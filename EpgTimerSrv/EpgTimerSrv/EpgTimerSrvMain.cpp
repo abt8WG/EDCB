@@ -1047,7 +1047,7 @@ bool CEpgTimerSrvMain::AutoAddReserveEPG(const EPG_AUTO_ADD_DATA& data, bool noR
 					item.serviceID = info.service_id;
 					item.eventID = info.event_id;
 					item.recSetting = data.recSetting;
-					if( data.searchInfo.chkRecEnd != 0 && this->reserveManager.IsFindRecEventInfo(info, data.searchInfo.chkRecDay) ){
+					if( data.searchInfo.chkRecEnd != 0 && this->reserveManager.IsFindRecEventInfo(info, data.searchInfo) ){
 						item.recSetting.recMode = RECMODE_NO;
 					}
 					item.comment = L"EPGŽ©“®—\–ñ";
@@ -1057,7 +1057,7 @@ bool CEpgTimerSrvMain::AutoAddReserveEPG(const EPG_AUTO_ADD_DATA& data, bool noR
 						Replace(item.comment, L"\n", L"");
 					}
 				}
-			}else if( data.searchInfo.chkRecEnd != 0 && this->reserveManager.IsFindRecEventInfo(info, data.searchInfo.chkRecDay) ){
+			}else if( data.searchInfo.chkRecEnd != 0 && this->reserveManager.IsFindRecEventInfo(info, data.searchInfo) ){
 				//˜^‰æÏ‚Ý‚È‚Ì‚Å–³Œø‚Å‚È‚¢—\–ñ‚Í–³Œø‚É‚·‚é
 				if( this->reserveManager.ChgAutoAddNoRec(info.original_network_id, info.transport_stream_id, info.service_id, info.event_id) ){
 					modified = true;
@@ -3401,6 +3401,7 @@ void CEpgTimerSrvMain::PushEpgSearchKeyInfo(CLuaWorkspace& ws, const EPGDB_SEARC
 	LuaHelp::reg_int(L, "freeCAFlag", k.freeCAFlag);
 	LuaHelp::reg_boolean(L, "chkRecEnd", k.chkRecEnd != 0);
 	LuaHelp::reg_int(L, "chkRecDay", k.chkRecDay);
+	LuaHelp::reg_boolean(L, "chkRecNoService", k.chkRecNoService != 0);
 	LuaHelp::reg_int(L, "chkDurationMin", k.chkDurationMin);
 	LuaHelp::reg_int(L, "chkDurationMax", k.chkDurationMax);
 	lua_pushstring(L, "contentList");
@@ -3510,6 +3511,7 @@ void CEpgTimerSrvMain::FetchEpgSearchKeyInfo(CLuaWorkspace& ws, EPGDB_SEARCH_KEY
 	k.freeCAFlag = (BYTE)LuaHelp::get_int(L, "freeCAFlag");
 	k.chkRecEnd = LuaHelp::get_boolean(L, "chkRecEnd");
 	k.chkRecDay = (WORD)LuaHelp::get_int(L, "chkRecDay");
+	k.chkRecNoService = LuaHelp::get_boolean(L, "chkRecNoService");
 	k.chkDurationMin = (WORD)LuaHelp::get_int(L, "chkDurationMin");
 	k.chkDurationMax = (WORD)LuaHelp::get_int(L, "chkDurationMax");
 	lua_getfield(L, -1, "contentList");
