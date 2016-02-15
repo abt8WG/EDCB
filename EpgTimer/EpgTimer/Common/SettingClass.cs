@@ -9,6 +9,8 @@ using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Windows;
+using EpgTimer.DefineClass;
+using EpgTimer.Common;
 
 namespace EpgTimer
 {
@@ -1520,6 +1522,87 @@ namespace EpgTimer
             get { return tryEpgSetting; }
             set { tryEpgSetting = value; }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool RecLog_Enabled
+        {
+            get { return _RecLog_Enabled; }
+            set { _RecLog_Enabled = value; }
+        }
+        bool _RecLog_Enabled = false;
+        /// <summary>
+        /// 
+        /// </summary>
+        public string RecLog_DB_MachineName
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_RecLog_DB_MachineName))
+                {
+                    return Environment.MachineName;
+                }
+                else {
+                    return _RecLog_DB_MachineName;
+                }
+            }
+            set { _RecLog_DB_MachineName = value; }
+        }
+        string _RecLog_DB_MachineName = null;
+        /// <summary>
+        /// 
+        /// </summary>
+        public string RecLog_DB_InstanceName
+        {
+            get { return _RecLog_DB_InstanceName; }
+            set { _RecLog_DB_InstanceName = value; }
+        }
+        string _RecLog_DB_InstanceName = "SQLEXPRESS";
+        /// <summary>
+        /// 
+        /// </summary>
+        public RecLogView.searchMethods RecLog_SearchMethod
+        {
+            get { return _RecLog_SearchMethod; }
+            set { _RecLog_SearchMethod = value; }
+        }
+        RecLogView.searchMethods _RecLog_SearchMethod = RecLogView.searchMethods.Contrains;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int RecLog_SearchColumn
+        {
+            get { return _RecLog_SearchColumn; }
+            set { _RecLog_SearchColumn = value; }
+        }
+        int _RecLog_SearchColumn = (int)DB_RecLog.searchColumns.ALL;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int RecLog_RecodeStatus
+        {
+            get { return _RecLog_RecodeStatuses; }
+            set { _RecLog_RecodeStatuses = value; }
+        }
+        int _RecLog_RecodeStatuses = (int)RecLogItem.RecodeStatuses.ALL;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int RecLog_SearchResultLimit
+        {
+            get { return _RecLog_SearchResultLimit; }
+            set { _RecLog_SearchResultLimit = value; }
+        }
+        int _RecLog_SearchResultLimit = 50;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int RecLogWindow_SearchResultLimit
+        {
+            get { return _RecLogWindow_SearchResultLimit; }
+            set { _RecLogWindow_SearchResultLimit = value; }
+        }
+        int _RecLogWindow_SearchResultLimit = 20;
 
         public Settings()
         {

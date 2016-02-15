@@ -45,6 +45,11 @@ TextOptions.TextFormattingMode="Display"
                     <local:EpgDataView x:Name="epgView" />
                 </Grid>
             </TabItem>
+            <TabItem Header="録画ログ" Name="tabItem_recLog">
+                <Grid>
+                    <local:RecLogView x:Name="recLogView" />
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

@@ -53,6 +53,7 @@ namespace EpgTimer
             new List<ICommand>{EpgCmds.SearchTitle},
             new List<ICommand>{EpgCmds.CopyNotKey},
             new List<ICommand>{EpgCmds.SetNotKey},
+            new List<ICommand>{EpgCmds.SearchRecLog},
 
             new List<ICommand>{EpgCmds.MenuSetting}
         };

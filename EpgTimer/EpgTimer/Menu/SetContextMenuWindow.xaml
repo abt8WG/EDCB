@@ -35,6 +35,7 @@
                             <CheckBox Margin="6,0,0,0" Content="番組名/ANDキーをネットで検索" />
                             <CheckBox Margin="6,0,0,0" Content="NOTキーをコピー" />
                             <CheckBox Margin="6,0,0,0" Content="NOTキーに貼り付け" />
+                            <CheckBox Margin="6,0,0,0" Content="録画ログを検索" />
                             <Separator Margin="12,0,12,0" Height="10" />
                             <CheckBox Margin="6,0,0,0" Content="右クリックメニューの設定..." />
                             <Separator Height="10" />
@@ -48,6 +49,7 @@
                             <CheckBox Margin="6,0,0,0" Content="確認メッセージを表示しない" Name="checkBox_NoMessageDelete2" />
                             <CheckBox Margin="6,0,0,0" Content="(予約ごと削除と共通)" IsEnabled="false" Name="checkBox_NoMessageDelete3" IsChecked="{Binding Path=IsChecked, ElementName=checkBox_NoMessageDelete2, UpdateSourceTrigger=PropertyChanged}" />
                             <CheckBox Margin="6,0,0,0" Content="確認メッセージを表示しない" Name="checkBox_NoMessageAdjustRes" />
+                            <CheckBox Margin="6,0,0,0" Visibility="Hidden"/>
                             <CheckBox Margin="6,0,0,0" Visibility="Hidden"/>
                             <CheckBox Margin="6,0,0,0" Visibility="Hidden"/>
                             <Separator Margin="12,0,12,0" Height="10" />
@@ -65,6 +67,7 @@
                             <CheckBox Margin="6,0,0,0" Content="記号類を取り除く" Name="checkBox_SearchTtile_Trim" />
                             <CheckBox Margin="6,0,6,0" Visibility="Hidden" />
                             <CheckBox Margin="6,0,6,0" Content="確認メッセージを表示しない" Name="checkBox_NoMessageNotKEY" />
+                            <CheckBox Margin="6,0,6,0" Visibility="Hidden" />
                             <Separator Margin="12,0,12,0" Height="10" />
                             <CheckBox Margin="6,0,6,0" Visibility="Hidden" />
                             <Separator Height="10" />

@@ -93,5 +93,22 @@ namespace EpgTimer
                 menu.ToolTip = (dataList.Count == 0 ? null : System.IO.Path.GetDirectoryName(dataList[0].RecFilePath));
             }
         }
+        protected override void mc_SearchRecLog(object sender, ExecutedRoutedEventArgs e)
+        {
+            this.recLogWindow.showResult(dataList[0]);
+            IsCommandExecuted = true;
+        }
+        PecLogWindow recLogWindow
+        {
+            get
+            {
+                if (this._recLogWindow == null)
+                {
+                    this._recLogWindow = new PecLogWindow(Window.GetWindow(this.Owner));
+                }
+                return this._recLogWindow;
+            }
+        }
+        PecLogWindow _recLogWindow = null;
     }
 }

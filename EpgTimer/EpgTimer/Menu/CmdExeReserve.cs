@@ -357,5 +357,29 @@ namespace EpgTimer
                 }
             }
         }
+        protected override void mc_SearchRecLog(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (eventList.Count != 0)
+            {   //番組情報優先
+                this.recLogWindow.showResult(eventList[0]);
+            }
+            else if (dataList.Count != 0)
+            {
+                this.recLogWindow.showResult(dataList[0]);
+            }
+            IsCommandExecuted = true;
+        }
+        PecLogWindow recLogWindow
+        {
+            get
+            {
+                if (this._recLogWindow == null)
+                {
+                    this._recLogWindow = new PecLogWindow(Window.GetWindow(this.Owner));
+                }
+                return this._recLogWindow;
+            }
+        }
+        PecLogWindow _recLogWindow = null;
     }
 }

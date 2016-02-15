@@ -93,11 +93,21 @@
     </Compile>
     <Compile Include="Common\CallerInfo.cs" />
     <Compile Include="Common\BoxExchangeEditor.cs" />
+    <Compile Include="Common\DBBase.cs" />
+    <Compile Include="Common\DB_EpgEventInfo.cs" />
+    <Compile Include="Common\DB_RecLog.cs" />
     <Compile Include="DefineClass\InfoWindowViewModel.cs" />
+    <Compile Include="DefineClass\RecLogItem.cs" />
     <Compile Include="DefineClass\SerializableDictionary.cs" />
     <Compile Include="DefineClass\SerializableSecureString.cs" />
     <Compile Include="InfoWindow.xaml.cs">
       <DependentUpon>InfoWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PecLogWindow.xaml.cs">
+      <DependentUpon>PecLogWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RecLogView.xaml.cs">
+      <DependentUpon>RecLogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="RestorableWindow.cs" />
     <Compile Include="UserCtrlView\BGBarListBoxItem.xaml.cs">
@@ -307,6 +317,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="InfoWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="PecLogWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RecLogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

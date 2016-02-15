@@ -52,6 +52,7 @@ namespace EpgTimer
         public static RoutedUICommand ViewChgSet { get; private set; }
         public static RoutedUICommand ViewChgMode { get; private set; }
         public static RoutedUICommand MenuSetting { get; private set; }
+        public static RoutedUICommand SearchRecLog { get; private set; }
 
         public static RoutedUICommand AddInDialog { get; private set; }
         public static RoutedUICommand ChangeInDialog { get; private set; }

@@ -115,6 +115,7 @@ namespace EpgTimer
             cmdList.Add(EpgCmds.ViewChgSet, new cmdOption(null, null, cmdExeType.Direct, false, false));//個別に指定
             cmdList.Add(EpgCmds.ViewChgMode, new cmdOption(null, null, cmdExeType.Direct, false, false));//個別に指定
             cmdList.Add(EpgCmds.MenuSetting, new cmdOption(mc_MenuSetting, null, cmdExeType.Direct, false, false));
+            cmdList.Add(EpgCmds.SearchRecLog, new cmdOption(mc_SearchRecLog, null, cmdExeType.SingleItem));
 
             cmdList.Add(EpgCmdsEx.AddMenu, new cmdOption(null, null, cmdExeType.MultiItem));//メニュー用
             cmdList.Add(EpgCmdsEx.ChgMenu, new cmdOption(null, null, cmdExeType.MultiItem));//メニュー用
@@ -508,6 +509,7 @@ namespace EpgTimer
             menu.IsEnabled = (autoAddInfo == null) ? false : (autoAddInfo.Count > 0);
             mm.CtxmGenerateChgAutoAdd(menu, autoAddInfo);
         }
+        protected virtual void mc_SearchRecLog(object sender, ExecutedRoutedEventArgs e) { }
     }
 
     public class CmdExeUtil

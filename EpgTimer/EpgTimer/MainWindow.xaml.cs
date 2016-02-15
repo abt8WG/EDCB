@@ -861,6 +861,13 @@ namespace EpgTimer
                         }
                         e.Handled = true;
                         break;
+                    case Key.D6:
+                        if (e.IsRepeat == false)
+                        {
+                            this.tabItem_recLog.IsSelected = true;
+                        }
+                        e.Handled = true;
+                        break;
                 }
             }
         }
@@ -1484,6 +1491,8 @@ namespace EpgTimer
                 default:
                     break;
             }
+
+            recLogView.update((UpdateNotifyItem)status.notifyID);
 
             if (CommonUtil.GetIdleTimeSec() < IdleTimeSec)
             {

@@ -7,21 +7,10 @@ Configuration files are stored in the 'ini' directory.
 
 **このForkについて**
 
-master ブランチは
-* xtne6f氏 (https://github.com/xtne6f/EDCB) の work-plus-s ブランチ
-* tkntrec氏 (https://github.com/tkntrec/EDCB) の my-build-s ブランチ
-* nekopanda氏 (https://github.com/nekopanda/EDCB) の develop ブランチ
-を merge しまくりつつ、各氏のサブブランチも先取りしつつ、
-自分の好みも混ぜ合わせてみるキメラのようなブランチです。
+EpgTimerに「録画ログ」機能を追加します。
 
-なるべく機能削除はしないマージをしていきたいところですが、
-機能削除による削除なのか
-修正による削除なのか
-コンフリクトによる削除なのか
-一つ一つ確認するのが難しい状況です。
+　過去に録画した番組や予約中の番組をキーワードで検索できます。
 
-README関連のファイルはコンフリクトしやすいので、あまり修正していません。
-各氏のREADMEを参照してください。
-* https://github.com/xtne6f/EDCB/tree/work-plus-s/Document
-* https://github.com/tkntrec/EDCB/tree/my-build-s/Document
-* https://github.com/nekopanda/EDCB/tree/develop/Document
+　この機能を使用するにはSQLServerが必要です。
+
+　詳しくは、「録画ログ」タブの左下にある「設定」ボタンをクリックし、表示される「HOWTO」を参考にして下さい

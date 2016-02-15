@@ -1,0 +1,32 @@
+﻿<Window x:Class="EpgTimer.PecLogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EpgTimer"
+        mc:Ignorable="d"
+        Title="PecLogWindow" WindowStyle="None" Width="400" Height="500" ResizeMode="NoResize" TextOptions.TextFormattingMode="Display" UseLayoutRounding="True" Background="{x:Null}" AllowsTransparency="True">
+    <Border x:Name="border" Margin="10" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="Black"
+                              Direction="270"
+                              BlurRadius="10"
+                              ShadowDepth="3" />
+        </Border.Effect>
+        <Grid Background="White" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBox Grid.Row="0" x:Name="textBox" Margin="7,7,7,0" VerticalContentAlignment="Center" KeyDown="textBox_KeyDown" />
+            <RichTextBox Grid.Row="1" x:Name="richTextBox"  Margin="7,3,7,7" Block.LineHeight="3" ScrollViewer.VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" SelectionOpacity="0.5" Background="#FFEEEEEE" ContextMenuOpening="richTextBox_ContextMenuOpening" >
+                <RichTextBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="MenuItem_Recorded" Click="MenuItem_Recorded_Click" />
+                    </ContextMenu>
+                </RichTextBox.ContextMenu>
+                <FlowDocument />
+            </RichTextBox>
+        </Grid>
+    </Border>
+</Window>

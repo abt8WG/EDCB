@@ -90,6 +90,7 @@ namespace EpgTimer
             EpgCmds.DownItem.Text = "下へ移動(自動予約登録一覧)";
             EpgCmds.SaveOrder.Text = "並びを保存(自動予約登録一覧)";
             EpgCmds.RestoreOrder.Text = "並びを元に戻す(自動予約登録一覧)";
+            EpgCmds.SearchRecLog.Text = "録画ログを検索";
 
             //ショートカットは、個別に無効にしたり範囲を限定したりするのでこちらで管理する。
             //AddCommand:コマンド、ショートカット、isEnable: 有効無効、
@@ -125,6 +126,7 @@ namespace EpgTimer
             AddCommand(EpgCmds.ViewChgSet, spc: GestureTrg.ToView);
             AddCommand(EpgCmds.ViewChgMode, spc: GestureTrg.ToView);
             AddCommand(EpgCmds.MenuSetting, spc: GestureTrg.ToView);
+            AddCommand(EpgCmds.SearchRecLog);
 
             //主にボタン用、Up,Downはリストビューのキー操作と干渉するのでウィンドウにもリストビューにもバインディングさせる。
             AddCommand(EpgCmds.AddInDialog, Key.A, ModifierKeys.Control | ModifierKeys.Shift, spc: GestureTrg.ToView, gesNeedMenu: false);
