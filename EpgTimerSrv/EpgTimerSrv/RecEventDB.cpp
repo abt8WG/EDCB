@@ -58,7 +58,13 @@ bool CRecEventDB::Save() {
 
 		buffer.Add((DWORD)1); // バージョン
 
+#if _MSC_VER < 1700
+		auto all = GetAll();
+		for (auto itr = all.cbegin(); itr != all.cend(); itr++) {
+			auto recInfo = *itr;
+#else
 		for (auto recInfo : GetAll()) {
+#endif
 			buffer.Add((DWORD)recInfo->filePath.size());
 			buffer.AddData((BYTE*)recInfo->filePath.c_str(), recInfo->filePath.size() * sizeof(wchar_t));
 			buffer.Add(recInfo->loadErrorCount);
@@ -81,14 +87,26 @@ bool CRecEventDB::Save() {
 }
 
 void CRecEventDB::Clear() {
+#if _MSC_VER < 1700
+	for (auto itr = eventMapNew.begin(); itr != eventMapNew.end(); itr++) {
+		SAFE_DELETE(itr->second);
+	}
+#else
 	for (std::pair<DWORD, const REC_EVENT_INFO*> entry : eventMapNew) {
 		SAFE_DELETE(entry.second);
 	}
+#endif
 	eventMapNew.clear();
 	serviceMapNew.clear();
+#if _MSC_VER < 1700
+	for (auto itr = eventMap.begin(); itr != eventMap.end(); itr++) {
+		SAFE_DELETE(itr->second);
+	}
+#else
 	for (std::pair<DWORD, const REC_EVENT_INFO*> entry : eventMap) {
 		SAFE_DELETE(entry.second);
 	}
+#endif
 	eventMap.clear();
 	serviceMap.clear();
 }
@@ -113,7 +131,13 @@ void CRecEventDB::UpdateFileExist() {
 	DWORD time = GetTickCount();
 
 	directoryCache.UpdateDirectoryInfo();
+#if _MSC_VER < 1700
+	auto all = GetAll();
+	for (auto itr = all.cbegin(); itr != all.cend(); itr++) {
+		auto recInfo = *itr;
+#else
 	for (auto recInfo : GetAll()) {
+#endif
 		if (recInfo->filePath.size() > 0) {
 			recInfo->fileExist = directoryCache.Exist(recInfo->filePath, true);
 		}
@@ -142,13 +166,23 @@ bool CRecEventDB::HasEpgInfo(DWORD id) const {
 vector<REC_EVENT_INFO*> CRecEventDB::GetAll() {
 	vector<REC_EVENT_INFO*> v;
 	v.reserve(eventMap.size() + eventMapNew.size());
+#if _MSC_VER < 1700
+	for (auto itr = eventMap.cbegin(); itr != eventMap.cend(); itr++) v.push_back(itr->second);
+	for (auto itr = eventMapNew.cbegin(); itr != eventMapNew.cend(); itr++) v.push_back(itr->second);
+#else
 	for (auto& entry : eventMap) v.push_back(entry.second);
 	for (auto& entry : eventMapNew) v.push_back(entry.second);
+#endif
 	return v;
 }
 
 void CRecEventDB::RegistRecFiles(const REC_INFO_MAP& recFiles) {
+#if _MSC_VER < 1700
+	for (auto itr = recFiles.cbegin(); itr != recFiles.cend(); itr++) {
+		auto recInfo = *itr;
+#else
 	for (const auto& recInfo : recFiles) {
+#endif
 		DWORD fileId = recInfo.first;
 		if (recInfo.second.recFilePath.size() > 0) {
 			idMap[recInfo.second.recFilePath] = fileId;
@@ -319,7 +353,12 @@ void CRecEventDB::ReadTsFile(REC_EVENT_INFO* eventInfo, const std::wstring& recF
 }
 
 void CRecEventDB::ReadTsFiles(const REC_INFO_MAP& recFiles) {
+#if _MSC_VER < 1700
+	for (auto itr = recFiles.cbegin(); itr != recFiles.cend(); itr++) {
+		auto recInfo = *itr;
+#else
 	for (const auto& recInfo : recFiles) {
+#endif
 		if (recInfo.second.recFilePath.size() > 0) {
 			auto it = idMap.find(recInfo.second.recFilePath);
 			if (it != idMap.end()) {
@@ -347,8 +386,13 @@ void CRecEventDB::UpdateServiceMap() {
 }
 
 void CRecEventDB::AddToServiceMap(REC_EVENT_MAP& from, SERVICE_EVENT_MAP& to) {
+#if _MSC_VER < 1700
+	for (auto itr = from.cbegin(); itr != from.cend(); itr++) {
+		REC_EVENT_INFO* eventInfo = itr->second;
+#else
 	for (std::pair<DWORD, REC_EVENT_INFO*> entry : from) {
 		REC_EVENT_INFO* eventInfo = entry.second;
+#endif
 		if (eventInfo->HasEpgInfo()) {
 			// 有効なデータがあるときだけ
 			LONGLONG key = _Create64Key(eventInfo->original_network_id, eventInfo->transport_stream_id, eventInfo->service_id);
@@ -401,9 +445,15 @@ vector<DWORD> CRecEventDB::SearchRecFile_(const EPGDB_SEARCH_KEY_INFO& item, SER
 	// IDリストに変換
 	vector<DWORD> ret;
 	ret.reserve(list.size());
+#if _MSC_VER < 1700
+	for (auto itr = list.cbegin(); itr != list.cend(); itr++) {
+		ret.push_back((*itr)->recFileId);
+	}
+#else
 	for (REC_EVENT_INFO* info : list) {
 		ret.push_back(info->recFileId);
 	}
+#endif
 
 	return ret;
 }

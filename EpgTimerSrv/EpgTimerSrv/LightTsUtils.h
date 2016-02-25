@@ -8,6 +8,10 @@
 #include "../../Common/StructDef.h"
 #include "../../Common/StringUtil.h"
 
+#if _MSC_VER < 1700
+#define noexcept
+#endif
+
 #define BIT_SHIFT_MASK(value, shift, mask) (((value) >> (shift)) & ((1<<(mask))-1))
 
 /////////////////////////////////////////////////////////////////////////////

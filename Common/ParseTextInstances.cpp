@@ -286,6 +286,22 @@ void CParseRecInfoText::ReadSupplementFileAll() {
 #if 1
 	// ディレクトリキャッシュを使って高速化
 	CDirectoryCache dirCache;
+#if _MSC_VER < 1700
+	for (auto itr = itemMap.begin(); itr != itemMap.end(); itr++) {
+		// パスを登録するため必ず失敗する関数を渡して処理させる
+		// ちょっときれいじゃないけどこれが一番楽
+		ReadSupplementFile(itr->second, [&](const wstring& filepath) -> HANDLE {
+			dirCache.CachePath(filepath);
+			return INVALID_HANDLE_VALUE;
+		});		
+	}
+	dirCache.UpdateDirectoryInfo();
+	for (auto itr = itemMap.begin(); itr != itemMap.end(); itr++) {
+		ReadSupplementFile(itr->second, [&](const wstring& filepath) -> HANDLE {
+			return dirCache.Open(filepath);
+		});
+	}
+#else
 	for (auto& entry : itemMap) {
 		// パスを登録するため必ず失敗する関数を渡して処理させる
 		// ちょっときれいじゃないけどこれが一番楽
@@ -300,10 +316,17 @@ void CParseRecInfoText::ReadSupplementFileAll() {
 			return dirCache.Open(filepath);
 		});
 	}
+#endif
+#else
+#if _MSC_VER < 1700
+	for (auto itr = itemMap.begin(); itr != itemMap.end(); itr++) {
+		ReadSupplementFile(itr->second, [](const wstring& filepath) -> HANDLE { return FileOpenRead(filepath); });
+	}
 #else
 	for (auto& entry : itemMap) {
 		ReadSupplementFile(entry.second, [](const wstring& filepath) { return FileOpenRead(filepath); });
 	}
+#endif
 #endif
 }
 
@@ -325,7 +348,12 @@ void CParseRecInfoText::SetRecInfoFolder(LPCWSTR recInfoFolder)
 
 void CParseRecInfoText::RemoveReserveAutoAddId(DWORD id, const vector<REC_FILE_BASIC_INFO>& list)
 {
+#if _MSC_VER < 1700
+	for (auto itr = list.cbegin(); itr != list.cend(); itr++) {
+		auto& recFile = *itr;
+#else
 	for (const auto& recFile : list) {
+#endif
 		auto itRsv = itemMap.find(recFile.id);
 		if (itRsv != itemMap.end()) {
 			for (auto it = itRsv->second.autoAddInfo.begin(); it != itRsv->second.autoAddInfo.end(); ++it) {
@@ -340,7 +368,12 @@ void CParseRecInfoText::RemoveReserveAutoAddId(DWORD id, const vector<REC_FILE_B
 
 void CParseRecInfoText::AddReserveAutoAddId(const EPG_AUTO_ADD_DATA& data, const vector<REC_FILE_BASIC_INFO>& list)
 {
+#if _MSC_VER < 1700
+	for (auto itr = list.cbegin(); itr != list.cend(); itr++) {
+		auto& recFile = *itr;
+#else
 	for (const auto& recFile : list) {
+#endif
 		auto itRsv = itemMap.find(recFile.id);
 		if (itRsv != itemMap.end()) {
 			itRsv->second.autoAddInfo.push_back(data);
@@ -850,7 +883,12 @@ const vector<pair<ULONGLONG, DWORD>>& CParseReserveText::GetSortByEventList() co
 
 void CParseReserveText::RemoveReserveAutoAddId(DWORD id, const vector<RESERVE_BASIC_DATA>& list)
 {
+#if _MSC_VER < 1700
+	for (auto itr = list.cbegin(); itr != list.cend(); itr++) {
+		auto& reserveData = *itr;
+#else
 	for (const auto& reserveData : list) {
+#endif
 		auto itRsv = itemMap.find(reserveData.reserveID);
 		if (itRsv != itemMap.end()) {
 			for (auto it = itRsv->second.autoAddInfo.begin(); it != itRsv->second.autoAddInfo.end(); ++it) {
@@ -865,7 +903,12 @@ void CParseReserveText::RemoveReserveAutoAddId(DWORD id, const vector<RESERVE_BA
 
 void CParseReserveText::AddReserveAutoAddId(const EPG_AUTO_ADD_DATA& data, const vector<RESERVE_DATA>& list)
 {
+#if _MSC_VER < 1700
+	for (auto itr = list.cbegin(); itr != list.cend(); itr++) {
+		auto& reserveData = *itr;
+#else
 	for (const auto& reserveData : list) {
+#endif
 		auto itRsv = itemMap.find(reserveData.reserveID);
 		if (itRsv != itemMap.end()) {
 			itRsv->second.autoAddInfo.push_back(data);

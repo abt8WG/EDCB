@@ -38,7 +38,12 @@ void CDirectoryCache::CachePath(const wstring& filepath) {
 
 void CDirectoryCache::UpdateDirectoryInfo() {
 	// ディレクトリの更新を検知
+#if _MSC_VER < 1700
+	for (auto itr = directoryMap.begin(); itr != directoryMap.end(); itr++) {
+		auto& entry = *itr;
+#else
 	for (auto& entry : directoryMap) {
+#endif
 		entry.second.exist = GetDirectoryExist(entry.first);
 		if (entry.second.exist) {
 			int64_t lastModified = GetFileLastModified(entry.first);

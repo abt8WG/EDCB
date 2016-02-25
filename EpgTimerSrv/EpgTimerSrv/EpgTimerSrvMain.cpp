@@ -1013,9 +1013,15 @@ void CEpgTimerSrvMain::UpdateRecFileInfo() {
 		// 新規録画ファイルがある場合は録画ファイルとの関連付けを更新
 		auto list = reserveManager.UpdateAndMergeNewRecInfo(epgAutoAdd.GetMap());
 		// 新規関連付け分を追加
+#if _MSC_VER < 1700
+		for (auto itr = list.cbegin(); itr != list.cend(); itr++) {
+			epgAutoAdd.AddRecList(itr->first, itr->second);
+		}
+#else
 		for (const auto& entry : list) {
 			epgAutoAdd.AddRecList(entry.first, entry.second);
 		}
+#endif
 		//_OutputDebugString(L"UpdateRecFileInfo %dmsec\r\n", GetTickCount() - time);
 	}
 }
@@ -1025,14 +1031,25 @@ bool CEpgTimerSrvMain::RemoveNolinkedReserve(vector<DWORD> beforeReserveIds) {
 
 	// 重複をなくす
 	std::set<DWORD> beforeIdSet;
+#if _MSC_VER < 1700
+	for (auto itr = beforeReserveIds.cbegin(); itr != beforeReserveIds.cend(); itr++) {
+		beforeIdSet.insert(*itr);
+	}
+#else
 	for (DWORD id : beforeReserveIds) {
 		beforeIdSet.insert(id);
 	}
+#endif
 
 	__int64 now = GetNowI64Time();
 
 	std::vector<DWORD> removeIds;
+#if _MSC_VER < 1700
+	for (auto itr = beforeReserveIds.cbegin(); itr != beforeReserveIds.cend(); itr++) {
+		auto id = *itr;
+#else
 	for (DWORD id : beforeIdSet) {
+#endif
 		RESERVE_DATA rsv;
 		if (reserveManager.GetReserveData(id, &rsv)) {
 			// 自動予約で追加された？
@@ -1072,9 +1089,16 @@ vector<EPG_AUTO_ADD_DATA> CEpgTimerSrvMain::GetAutoAddList()
 
 	vector<EPG_AUTO_ADD_DATA> ret;
 	ret.reserve(epgAutoAdd.GetMap().size());
+#if _MSC_VER < 1700
+	auto map = epgAutoAdd.GetMap();
+	for (auto itr = map.cbegin(); itr != map.cend(); itr++) {
+		ret.push_back(itr->second);
+	}
+#else
 	for (const auto& entry : epgAutoAdd.GetMap()) {
 		ret.push_back(entry.second);
 	}
+#endif
 
 	return ret;
 }
@@ -1088,9 +1112,15 @@ bool CEpgTimerSrvMain::DelAutoAdd(vector<DWORD>& val) {
 	for (size_t i = 0; i < val.size(); i++) {
 		auto it = epgAutoAdd.GetMap().find(val[i]);
 		if (it != epgAutoAdd.GetMap().end()) {
+#if _MSC_VER < 1700
+			for (auto itr = it->second.reserveList.cbegin(); itr != it->second.reserveList.cend(); itr++) {
+				reserveList.push_back(itr->reserveID);
+			}
+#else
 			for (const RESERVE_BASIC_DATA& rsv : it->second.reserveList) {
 				reserveList.push_back(rsv.reserveID);
 			}
+#endif
 			reserveManager.AutoAddDeleted(it->second);
 			epgAutoAdd.DelData(val[i]);
 			modified = true;
@@ -1115,9 +1145,15 @@ bool CEpgTimerSrvMain::ChgAutoAdd(vector<EPG_AUTO_ADD_DATA>& val) {
 			}
 			else {
 				val[i] = epgAutoAdd.GetMap().at(val[i].dataID);
+#if _MSC_VER < 1700
+				for (auto itr = val[i].reserveList.cbegin(); itr != val[i].reserveList.cend(); itr++) {
+					reserveList.push_back(itr->reserveID);
+				}
+#else
 				for (const RESERVE_BASIC_DATA& rsv : val[i].reserveList) {
 					reserveList.push_back(rsv.reserveID);
 				}
+#endif
 				auto list = reserveManager.AutoAddUpdateRecInfo(val[i]);
 				epgAutoAdd.SetRecList(val[i].dataID, list);
 				modified = true;
@@ -1636,7 +1672,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 						}
 						else if (CompareNoCase(filename, L"EpgTimerSrv.ini") == 0) {
 							GetEpgTimerSrvIniPath(path);
-							specialKey.insert(pair<wstring, std::function<bool()>>(L"TCPAccessPassword", [&](){
+							specialKey.insert(pair<wstring, std::function<bool()>>(L"TCPAccessPassword", [&]() -> bool {
 								wstring temp;
 								if (tcpFlag) return false;
 								if (CCryptUtil::Decrypt(value, temp)) return true;

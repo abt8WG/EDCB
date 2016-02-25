@@ -1994,11 +1994,19 @@ vector<REC_FILE_BASIC_INFO> CReserveManager::AutoAddUpdateRecInfo(const EPG_AUTO
 vector<pair<DWORD, vector<REC_FILE_BASIC_INFO> > > CReserveManager::UpdateAndMergeNewRecInfo(const map<DWORD, EPG_AUTO_ADD_DATA>& epgAutoAdd) {
 	CBlockLock lock(&this->managerLock);
 	vector<pair<DWORD, vector<REC_FILE_BASIC_INFO> > > ret;
+#if _MSC_VER < 1700
+	for (auto itr = epgAutoAdd.cbegin(); itr != epgAutoAdd.cend(); itr++) {
+		vector<REC_FILE_BASIC_INFO> recFiles = SearchRecFile(itr->second.searchInfo, true);
+		recInfoText.AddReserveAutoAddId(itr->second, recFiles);
+		ret.push_back(std::make_pair(itr->first, recFiles));
+	}
+#else
 	for (const auto& entry : epgAutoAdd) {
 		vector<REC_FILE_BASIC_INFO> recFiles = SearchRecFile(entry.second.searchInfo, true);
 		recInfoText.AddReserveAutoAddId(entry.second, recFiles);
 		ret.push_back(std::make_pair(entry.first, recFiles));
 	}
+#endif
 	recEventDB.MergeNew();
 	return ret;
 }
@@ -2108,17 +2116,29 @@ bool CReserveManager::AutoAddReserveEPG(
 	// éûä‘èáÇ…É\Å[Ég
 	typedef pair<int64_t, const RESERVE_DATA*> RESERVE_PAIR;
 	vector<RESERVE_PAIR> tmpList; tmpList.reserve(addList.size());
+#if _MSC_VER < 1700
+	for(auto itr = addList.cbegin(); itr != addList.cend(); itr++) {
+		tmpList.push_back(RESERVE_PAIR(ConvertI64Time((*itr)->startTime), *itr));
+	}
+#else
 	for(auto rsv : addList) {
 		tmpList.push_back(RESERVE_PAIR(ConvertI64Time(rsv->startTime), rsv));
 	}
+#endif
 	std::sort(tmpList.begin(), tmpList.end(), [](RESERVE_PAIR a, RESERVE_PAIR b) {
 		return a.first < b.first;
 	});
 
 	vector<RESERVE_DATA> list; list.reserve(tmpList.size());
+#if _MSC_VER < 1700
+	for (auto itr = tmpList.cbegin(); itr != tmpList.cend(); itr++) {
+		list.push_back(*itr->second);
+	}
+#else
 	for (RESERVE_PAIR item : tmpList) {
 		list.push_back(*item.second);
 	}
+#endif
 
 	reserveText.AddReserveAutoAddId(data, list);
 	if (reserveData != NULL) {
@@ -2238,11 +2258,20 @@ vector<REC_FILE_BASIC_INFO> CReserveManager::SearchRecFile(const EPGDB_SEARCH_KE
 	const auto& recFileMap = recInfoText.GetMap();
 	vector<REC_FILE_BASIC_INFO> list;
 	list.reserve(ids.size());
+#if _MSC_VER < 1700
+	for (auto itr = ids.cbegin(); itr != ids.end(); itr++) {
+		auto it = recFileMap.find(*itr);
+		if (it != recFileMap.end()) {
+			list.push_back(it->second);
+		}
+	}
+#else
 	for (DWORD id : ids) {
 		auto it = recFileMap.find(id);
 		if (it != recFileMap.end()) {
 			list.push_back(it->second);
 		}
 	}
+#endif
 	return list;
 }

@@ -79,7 +79,13 @@ BOOL GetRecFolderPath(wstring& strPath, int index)
 	int numOfFolders = GetPrivateProfileInt(L"SET", L"RecFolderNum", 0, strIni.c_str());
 	if (numOfFolders < 0 || index >= numOfFolders)
 		return FALSE;
+#if _MSC_VER < 1700
+	WCHAR wstrInsdex[10];
+	wsprintf(wstrInsdex, L"%d", index);
+	wstring strKey = L"RecFolderPath" + wstring(wstrInsdex);
+#else
 	wstring strKey = L"RecFolderPath" + std::to_wstring(index);
+#endif
 
 	WCHAR wPath[MAX_PATH + 8];
 	GetPrivateProfileString( L"Set", strKey.c_str(), L"", wPath, MAX_PATH + 8, strIni.c_str() );
