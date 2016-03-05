@@ -2,6 +2,7 @@
 //
 #include "windows.h"
 #include "../resource.h"
+#include "gitrevision.h"
 /////////////////////////////////////////////////////////////////////////////
 // ì˙ñ{åÍ (ì˙ñ{) resources
 
@@ -194,7 +195,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "TVTest EDCB Support Plugin"
             VALUE "CompanyName", "HDUSTestÇÃíÜÇÃêl"
-            VALUE "FileDescription", "EDCBSupport"
+            VALUE "FileDescription", "EDCBSupport" GIT_REVISION
             VALUE "FileVersion", "0.2.0"
             VALUE "InternalName", "EDCBSupport"
             VALUE "OriginalFilename", "EDCBSupport.tvtp"

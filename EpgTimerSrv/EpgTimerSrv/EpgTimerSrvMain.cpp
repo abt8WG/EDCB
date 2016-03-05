@@ -1201,7 +1201,7 @@ static void SearchPgCallback(vector<CEpgDBManager::SEARCH_RESULT_EVENT>* pval, v
 	}
 	CMD_STREAM *resParam = (CMD_STREAM*)param;
 	resParam->param = CMD_SUCCESS;
-	resParam->data = NewWriteVALUE(&valp, resParam->dataSize);
+	resParam->data = NewWriteVALUE(valp, resParam->dataSize);
 }
 
 //大変行儀が悪いが、正しくver渡すために外に置いておく。
@@ -1215,7 +1215,7 @@ static void SearchPg2Callback(vector<CEpgDBManager::SEARCH_RESULT_EVENT>* pval, 
 	}
 	CMD_STREAM *resParam = (CMD_STREAM*)param;
 	resParam->param = CMD_SUCCESS;
-	resParam->data = NewWriteVALUE2WithVersion(CommitedVerForNewCMD, &valp, resParam->dataSize);
+	resParam->data = NewWriteVALUE2WithVersion(CommitedVerForNewCMD, valp, resParam->dataSize);
 }
 
 //戻り値の型を変更出来るように、一応分けておく
@@ -1228,14 +1228,14 @@ static void EnumPgInfoCallback(const vector<EPGDB_EVENT_INFO>* pval, void* param
 {
 	CMD_STREAM *resParam = (CMD_STREAM*)param;
 	resParam->param = CMD_SUCCESS;
-	resParam->data = NewWriteVALUE(pval, resParam->dataSize);
+	resParam->data = NewWriteVALUE(*pval, resParam->dataSize);
 }
 
 static void EnumPgAllCallback(vector<const EPGDB_SERVICE_EVENT_INFO*>* pval, void* param)
 {
 	CMD_STREAM *resParam = (CMD_STREAM*)param;
 	resParam->param = CMD_SUCCESS;
-	resParam->data = NewWriteVALUE(pval, resParam->dataSize);
+	resParam->data = NewWriteVALUE(*pval, resParam->dataSize);
 }
 
 int CALLBACK CEpgTimerSrvMain::CtrlCmdPipeCallback(void* param, CMD_STREAM* cmdParam, CMD_STREAM* resParam)
@@ -1330,18 +1330,15 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			REGIST_TCP_INFO val;
 			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) ){
 				BOOL registered = sys->notifyManager.IsRegistTCP(val);
-				resParam->data = NewWriteVALUE(&registered, resParam->dataSize);
+				resParam->data = NewWriteVALUE(registered, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_RESERVE:
-		{
-			OutputDebugString(L"CMD2_EPG_SRV_ENUM_RESERVE\r\n");
-			vector<RESERVE_DATA> list = sys->reserveManager.GetReserveDataAll();
-			resParam->data = NewWriteVALUE(&list, resParam->dataSize);
-			resParam->param = CMD_SUCCESS;
-		}
+		OutputDebugString(L"CMD2_EPG_SRV_ENUM_RESERVE\r\n");
+		resParam->data = NewWriteVALUE(sys->reserveManager.GetReserveDataAll(), resParam->dataSize);
+		resParam->param = CMD_SUCCESS;
 		break;
 	case CMD2_EPG_SRV_GET_RESERVE:
 		{
@@ -1349,8 +1346,8 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD reserveID;
 			if( ReadVALUE(&reserveID, cmdParam->data, cmdParam->dataSize, NULL) ){
 				RESERVE_DATA info;
-				if(sys->reserveManager.GetReserveData(reserveID, &info)){
-					resParam->data = NewWriteVALUE(&info, resParam->dataSize);
+				if( sys->reserveManager.GetReserveData(reserveID, &info) ){
+					resParam->data = NewWriteVALUE(info, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
 				}
 			}
@@ -1384,13 +1381,9 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_RECINFO:
-		{
-			OutputDebugString(L"CMD2_EPG_SRV_ENUM_RECINFO\r\n");
-			sys->UpdateRecFileInfo();
-			vector<REC_FILE_INFO> list = sys->reserveManager.GetRecFileInfoAll();
-			resParam->data = NewWriteVALUE(&list, resParam->dataSize);
-			resParam->param = CMD_SUCCESS;
-		}
+		OutputDebugString(L"CMD2_EPG_SRV_ENUM_RECINFO\r\n");
+		resParam->data = NewWriteVALUE(sys->reserveManager.GetRecFileInfoAll(), resParam->dataSize);
+		resParam->param = CMD_SUCCESS;
 		break;
 	case CMD2_EPG_SRV_DEL_RECINFO:
 		{
@@ -1408,7 +1401,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		}else{
 			vector<EPGDB_SERVICE_INFO> list;
 			if( sys->epgDB.GetServiceList(&list) != FALSE ){
-				resParam->data = NewWriteVALUE(&list, resParam->dataSize);
+				resParam->data = NewWriteVALUE(list, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -1444,7 +1437,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			EPGDB_EVENT_INFO val;
 			if( ReadVALUE(&key, cmdParam->data, cmdParam->dataSize, NULL) &&
 			    sys->epgDB.SearchEpg(key>>48&0xFFFF, key>>32&0xFFFF, key>>16&0xFFFF, key&0xFFFF, &val) ){
-				resParam->data = NewWriteVALUE(&val, resParam->dataSize);
+				resParam->data = NewWriteVALUE(val, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -1483,7 +1476,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		{
 			OutputDebugString(L"CMD2_EPG_SRV_ENUM_AUTO_ADD\r\n");
 			vector<EPG_AUTO_ADD_DATA> val = sys->GetAutoAddList();
-			resParam->data = NewWriteVALUE(&val, resParam->dataSize);
+			resParam->data = NewWriteVALUE(val, resParam->dataSize);
 			resParam->param = CMD_SUCCESS;
 		}
 		break;
@@ -1525,7 +1518,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 					val.push_back(itr->second);
 				}
 			}
-			resParam->data = NewWriteVALUE(&val, resParam->dataSize);
+			resParam->data = NewWriteVALUE(val, resParam->dataSize);
 			resParam->param = CMD_SUCCESS;
 		}
 		break;
@@ -1584,12 +1577,9 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_TUNER_RESERVE:
-		{
-			OutputDebugString(L"CMD2_EPG_SRV_ENUM_TUNER_RESERVE\r\n");
-			vector<TUNER_RESERVE_INFO> list = sys->reserveManager.GetTunerReserveAll();
-			resParam->data = NewWriteVALUE(&list, resParam->dataSize);
-			resParam->param = CMD_SUCCESS;
-		}
+		OutputDebugString(L"CMD2_EPG_SRV_ENUM_TUNER_RESERVE\r\n");
+		resParam->data = NewWriteVALUE(sys->reserveManager.GetTunerReserveAll(), resParam->dataSize);
+		resParam->param = CMD_SUCCESS;
 		break;
 	case CMD2_EPG_SRV_FILE_COPY:
 		{
@@ -1797,7 +1787,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 						resultList.push_back(rfi);
 					}
 				} while (i && GetRecFolderPath(val, i++));
-				resParam->data = NewWriteVALUE(&resultList, resParam->dataSize);
+				resParam->data = NewWriteVALUE(resultList, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -1820,7 +1810,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 						}
 					}while( FindNextFile(hFind, &findData) );
 					FindClose(hFind);
-					resParam->data = NewWriteVALUE(&fileList, resParam->dataSize);
+					resParam->data = NewWriteVALUE(fileList, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
 				}
 			}
@@ -1851,7 +1841,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 						}
 					}
 					if( info.chInfo.useBonCh ){
-						resParam->data = NewWriteVALUE(&info, resParam->dataSize);
+						resParam->data = NewWriteVALUE(info, resParam->dataSize);
 						resParam->param = CMD_SUCCESS;
 						break;
 					}
@@ -1951,7 +1941,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			OutputDebugString(L"CMD2_EPG_SRV_NWPLAY_GET_POS\r\n");
 			NWPLAY_POS_CMD val;
 			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) && sys->streamingManager.GetPos(&val) ){
-				resParam->data = NewWriteVALUE(&val, resParam->dataSize);
+				resParam->data = NewWriteVALUE(val, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -1970,7 +1960,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			OutputDebugString(L"CMD2_EPG_SRV_NWPLAY_SET_IP\r\n");
 			NWPLAY_PLAY_INFO val;
 			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) && sys->streamingManager.SetIP(&val) ){
-				resParam->data = NewWriteVALUE(&val, resParam->dataSize);
+				resParam->data = NewWriteVALUE(val, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -1985,7 +1975,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) &&
 			    sys->reserveManager.GetRecFilePath(val, resVal.filePath, &ctrlID, &processID) &&
 			    sys->streamingManager.OpenTimeShift(resVal.filePath.c_str(), processID, ctrlID, &resVal.ctrlID) ){
-				resParam->data = NewWriteVALUE(&resVal, resParam->dataSize);
+				resParam->data = NewWriteVALUE(resVal, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -1996,7 +1986,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			wstring val, resVal;
 			if (ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) &&
 				GetNetworkPath(val, resVal)) {
-				resParam->data = NewWriteVALUE(&resVal, resParam->dataSize);
+				resParam->data = NewWriteVALUE(resVal, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -2010,8 +2000,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			WORD ver;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, NULL) ){
 				//ver>=5では録画予定ファイル名も返す
-				vector<RESERVE_DATA> list = sys->reserveManager.GetReserveDataAll(ver >= 5);
-				resParam->data = NewWriteVALUE2WithVersion(ver, &list, resParam->dataSize);
+				resParam->data = NewWriteVALUE2WithVersion(ver, sys->reserveManager.GetReserveDataAll(ver >= 5), resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -2025,8 +2014,8 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 				DWORD reserveID;
 				if( ReadVALUE2(ver, &reserveID, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
 					RESERVE_DATA info;
-					if(sys->reserveManager.GetReserveData(reserveID, &info)){
-						resParam->data = NewWriteVALUE2WithVersion(ver, &info, resParam->dataSize);
+					if( sys->reserveManager.GetReserveData(reserveID, &info) ){
+						resParam->data = NewWriteVALUE2WithVersion(ver, info, resParam->dataSize);
 						resParam->param = CMD_SUCCESS;
 					}
 				}
@@ -2109,7 +2098,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			WORD ver;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, NULL) ){
 				vector<EPG_AUTO_ADD_DATA> val = sys->GetAutoAddList();
-				resParam->data = NewWriteVALUE2WithVersion(ver, &val, resParam->dataSize);
+				resParam->data = NewWriteVALUE2WithVersion(ver, val, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -2157,7 +2146,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 						val.push_back(itr->second);
 					}
 				}
-				resParam->data = NewWriteVALUE2WithVersion(ver, &val, resParam->dataSize);
+				resParam->data = NewWriteVALUE2WithVersion(ver, val, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -2218,10 +2207,9 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		{
 			OutputDebugString(L"CMD2_EPG_SRV_ENUM_RECINFO2\r\n");
 			WORD ver;
-			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, NULL) ) {
-				sys->UpdateRecFileInfo();
-				vector<REC_FILE_INFO> list = sys->reserveManager.GetRecFileInfoAll();
-				resParam->data = NewWriteVALUE2WithVersion(ver, &list, resParam->dataSize);
+			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, NULL) ){
+				sys->UpdateRecFileInfo(); // nekopanda版 (8bae159)
+				resParam->data = NewWriteVALUE2WithVersion(ver, sys->reserveManager.GetRecFileInfoAll(), resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
 		}
@@ -2292,7 +2280,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
                         result.push_back(data1);
                     }
 
-                    resParam->data = NewWriteVALUE2WithVersion(ver, &result, resParam->dataSize);
+                    resParam->data = NewWriteVALUE2WithVersion(ver, result, resParam->dataSize);
                     resParam->param = CMD_SUCCESS;
 
                     vector<FILE_DATA>::iterator itr2;

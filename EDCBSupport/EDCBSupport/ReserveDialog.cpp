@@ -323,7 +323,7 @@ void CReserveDialog::InitDialog(HWND hDlg)
 		TEXT("‰½‚à‚µ‚È‚¢"),
 	};
 	SetComboBoxList(hDlg,IDC_RESERVE_SUSPENDMODE,SuspendModeList,_countof(SuspendModeList));
-	::SendDlgItemMessage(hDlg,IDC_RESERVE_SUSPENDMODE,CB_SETCURSEL,0,RecSetting.suspendMode);
+	::SendDlgItemMessage(hDlg,IDC_RESERVE_SUSPENDMODE,CB_SETCURSEL,RecSetting.suspendMode,0);
 	bool fDefault=RecSetting.suspendMode==0;
 	if (!fDefault)
 		::CheckDlgButton(hDlg,IDC_RESERVE_REBOOT,RecSetting.rebootFlag?BST_CHECKED:BST_UNCHECKED);
@@ -416,6 +416,7 @@ bool CReserveDialog::GetSettings(HWND hDlg)
 		}
 		m_pReserveData->startTime=StartTime;
 		m_pReserveData->durationSecond=(DWORD)Duration;
+		m_pReserveData->eventID = 0xFFFF;
 		RecSetting.tuijyuuFlag=0;
 		RecSetting.pittariFlag=0;
 	} else {

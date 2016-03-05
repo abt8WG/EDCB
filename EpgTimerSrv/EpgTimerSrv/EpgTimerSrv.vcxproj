@@ -101,6 +101,9 @@
       <AdditionalDependencies>lua52.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>lua52.dll</DelayLoadDLLs>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -116,6 +119,9 @@
       <AdditionalDependencies>lua52-x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>lua52.dll</DelayLoadDLLs>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -137,6 +143,9 @@
       <AdditionalDependencies>lua52.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>lua52.dll</DelayLoadDLLs>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -157,6 +166,9 @@
       <AdditionalDependencies>lua52-x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>lua52.dll</DelayLoadDLLs>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="EpgTimerSrv.ico" />

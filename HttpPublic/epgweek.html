@@ -1,0 +1,387 @@
+dofile(mg.document_root..'\\string.lua')
+dofile(mg.document_root..'\\util.lua')
+
+path='Setting\\HttpPublic.ini'
+oneseg=0+edcb.GetPrivateProfile('GUIDE','oneseg',false,path)~=0
+hover=0+edcb.GetPrivateProfile('GUIDE','hover',false,path)~=0
+ONE_MIN_PX=edcb.GetPrivateProfile('GUIDE','ONE_MIN_PX','4',path)
+MARGIN_HOUR=edcb.GetPrivateProfile('GUIDE','MARGIN_HOUR','1',path)
+MARGIN_MIN=edcb.GetPrivateProfile('GUIDE','MARGIN_MIN','30',path)
+w_service=edcb.GetPrivateProfile('GUIDE','service','208',path)
+w_service_sp=edcb.GetPrivateProfile('GUIDE','service_sp','120',path)
+w_hour=edcb.GetPrivateProfile('GUIDE','hour','22',path)
+w_hour_sp=edcb.GetPrivateProfile('GUIDE','hour_sp','16',path)
+
+background=edcb.GetPrivateProfile('BACKGROUND','background','#EEEEEE',path)
+
+news=edcb.GetPrivateProfile('BACKGROUND','news','#B3E5FC',path)
+sports=edcb.GetPrivateProfile('BACKGROUND','sports','#FFF9C4',path)
+information=edcb.GetPrivateProfile('BACKGROUND','information','#BBDEFB',path)
+drama=edcb.GetPrivateProfile('BACKGROUND','drama','#FFCDD2',path)
+music=edcb.GetPrivateProfile('BACKGROUND','music','#FFECB3',path)
+variety=edcb.GetPrivateProfile('BACKGROUND','variety','#E1BEE7',path)
+movie=edcb.GetPrivateProfile('BACKGROUND','movie','#FFE0B2',path)
+anime=edcb.GetPrivateProfile('BACKGROUND','anime','#F8BBD0',path)
+documentary=edcb.GetPrivateProfile('BACKGROUND','documentary','#C5CAE9',path)
+theater=edcb.GetPrivateProfile('BACKGROUND','theater','#DCEDC8',path)
+education=edcb.GetPrivateProfile('BACKGROUND','education','#C8E6C9',path)
+welfare=edcb.GetPrivateProfile('BACKGROUND','welfare','#B2DFDB',path)
+extension=edcb.GetPrivateProfile('BACKGROUND','extension','#FFFFFF',path)
+other=edcb.GetPrivateProfile('BACKGROUND','other','#F5F5F5',path)
+none=edcb.GetPrivateProfile('BACKGROUND','none','#E0E0E0',path)
+nothing=edcb.GetPrivateProfile('BACKGROUND','nothing','#9E9E9E',path)
+
+reserved=edcb.GetPrivateProfile('BACKGROUND','reserved','#FF3D00',path)
+disable=edcb.GetPrivateProfile('BACKGROUND','disable','#757575',path)
+partially=edcb.GetPrivateProfile('BACKGROUND','partially','#FFFF00',path)
+partially_border=edcb.GetPrivateProfile('BACKGROUND','partially_border','#FF3D00',path)
+shortage=edcb.GetPrivateProfile('BACKGROUND','shortage','#FF5252',path)
+shortage_border=edcb.GetPrivateProfile('BACKGROUND','shortage_border','#FFEA00',path)
+paint=0+edcb.GetPrivateProfile('BACKGROUND','paint',false,path)~=0
+
+
+CATEGORY={
+  'news',
+  'sports',
+  'information',
+  'drama',
+  'music',
+  'variety',
+  'movie',
+  'anime',
+  'documentary',
+  'theater',
+  'education',
+  'welfare',
+  'extension',
+  'extension',
+  'extension',
+  'other',
+}
+
+show=mg.get_var(mg.request_info.query_string,'show') or nil
+page=0+(mg.get_var(mg.request_info.query_string,'page') or 0)
+hour=0+(mg.get_var(mg.request_info.query_string,'hour') or 4)
+--hour=0で現在時刻-MARGIN_HOUR時間を基準、0以外で"hour"時を基準
+interval=0+(mg.get_var(mg.request_info.query_string,'interval') or 25)
+
+onid=0+(mg.get_var(mg.request_info.query_string,'onid') or 0)
+tsid=0+(mg.get_var(mg.request_info.query_string,'tsid') or 0)
+sid=0+(mg.get_var(mg.request_info.query_string,'sid') or 0)
+
+now=os.time()
+timezone=os.time(os.date('*t',now))-os.time(os.date('!*t',now))
+nowDate=math.floor((now+timezone)/(24*3600))
+nowHour=math.floor(((now+timezone)-nowDate*24*3600)/3600)
+baseHour=hour==0 and nowHour-MARGIN_HOUR or hour
+baseHour=baseHour<0 and baseHour+24 or baseHour
+baseDate=math.floor((now+timezone-baseHour*3600)/(24*3600))
+
+date=interval~=25 and 3<now and now<hour and 1 or 0
+baseTime=baseDate*24*3600+baseHour*3600-timezone+date*24*3600
+
+hour=hour<0 and hour+24 or hour
+NOW=baseTime<now and now<baseTime+interval*3600 or nil
+
+ct=[=[
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.5">
+<title>EpgTimer</title>
+<link rel="shortcut icon" href="img/EpgTimer.ico">
+<link href="css/default.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style type="text/css">
+<!--
+]=]
+
+ct=ct..'html,body{background:'..background..';}\n'
+  ..'[class^="id"]{width:'..w_service..'px;}#hour{width:'..w_hour..'px;}#hour div{height:'..(ONE_MIN_PX*60)..'px;}\n'
+  ..'.news{background:'..news
+  ..';}.sports{background:'..sports
+  ..';}.information{background:'..information
+  ..';}.drama{background:'..drama
+  ..';}.music{background:'..music
+  ..';}.variety{background:'..variety
+  ..';}.movie{background:'..movie
+  ..';}.anime{background:'..anime
+  ..';}.documentary{background:'..documentary
+  ..';}.theater{background:'..theater
+  ..';}.education{background:'..education
+  ..';}.welfare{background:'..welfare
+  ..';}.extension{background:'..extension
+  ..';}.other{background:'..other
+  ..';}.none{background:'..none
+  ..';}.nothing{background:'..nothing
+  ..';}\n'
+
+  ..'.reserved{'..(paint and 'border:none;background:' or 'border-color:')..reserved..';}'
+  ..'.disable{'..(paint and 'border:none;background:' or 'border-color:')..disable..';}'
+  ..'.partially{background:'..partially..';border-color:'..partially_border..';}'
+  ..'.shortage{background:'..shortage..';border-color:'..shortage_border..';}\n'
+
+  ..'@media screen and (max-width:720px){[class^="id"]{width:'..w_service_sp..'px;}#hour{width:'..w_hour_sp..'px;}}\n'
+
+ct=ct..[=[
+--> 
+</style>
+<script src="js/jquery.min.js"></script>
+<script src="js/hammer.min.js"></script>
+<script src="js/jquery.hammer.js"></script>
+<script src="js/common.js"></script>
+<script src="js/tvguide.js"></script>
+<script type="text/javascript">
+]=]
+ct=ct..'oneminpx='..ONE_MIN_PX..';\n'
+     ..'basehour='..baseHour..';\n'
+     ..'marginmin='..MARGIN_MIN..';\n'
+     ..'hover='..(hover and 'true' or 'false')..';\n'
+     ..'$(function(){line();});\n'
+     ..'setInterval("minute()", 1000);\n'
+
+edcb.htmlEscape=15
+a=edcb.GetServiceList()
+sort={}
+hidecount=0+edcb.GetPrivateProfile('HIDE','count',0,path)
+count=0+edcb.GetPrivateProfile('SORT','count',0,path)
+if count>0 then
+  for i=0,count do
+    w=edcb.GetPrivateProfile('SORT','sort'..i,0,path)
+    m={string.match(w, '^(%d+)%-(%d+)%-(%d+)$')}
+    if #m==3 then
+    monid=0+m[1]
+    mtsid=0+m[2]
+    msid=0+m[3]
+    end
+    for j,v in ipairs(a or {}) do
+      if onid==v.onid and tsid==v.tsid and sid==v.sid then
+        st=v
+      end
+      if monid==v.onid and mtsid==v.tsid and msid==v.sid then
+        if hidecount>0 then
+          for k=0,hidecount do
+            w=edcb.GetPrivateProfile('HIDE','hide'..k,0,path)
+            m={string.match(w, '^(%d+)%-(%d+)%-(%d+)$')}
+            if monid==0+m[1] and mtsid==0+m[2] and msid==0+m[3] then
+              v.hide=true
+              break
+            end
+          end
+        end
+        if v.hide and not show then break end
+        table.insert(sort, v)
+        break
+      end
+    end
+  end
+else
+  sort=a
+  table.sort(sort, function(a,b) 
+    if a.remote_control_key_id==b.remote_control_key_id then
+    	return a.sid<b.sid
+    else
+    	return a.remote_control_key_id<b.remote_control_key_id
+    end
+  end)
+  for j,v in ipairs(sort or {}) do
+    if onid==v.onid and tsid==v.tsid and sid==v.sid then
+      st=v
+      break
+    end
+  end
+end
+
+if not st then
+  st=sort[1]
+end
+
+b=edcb.EnumEventInfo({{onid=st.onid, tsid=st.tsid, sid=st.sid}})
+if b then
+ st.event=b
+ table.sort(st.event, function(a,b) return os.time(a.startTime)<os.time(b.startTime) end)
+end
+
+ct=ct..[=[
+</script>
+</head>
+<body>
+<div id="wrap">
+<div id="tvheader">
+]=]..menu('週間番組表 <span>('..(st and st.service_name or '')..')</span>')
+
+rt={}
+for i,v in ipairs(edcb.GetReserveData()) do
+  rt[string.format('%04X%04X%04X%04X', v.onid, v.tsid, v.sid, v.eid)]=v.reserveID
+end
+
+ct=ct..'<div id="submenu"><ul style="justify-content: flex-end;">\n'
+     ..(interval~=25 and '<li class="navi"><a class="prev" href="epgweek.html?onid='..onid..'&tsid='..tsid..'&sid='..sid..'&hour='..hour-interval..'&interval='..interval..'"></a></li>' or '')
+     ..'<li class="now'..(interval==25 and ' dividers' or '')..'"><a '..(NOW and 'id="jumpnow"' or 'href="epgweek.html?onid='..onid..'&tsid='..tsid..'&sid='..sid..'&hour='..now..(interval~=25 and '&interval='..interval or '')..'"')..'><span></span></a></li>\n'
+     ..(interval~=25 and '<li class="navi dividers"><a class="next" href="epgweek.html?onid='..onid..'&tsid='..tsid..'&sid='..sid..'&hour='..hour+interval..'&interval='..interval..'"></a></li>' or '')
+
+pu='<li class="pull tabpage dividers servicelist"><a>'..(st and st.service_name or '')..'</a>\n<div class="jump"><div><div></div><ul>\n'
+se='<li class="select dividers servicelist"><select name="tabpage" onchange="location.href=value;">\n'
+
+for j,v in ipairs(sort or {}) do
+  if (oneseg or not v.partialReceptionFlag) then
+    u='="epgweek.html?onid='..v.onid..'&tsid='..v.tsid..'&sid='..v.sid..(hour~=4 and '&hour='..hour or '')..(interval~=25 and '&interval='..interval or '')..'">'
+    pu=pu..'<li><a '..(st.onid==v.onid and st.tsid==v.tsid and st.sid==v.sid and 'class="selected">' or 'href'..u)..v.service_name..'</a></li>\n'
+    se=se..'<option ' ..(onid==v.onid and tsid==v.tsid and sid==v.sid and 'selected>' or 'value'..u)..v.service_name..'</option>\n'
+  end
+end
+
+pu=pu..'</ul></div></div></li>\n'
+se=se..'</select></li>\n'
+ct=ct..pu..se
+
+if st then
+  pu='<li class="pull time"><a>時間</a><div class="jump"><div></div><ul>\n'
+  se='<li class="select"><select name="time">\n<option>時間</option>\n'
+
+  k=1
+  if interval==25 then
+    for i=baseHour , baseHour+23 ,2 do
+      j=i>27 and i-24 or i
+      u=' value="'..k..'">'..j..'時<'
+      pu=pu..'<li><a class="jumper"'..u..'/a></li>\n'
+      se=se..'<option'..u..'/option>\n'
+      k=k+2
+    end
+  else
+    for i=4, 27 ,2 do
+      j=i>23 and i-24 or i
+      if 4<=baseHour and baseHour<=i and i<baseHour+interval or baseHour<4 and j<4 then
+        u=k..'">'..i..'時<'
+        pu=pu..'<li><a class="jumper selected" value="'..u..'/a></li>\n'
+        k=k+2
+      else
+        u='epgweek.html?onid='..st.onid..'&tsid='..st.tsid..'&sid='..st.sid..'&hour='..j..'&interval='..interval..'">'..i..'時<'
+        pu=pu..'<li><a href="'..u..'/a></li>\n'
+      end
+    se=se..'<option value="'..u..'/option>\n'
+    end
+  end
+
+  pu=pu..'</ul></div></li>\n'
+  se=se..'</select></li>\n'
+  ct=ct..pu..se
+end
+
+ct=ct..'</ul></div>\n</div>\n'
+
+add=[=[
+<span class="link toggle">ジャンル</span>
+<div id="genre-list">
+]=]
+
+  for i=0,15 do
+    nibble1=edcb.GetGenreName(i*256+255)
+    if nibble1~='' then
+      add=add..'<div><label id="g-'..(i*256+255)..'" for="g-'..(i*256+255)..'" data-value="'..CATEGORY[i+1]..'">'..nibble1..'</label></div>\n'
+    end
+  end
+add=add..'</div>\n<div class="separator"></div>\n'
+
+ct=ct..sidemenu(add)
+
+rowHead='<div id="head" class="shadow"><ul>\n'
+for i=0,7 do
+  d=os.date('*t', ((date+i+baseDate)*24)*3600-timezone)
+  d=d.month..'/'..d.day..'('..({'日','月','火','水','木','金','土'})[d.wday]..')'
+  rowHead=rowHead..'<li class="id">'..d..'</li>\n'
+end
+rowHead=rowHead..'</ul></div>\n'
+
+colHead='<div id="wrap_tv_1">\n<div id="hour">\n'
+for i=baseHour,baseHour+interval-1 do
+     j=(i>27 and i-24 or i)
+  colHead=colHead..'<div><p class="t'..j..'"><span>'..j..'時</span></p></div>\n'
+end
+colHead=colHead..'</div>\n'
+
+ctt={ct}
+table.insert(ctt, rowHead..colHead..'<div id="wrap_tv_2">'..[=[
+<div id="loading"><div><div class="spinner">
+<div class="spinner__layer spinner__layer-1"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-2"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-3"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-4"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+</div></div></div>
+<div id="line"></div>
+<div id="wrap_tv_3" class="drag"><ul id="tvguide">
+]=])
+for i=0,7 do
+  table.insert(ctt, '<li class="id">\n')
+  lastPx=0
+  total=0
+  for j,w in ipairs(st.event) do
+    startTime=os.time(w.startTime)
+    startPx=math.min(math.floor((startTime-baseTime-i*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
+    endTime=w.durationSecond and startTime+w.durationSecond or startTime				 --終了時間未定
+    endPx=math.min(math.floor((endTime-baseTime-i*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
+    if startPx-lastPx>0 then
+      table.insert(ctt, '<div class="cell'..os.date(' %d-%H-%M', startTime)..'" style="height:'..(startPx-lastPx)..'px"><div class="content nothing"></div></div>\n')
+      total=total+startPx-lastPx
+      lastPx=startPx
+    end
+    if endPx-lastPx>2 then
+      category=w.contentInfoList and #w.contentInfoList>0 and CATEGORY[math.floor(w.contentInfoList[1].content_nibble/256)%16+1] or 'none'	--背景色
+      title=(w.shortInfo and ConvertTitle(w.shortInfo.event_name) or '')									--番組タイトル
+      info=string.gsub((w.shortInfo and '<p>'..w.shortInfo.text_char..'</p>' or ''), '\r?\n', '<br>')						--番組詳細
+      search=(w.shortInfo and ConvertSearch(w.shortInfo.event_name) or '')									--検索
+
+      r=nil
+      id=rt[string.format('%04X%04X%04X%04X', w.onid, w.tsid, w.sid, w.eid)]
+      if id then
+        r=edcb.GetReserveData(id)
+      end
+      rs=r and r.recSetting or nil
+
+      mark=(r and '<span class="mark recable'..(rs.recMode==5 and ' no">無' or r.overlapMode==1 and '">部' or r.overlapMode==2 and '">不' or rs.recMode==4 and ' view">視'or '">録')..'</span>' or '')	--録画マーク
+      recmode=r and (rs.recMode==5 and ' disable' or r.overlapMode==1 and ' partially' or r.overlapMode==2 and ' shortage' or rs.recMode==4 and ' viewing' or ' reserved') or ''	--録画モード
+
+      table.insert(ctt, '<div class="cell'..(endTime~=startTime and os.date(' end_%d-%H-%M-%S', endTime) or '')..'" style="height:'..(endPx-lastPx)..'px">\n'
+        ..'<div class="content '..category..recmode..'" style="min-height:'..(endPx-lastPx-2)..'px"><ul><li class="start">'..os.date('%M', startTime)..mark..'</li>'
+        ..'<li>'..title..(w.durationSecond and w.durationSecond>=30*60 and info..'<div class="popup">' or '<div class="popup">'..info)..search
+        ..'<ul class="tool"><li><a class="button raised" href=\"epginfo.html?onid='..w.onid..'&tsid='..w.tsid..'&sid='..w.sid..'&eid='..w.eid..(hour~=4 and '&hour='..hour or '')..(interval~=25 and '&interval='..interval or '')..'&week='..'">番組詳細</a></li>'
+        ..(endTime~=startTime and endTime-now>0 and '<li><label class="button raised reserve"'								--終了前
+        ..(r and ' data-reserve="'..id..'">'..(rs.recMode==5 and '有効' or '無効')										--予約あり有効無効
+          or ' data-onid="'..w.onid..'" data-tsid="'..w.tsid..'" data-sid="'..w.sid..'" data-eid="'..w.eid..'">録画予約')..'</label></li>' or '')		--なし新規追加
+        ..'<li><a class="button raised addepg" data-andkey="'..(w.shortInfo and w.shortInfo.event_name or '')..'">EPG予約</a></li>'
+        ..'</ul>'
+        ..string.gsub(string.gsub((w.extInfo and '<p>'..w.extInfo.text_char..'</p>' or ''), 'https?://[%w/:%#%$&%?%(%)~%.=%+%-_]+', '<a href="%1" target="_blank">%1</a>'), '\r?\n', '<br>')
+        ..'</div></li></ul></div>\n</div>\n')
+      total=total+endPx-lastPx
+      lastPx=endPx
+    end
+  end
+  if total<interval*60*ONE_MIN_PX then
+    table.insert(ctt, '<div class="cell" style="height:'..(interval*60*ONE_MIN_PX-total)..'px"><div class="content nothing"></div></div>\n')
+  end
+  table.insert(ctt, '</li>\n')
+end
+
+table.insert(ctt, '</ul></div></div>\n</div>\n'
+  ..'<form id="hidden" method="POST" action="autoaddepginfo.html?week=&onid='..st.onid..'&tsid='..st.tsid..'&sid='..st.sid..(hour~=4 and '&hour='..hour or '')..(interval~=25 and '&interval='..interval or '')..'">\n')
+
+table.insert(ctt,[=[
+<input type="hidden" name="andKey" value="">
+<input type="hidden" name="notKey" value="">
+<input type="hidden" name="freeCAFlag" value="0">
+<input type="hidden" name="network" value="0">
+<input type="hidden" name="days" value="0">
+<select name="contentList" multiple size="0"></select>
+<input type="hidden" name="serviceList" value="]=]..st.onid..'-'..st.tsid..'-'..st.sid..[=[">
+<input type="hidden" name="dateList" value="">
+</form>
+</div>
+</body>
+</html>
+]=])
+
+cl=0
+for i,v in ipairs(ctt) do cl=cl+#v end
+mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: '..cl..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n')
+for i,v in ipairs(ctt) do mg.write(v) end

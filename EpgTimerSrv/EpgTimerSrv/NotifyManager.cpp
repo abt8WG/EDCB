@@ -322,7 +322,7 @@ UINT CNotifyManager::SendNotifyThread()
 				sendCtrl.SetSendMode(FALSE);
 				sendCtrl.SetPipeSetting(CMD2_GUI_CTRL_WAIT_CONNECT, CMD2_GUI_CTRL_PIPE, itr->first);
 				sendCtrl.SetConnectTimeOut(10*1000);
-				DWORD err = sendCtrl.SendGUINotifyInfo2(&notifyInfo);
+				DWORD err = sendCtrl.SendGUINotifyInfo2(notifyInfo);
 				if( err == CMD_NON_SUPPORT ){
 					switch(notifyInfo.notifyID){
 					case NOTIFY_UPDATE_EPGDATA:
@@ -359,7 +359,7 @@ UINT CNotifyManager::SendNotifyThread()
 			sendCtrl.SetNWSetting(itrTCP->second.ip, itrTCP->second.port, L"");
 			sendCtrl.SetConnectTimeOut(10*1000);
 
-			DWORD err = sendCtrl.SendGUINotifyInfo2(&notifyInfo);
+			DWORD err = sendCtrl.SendGUINotifyInfo2(notifyInfo);
 			if( err == CMD_NON_SUPPORT ){
 				switch(notifyInfo.notifyID){
 				case NOTIFY_UPDATE_EPGDATA:

@@ -1,4 +1,6 @@
 dofile(mg.document_root..'\\util.lua')
+path='Setting\\HttpPublic.ini'
+DEF_CH_COUNT=0+edcb.GetPrivateProfile('GUIDE','CH_COUNT','10',path)
 
 ct=[=[
 <!doctype html>
@@ -9,44 +11,17 @@ ct=[=[
 <title>EpgTimer</title>
 <link rel="shortcut icon" href="img/EpgTimer.ico">
 <link href="css/default.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="js/jquery.min.js"></script>
+<script src="js/hammer.min.js"></script>
+<script src="js/jquery.hammer.js"></script>
 <script src="js/common.js"></script>
 </head>
 <body>
 <div id="wrap">
 <div id="wrap2">
 <div id="header" class="shadow">
-<div id="menu">
-<div id="menu_ico"><span></span></div>
-<div class="menu">
-<span>番組情報</span>
-<div class="space"></div>
-<nav>
-<a href="epg.html">番組表</a>
-<a href="reserve.html">予約一覧</a>
-<a class="sp" href="autoaddepg.html">EPG予約</a>
-<a class="sp" href="recinfo.html">録画結果</a>
-<a href="search.html">検索</a>
-</nav>
-</div>
-</div>
-</div>
-<div class="sidemenu">
-<span class="title">EpgTimer</span>
-<nav>
-<a class="link" href="epg.html">番組表</a>
-<a class="link" href="reserve.html">予約一覧</a>
-<a class="link" href="tunerreserve.html">チューナー別</a>
-<a class="link" href="autoaddepg.html">EPG予約</a>
-<a class="link" href="recinfo.html">録画結果</a>
-<a class="link" href="search.html">検索</a>
-<a class="link" href="setting.html">設定</a>
-</nav>
-</div>
-<div class="obfuscator"></div>
-<div id="main">
-<div class="center">
-]=]
+]=]..menu('番組情報')
 
 onid=0+(mg.get_var(mg.request_info.query_string,'onid') or 0)
 tsid=0+(mg.get_var(mg.request_info.query_string,'tsid') or 0)
@@ -57,33 +32,72 @@ tab=0+(mg.get_var(mg.request_info.query_string,'tab') or 0)
 page=0+(mg.get_var(mg.request_info.query_string,'page') or 0)
 date=0+(mg.get_var(mg.request_info.query_string,'date') or 0)
 hour=0+(mg.get_var(mg.request_info.query_string,'hour') or 0)
+interval=0+(mg.get_var(mg.request_info.query_string,'interval') or 25)
 dataID=0+(mg.get_var(mg.request_info.query_string, 'id') or 0)
+autopage=0+(mg.get_var(mg.request_info.query_string,'autopage') or 0)
+week=0+(mg.get_var(mg.request_info.query_string,'week') and 1 or 0)~=0
+pageIndex=0+(mg.get_var(mg.request_info.query_string,'chpage') or 0)
+CH_COUNT=0+(mg.get_var(mg.request_info.query_string,'chcount') or DEF_CH_COUNT)
 
-if mg.get_var(mg.request_info.query_string,'search') then
-  if dataID~=0 then
-    val='&dataid='..dataID
-  else
-    network=0
-    for i=0,10000 do
-      v=mg.get_var(mg.request_info.query_string, 'network', i)
-      if not v then break end
-      network=network+v
-    end
-    for i=0,10000 do
-      v=mg.get_var(mg.request_info.query_string, 'contentList', i)
-      if not v then break end
-      con=(con and con or '')..'&contentList='..v
-    end
-    for i=0,10000 do
-      v=mg.get_var(mg.request_info.query_string, 'serviceList', i)
-      if not v then break end
-      m={string.match(v, '^(%d+)%-(%d+)%-(%d+)$')}
-      if #m==3 then
-        ser=(ser and ser or '&service=')..'&serviceList='..v
-      end
-    end
-    val='&search=&andKey='..mg.get_var(mg.request_info.query_string, 'andKey')..'&notKey='..mg.get_var(mg.request_info.query_string, 'notKey')..(mg.get_var(mg.request_info.query_string, 'regExpFlag') and '&regExpFlag=' or '')..(mg.get_var(mg.request_info.query_string, 'aimaiFlag') and '&aimaiFlag=' or '')..(mg.get_var(mg.request_info.query_string, 'titleOnlyFlag') and '&titleOnlyFlag=' or '')..'&network='..network..'&days='..mg.get_var(mg.request_info.query_string, 'days')..(con and con or '')..(ser and ser or '')
+post=nil
+if mg.request_info.request_method=='POST' then
+  post=''
+  repeat
+    s=mg.read()
+    post=post..(s or '')
+  until not s
+  if #post~=mg.request_info.content_length then
+    post=nil
   end
+end
+
+if post then
+  for i=0,10000 do
+    v=mg.get_var(post, 'network', i)
+    if not v then break end
+    network=network and network+v or v
+  end
+
+  hidden='<form id="hidden" method="POST" action="search.html'..(page~=0 and '?page='..page or '')..(autopage and (page~=0 and '&' or '?')..'autopage='..autopage or '')..'">\n'
+    ..(mg.get_var(post, 'id') and '<input type="hidden" name="id" value="'..mg.get_var(post, 'id')..'">\n' or '')
+    ..(mg.get_var(post, 'advanced') and '<input type="hidden" name="advanced" checked="checked">\n' or '')
+    ..'<input type="hidden" name="andKey" value="'..(mg.get_var(post, 'andKey') and mg.get_var(post, 'andKey' or ''))..'">\n'
+    ..'<input type="hidden" name="notKey" value="'..(mg.get_var(post, 'notKey') and mg.get_var(post, 'notKey') or '')..'">\n'
+    ..(mg.get_var(post, 'regExpFlag') and '<input type="hidden" name="regExpFlag" value="1">\n' or '')
+    ..(mg.get_var(post, 'titleOnlyFlag') and '<input type="hidden" name="titleOnlyFlag" value="1">\n' or '')
+    ..(mg.get_var(post, 'aimaiFlag') and '<input type="hidden" name="aimaiFlag" value="1">\n' or '')
+    ..(mg.get_var(post, 'notContetFlag') and '<input type="hidden" name="notContetFlag" value="1">\n' or '')
+    ..(mg.get_var(post, 'notDateFlag') and '<input type="hidden" name="notDateFlag" value="1">\n' or '')
+    ..(mg.get_var(post, 'freeCAFlag') and '<input type="hidden" name="freeCAFlag" value="'..mg.get_var(post, 'freeCAFlag')..'">\n' or '')
+    ..(mg.get_var(post, 'network') and '<input type="hidden" name="network" value="'..network..'">\n' or '')
+    ..(mg.get_var(post, 'days') and '<input type="hidden" name="days" value="'..mg.get_var(post, 'days')..'">\n' or '')
+    ..(tkntrec and (mg.get_var(post, 'chkRecNoService') and '<input type="hidden" name="chkRecNoService" value="'..mg.get_var(post, 'chkRecNoService')..'">\n' or '')..(mg.get_var(post, 'chkDurationMax') and '<input type="hidden" name="chkDurationMax" value="'..mg.get_var(post, 'chkDurationMax')..'">\n' or '') or '')
+    ..(mg.get_var(post, 'chkRecEnd') and '<input type="hidden" name="chkRecEnd" checked="checked">\n' or '')
+    ..(mg.get_var(post, 'chkRecDay') and '<input type="hidden" name="chkRecDay" value="'..mg.get_var(post, 'chkRecDay')..'">\n' or '')
+    ..(mg.get_var(post, 'disableFlag') and '<input type="hidden" name="disableFlag" checked="checked">\n' or '')
+    ..(mg.get_var(post, 'dateList') and '<input type="hidden" name="dateList" value="'..mg.get_var(post, 'dateList')..'">\n' or '')
+
+  if mg.get_var(post, 'contentList') then
+    hidden=hidden..'<select name="contentList" multiple size="0">\n'
+    for i=0,10000 do
+      v=mg.get_var(post, 'contentList', i)
+      if not v then break end
+      hidden=hidden..'<option value="'..v..'" selected></option>\n'
+    end
+    hidden=hidden..'</select>\n'
+  end
+
+  if mg.get_var(post, 'serviceList') then
+    hidden=hidden..'<select name="serviceList" multiple size="0">\n'
+    for i=0,10000 do
+      v=mg.get_var(post, 'serviceList', i)
+      if not v then break end
+      hidden=hidden..'<option value="'..v..'" selected></option>\n'
+    end
+    hidden=hidden..'</select>\n'
+      ..'</form>\n'
+  end
+
 end
 
 r=nil
@@ -91,6 +105,7 @@ edcb.htmlEscape=15
 for i,v in ipairs(edcb.GetReserveData()) do
   if v.onid==onid and v.tsid==tsid and v.sid==sid and v.eid==eid then
     r=v
+    recording=edcb.GetRecFilePath(r.reserveID)
     break
   end
 end
@@ -98,38 +113,68 @@ if not r and presetID==65535 then
   presetID=0
 end
 
-ct=ct.._ConvertEpgInfoText2(onid, tsid, sid, eid)
-  ..'<h2>録画設定</h2>\n<div id="rec" class="card"><div class="form">\n'
-  ..'<form id="set" method="POST" action="'
-  ..(r and 'reservechg.html?id='..r.reserveID..'&tab='..tab..'&date='..date..(hour~=0 and '&hour='..hour or '')..(mg.get_var(mg.request_info.query_string,'search') and '&search=&page='..page..val or '')
-    or 'reserveadd.html?onid='..onid..'&tsid='..tsid..'&sid='..sid..'&eid='..eid..'&tab='..tab..'&date='..date..(hour~=0 and '&hour='..hour or '')..(mg.get_var(mg.request_info.query_string,'search') and '&search=&page='..page..val or ''))
-  ..'">\n<div>'
-  ..(r and '<input type="hidden" name="id" value="'..r.reserveID..'">\n' or '')
-  ..'<ul><li>プリセット</li>\n<li class="select"><select name="presetID">\n'
-preset=false
-rs=r and r.recSetting or nil
-for i,v in ipairs(edcb.EnumRecPresetInfo()) do
-  if v.id==presetID then
-    preset=true
-    rs=v.recSetting
-    ct=ct..'<option value="'..v.id..'" selected>'..v.name..'\n'
-  else
-    ct=ct..'<option value="'..v.id..'">'..v.name..'\n'
+info=_ConvertEpgInfoText2(onid, tsid, sid, eid)
+
+ct=ct..[=[
+<div id="tab-bar-container">
+<div id="tab-bar">
+<label class="active" data-val="detail">番組詳細</label>
+]=]..(rec and '<label data-val="recset">録画設定</label>\n' or '')
+..(recording and '<label data-val="movie-tab">再生</label>\n' or '')..[=[
+</div>
+</div>
+</div>
+]=]..sidemenu()..[=[
+<div id="main" class="swipe">
+<div id="loading"><div><div class="spinner">
+<div class="spinner__layer spinner__layer-1"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-2"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-3"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-4"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+</div></div></div>
+<div class="center">
+]=]..info
+
+redirect=mg.get_var(post, 'andKey') and ' submit' or '" data-redirect="'..(week and 'epgweek.html?onid='..onid..'&tsid='..tsid..'&sid='..sid or 'epg.html?tab='..tab..'&date='..date..(pageIndex~=0 and '&chpage='..pageIndex or ''))..(hour~=0 and '&hour='..hour or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')
+
+if rec then
+  ct=ct..'<div id="rec" class="tab-bar recset"><div class="form">\n'
+    ..'<form id="set" class="api'..redirect..'" method="POST" action="'
+    ..(r and 'api/ReserveChg?id='..r.reserveID or 'api/ReserveAdd')
+    ..'"><div>\n'
+    ..'<input type="hidden" name="onid" value="'..onid..'">\n'
+    ..'<input type="hidden" name="tsid" value="'..tsid..'">\n'
+    ..'<input type="hidden" name="sid" value="'..sid..'">\n'
+    ..'<input type="hidden" name="eid" value="'..eid..'">\n'
+    ..'<ul><li>プリセット</li>\n<li class="select"><select name="presetID">\n'
+  preset=false
+  rs=r and r.recSetting or nil
+  for i,v in ipairs(edcb.EnumRecPresetInfo()) do
+    if v.id==presetID then
+      preset=true
+      rs=v.recSetting
+      ct=ct..'<option value="'..v.id..'" selected>'..v.name..'\n'
+    else
+      ct=ct..'<option value="'..v.id..'">'..v.name..'\n'
+    end
   end
-end
-if r then
-  ct=ct..'<option value="65535"'..(preset and '' or ' selected')..'>予約時'
-end
+  if r then
+    ct=ct..'<option value="65535"'..(preset and '' or ' selected')..'>予約時'
+  end
   ct=ct..'</select></li></ul>\n'
 
 
-  ct=ct..RecSettingTemplate(rs)..'</div></form>\n'
+  ct=ct..RecSettingTemplate(rs)..'</div></form>\n'..(hidden and hidden or '')
   if r then
-    ct=ct..'<form id="del" method="POST" action="reservedel.html?id='..r.reserveID..'&tab='..tab..'&date='..date..(hour~=0 and '&hour='..hour or '')..(mg.get_var(mg.request_info.query_string,'search') and '&search=&page='..page..val or '')..'"></form>\n'
+    ct=ct..'<form id="del" class="api'..redirect..'" method="POST" action="api/ReserveDel?id='..r.reserveID..'"></form>\n'
   end
-  ct=ct..'</div>\n<div id="button"><input class="button" form="set" type="submit" value="'..(r and '変更' or '予約追加')..'">'..(r and '<input form="del" class="button del" type="submit" value="削除">' or '')..'</div>\n'
+  ct=ct..'</div>\n</div>\n'
+    ..(recording and '<div id="movie" class="tab-bar movie-tab"><div><div>\n<video src="api/Movie?reid='..r.reserveID..'" type="video/webm" preload="none" controls></video>\n<script type="text/javascript">load=false;</script>\n</div></div></div>\n' or '')
+    ..'<div class="button-wrap footer">'..(r and '<input form="del" class="button del" type="submit" value="削除">' or '')..'<input class="button'..(r and ' tab-bar recset' or '')..'" form="set" type="submit" value="'..(r and '変更' or '予約追加')..'"></div>\n'
+end
 
 ct=ct..[=[
+</div>
 </div>
 </div>
 </div>

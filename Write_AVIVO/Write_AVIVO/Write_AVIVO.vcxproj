@@ -100,6 +100,9 @@
       <ModuleDefinitionFile>Write_PlugIn.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -115,6 +118,9 @@
       <ModuleDefinitionFile>Write_PlugIn.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\x64\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -134,6 +140,9 @@
       <ModuleDefinitionFile>Write_PlugIn.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -153,6 +162,9 @@
       <ModuleDefinitionFile>Write_PlugIn.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\x64\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />

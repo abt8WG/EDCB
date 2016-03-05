@@ -403,7 +403,7 @@ HTTPサーバ機能の簡単化とディレクトリトラバーサル等々のバグ修正を目的に、EpgTimer
 HTTPサーバ機能は従来通りEpgTimerSrv.iniのEnableHttpSrvキーを1にすると有効になります(2にするとEpgTimerSrv.exeと同じ場所にログファイルも出力)。
 有効にする場合はEpgTimerSrv.exeと同じ場所にlua52.dllが必要です。対応するものをDLしてください。
 https://sourceforge.net/projects/luabinaries/files/5.2.4/Windows%20Libraries/Dynamic/
-Civetwebについては本家のドキュメント↓を参照してください(英語)
+Civetwebについては本家のドキュメント↓を参照してください(英語) ※組み込みバージョンはv1.7
 https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md
 SSL/TLSを利用する場合はEpgTimerSrv.exeと同じ場所にssleay32.dllとlibeay32.dllが必要です。自ビルド(推奨)するか信頼できるどこかから入手してください。
 とりあえず https://www.openssl.org/community/binaries.html にある https://indy.fulgan.com/SSL/ で動作を確認しています。

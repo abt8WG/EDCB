@@ -948,9 +948,9 @@ bool CEDCBSupportPlugin::OnProgramMenuSelected(const TVTest::ProgramGuideProgram
 
 			ReserveList.push_back(ReserveData);
 			if (fNew) {
-				Err=m_SendCtrlCmd.SendAddReserve(&ReserveList);
+				Err=m_SendCtrlCmd.SendAddReserve(ReserveList);
 			} else {
-				Err=m_SendCtrlCmd.SendChgReserve(&ReserveList);
+				Err=m_SendCtrlCmd.SendChgReserve(ReserveList);
 			}
 			if (Err==CMD_SUCCESS) {
 				// ó\ñÒÉäÉXÉgçƒéÊìæ
@@ -1428,7 +1428,7 @@ bool CEDCBSupportPlugin::ChangeReserve(HWND hwndOwner,std::vector<RESERVE_DATA> 
 {
 	HCURSOR hOldCursor=::SetCursor(::LoadCursor(NULL,IDC_WAIT));
 
-	DWORD Err=m_SendCtrlCmd.SendChgReserve(&ReserveList);
+	DWORD Err=m_SendCtrlCmd.SendChgReserve(ReserveList);
 
 	if (Err!=CMD_SUCCESS) {
 		::SetCursor(hOldCursor);
@@ -1464,7 +1464,7 @@ bool CEDCBSupportPlugin::DeleteReserve(HWND hwndOwner,std::vector<DWORD> &Reserv
 {
 	HCURSOR hOldCursor=::SetCursor(::LoadCursor(NULL,IDC_WAIT));
 
-	DWORD Err=m_SendCtrlCmd.SendDelReserve(&ReserveIDList);
+	DWORD Err=m_SendCtrlCmd.SendDelReserve(ReserveIDList);
 
 	if (Err!=CMD_SUCCESS) {
 		::SetCursor(hOldCursor);
@@ -1544,7 +1544,7 @@ bool CEDCBSupportPlugin::DeleteRecordedFileInfo(HWND hwndOwner,std::vector<DWORD
 {
 	HCURSOR hOldCursor=::SetCursor(::LoadCursor(NULL,IDC_WAIT));
 
-	DWORD Err=m_SendCtrlCmd.SendDelRecInfo(&IDList);
+	DWORD Err=m_SendCtrlCmd.SendDelRecInfo(IDList);
 
 	if (Err!=CMD_SUCCESS) {
 		::SetCursor(hOldCursor);

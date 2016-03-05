@@ -1,4 +1,5 @@
 dofile(mg.document_root..'\\string.lua')
+dofile(mg.document_root..'\\util.lua')
 
 path='Setting\\HttpPublic.ini'
 oneseg=0+edcb.GetPrivateProfile('GUIDE','oneseg',false,path)~=0
@@ -10,6 +11,7 @@ w_service=edcb.GetPrivateProfile('GUIDE','service','208',path)
 w_service_sp=edcb.GetPrivateProfile('GUIDE','service_sp','120',path)
 w_hour=edcb.GetPrivateProfile('GUIDE','hour','22',path)
 w_hour_sp=edcb.GetPrivateProfile('GUIDE','hour_sp','16',path)
+DEF_CH_COUNT=0+edcb.GetPrivateProfile('GUIDE','CH_COUNT','10',path)
 
 background=edcb.GetPrivateProfile('BACKGROUND','background','#EEEEEE',path)
 
@@ -58,11 +60,15 @@ CATEGORY={
   'other',
 }
 
+show=mg.get_var(mg.request_info.query_string,'show') or nil
 tab=0+(mg.get_var(mg.request_info.query_string,'tab') or 0)
 page=0+(mg.get_var(mg.request_info.query_string,'page') or 0)
 date=0+(mg.get_var(mg.request_info.query_string,'date') or 0)
 hour=0+(mg.get_var(mg.request_info.query_string,'hour') or 0)
 --hour=0で現在時刻-MARGIN_HOUR時間を基準、0以外で"hour"時を基準
+interval=0+(mg.get_var(mg.request_info.query_string,'interval') or 25)
+CH_COUNT=0+(mg.get_var(mg.request_info.query_string,'chcount') or DEF_CH_COUNT)
+pageIndex=0+(mg.get_var(mg.request_info.query_string,'chpage') or 0)
 
 adjust=math.floor(hour/24)
 date=(hour~=24 and date+adjust or date)
@@ -72,11 +78,13 @@ now=os.time()
 timezone=os.time(os.date('*t',now))-os.time(os.date('!*t',now))
 nowDate=math.floor((now+timezone)/(24*3600))
 nowHour=math.floor(((now+timezone)-nowDate*24*3600)/3600)
-baseHour=(hour==0 and nowHour-MARGIN_HOUR or hour)
-baseHour=(baseHour<0 and baseHour+24 or baseHour)
+baseHour=hour==0 and nowHour-MARGIN_HOUR or hour
+baseHour=baseHour<0 and baseHour+24 or baseHour
 baseDate=math.floor((now+timezone-baseHour*3600)/(24*3600))
-baseDate=(hour>nowHour and baseDate+1 or baseDate)
-baseTime=baseDate*24*3600+baseHour*3600-timezone
+baseDate=hour>nowHour and baseDate+1 or baseDate
+baseTime=baseDate*24*3600+baseHour*3600-timezone+date*24*3600
+
+NOW=baseTime<now and now<baseTime+interval*3600 or nil
 
 ct=[=[
 <!doctype html>
@@ -87,12 +95,13 @@ ct=[=[
 <title>EpgTimer</title>
 <link rel="shortcut icon" href="img/EpgTimer.ico">
 <link href="css/default.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style type="text/css">
 <!--
 ]=]
 
 ct=ct..'html,body{background:'..background..';}\n'
-  ..'[class^="id"]{width:'..w_service..'px;}#hour{width:'..w_hour..'px;}\n'
+  ..'[class^="id"]{width:'..w_service..'px;}#hour{width:'..w_hour..'px;}#hour div{height:'..(ONE_MIN_PX*60)..'px;}\n'
   ..'.news{background:'..news
   ..';}.sports{background:'..sports
   ..';}.information{background:'..information
@@ -116,32 +125,15 @@ ct=ct..'html,body{background:'..background..';}\n'
   ..'.partially{background:'..partially..';border-color:'..partially_border..';}'
   ..'.shortage{background:'..shortage..';border-color:'..shortage_border..';}\n'
 
-count=0+edcb.GetPrivateProfile('HIDE','count',0,path)
-
-hidelist={}
-if count>0 then
-  for i=0,count do
-    v=edcb.GetPrivateProfile('HIDE','hide'..i,0,path)
-    hide=(hide and hide..',' or '')..'.id-'..v
-    m={string.match(v, '^(%d+)%-(%d+)%-(%d+)$')}
-    if #m==3 then
-    b={
-    onid=0+m[1],
-    tsid=0+m[2],
-    sid=0+m[3]
-    }
-    table.insert(hidelist,b)
-    end
-  end
-  ct=ct..hide..'{display:none;}\n'
-end
-
-ct=ct..'@media screen and (max-width:720px){[class^="id"]{width:'..w_service_sp..'px;}#hour{width:'..w_hour_sp..'px;}}\n'
+  ..'@media screen and (max-width:720px){[class^="id"]{width:'..w_service_sp..'px;}#hour{width:'..w_hour_sp..'px;}}\n'
 
 ct=ct..[=[
 --> 
 </style>
 <script src="js/jquery.min.js"></script>
+<script src="js/hammer.min.js"></script>
+<script src="js/jquery.hammer.js"></script>
+<script src="js/common.js"></script>
 <script src="js/tvguide.js"></script>
 <script type="text/javascript">
 ]=]
@@ -149,12 +141,13 @@ ct=ct..'oneminpx='..ONE_MIN_PX..';\n'
      ..'basehour='..baseHour..';\n'
      ..'marginmin='..MARGIN_MIN..';\n'
      ..'hover='..(hover and 'true' or 'false')..';\n'
-
-ct=ct..(date == 0 and hour==0 and '$(window).load(function(){jump();});\n' or '')
+     ..(NOW and '$(function(){jump();});\n'
+              ..'setInterval("end()", 1000);\n' or '')
 
 edcb.htmlEscape=15
 a=edcb.GetServiceList()
 sort={}
+hidecount=0+edcb.GetPrivateProfile('HIDE','count',0,path)
 count=0+edcb.GetPrivateProfile('SORT','count',0,path)
 if count>0 then
   for i=0,count do
@@ -165,8 +158,19 @@ if count>0 then
     tsid=0+m[2]
     sid=0+m[3]
     end
-    for i,v in ipairs(a or {}) do
+    for j,v in ipairs(a or {}) do
       if onid==v.onid and tsid==v.tsid and sid==v.sid then
+        if hidecount>0 then
+          for k=0,hidecount do
+            w=edcb.GetPrivateProfile('HIDE','hide'..k,0,path)
+            m={string.match(w, '^(%d+)%-(%d+)%-(%d+)$')}
+            if onid==0+m[1] and tsid==0+m[2] and sid==0+m[3] then
+              v.hide=true
+              break
+            end
+          end
+        end
+        if v.hide and not show then break end
         table.insert(sort, v)
         break
       end
@@ -174,34 +178,22 @@ if count>0 then
   end
 else
   sort=a
-  if (tab==0) then
-    table.sort(sort, function(a,b) return a.remote_control_key_id<b.remote_control_key_id end)
-  else
-    table.sort(sort, function(a,b) return a.sid<b.sid end)
-  end
+  table.sort(sort, function(a,b) 
+    if a.remote_control_key_id==b.remote_control_key_id then
+    	return a.sid<b.sid
+    else
+    	return a.remote_control_key_id<b.remote_control_key_id
+    end
+  end)
 end
 
 ct=ct..[=[
 </script>
 </head>
 <body>
-
 <div id="wrap">
 <div id="tvheader">
-<div id="menu">
-<div id="menu_ico"><span></span></div>
-<div class="menu">
-<span>番組表</span>
-<div class="space"></div>
-<nav>
-<a href="reserve.html">予約一覧</a>
-<a href="autoaddepg.html">EPG予約</a>
-<a class="sp" href="recinfo.html">録画結果</a>
-<a href="search.html">検索</a>
-</nav>
-</div>
-</div>
-]=]
+]=]..menu('番組表')
 
 rt={}
 for i,v in ipairs(edcb.GetReserveData()) do
@@ -212,7 +204,7 @@ minTime=nil
 maxTime=nil
 st={}
 for i,v in ipairs(sort or {}) do
-  if (v.partialReceptionFlag or v.service_type==0x01 or v.service_type==0xA5 or v.service_type==0xAD) and (
+  if (v.partialReceptionFlag or v.service_type==0x01 or v.service_type==0x02 or v.service_type==0xA5 or v.service_type==0xAD) and (
      tab==0 and 0x7880<=v.onid and v.onid<=0x7FE8 and v.service_type==0x01 or
      tab==1 and v.partialReceptionFlag or
      tab==2 and v.onid==4 or
@@ -227,7 +219,7 @@ for i,v in ipairs(sort or {}) do
         endTime=w.durationSecond and startTime+w.durationSecond or (j<#b and os.time(b[j+1].startTime) or startTime)
         minTime=minTime and startTime>minTime and minTime or startTime
         maxTime=maxTime and startTime<maxTime and maxTime or startTime
-        if baseTime+date*24*3600<=endTime and startTime<baseTime+((date+1)*24+1)*3600 then
+        if baseTime<=endTime and startTime<baseTime+interval*3600 then
           table.insert(st[#st].et, w)
         end
       end
@@ -238,147 +230,184 @@ end
 
 ct=ct..'<div id="submenu"><ul>\n'
 
-ct=ct..'<li class="now dividers"><a '..(date==0 and 'class="jumpnow"' or 'href="epg.html?tab='..tab..'&date=0"')..'><span></span></a></li>\n'
+ct=ct..'<li class="now dividers"><a '..(NOW and 'id="jumpnow"' or 'href="epg.html?tab='..tab..'&date=0'..(pageIndex~=0 and '&chpage='..pageIndex or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'"')..'><span></span></a></li>\n'
 
-pu='<li class="pull tabpage dividers"><a>'..(tab==0 and '地デジ' or tab==1 and 'ワンセグ' or tab==2 and 'BS' or tab==3 and 'CS' or tab==4 and 'その他' or '')..'</a>\n<ul class="jump">\n'
+pu='<li class="pull tabpage dividers"><a>'..(tab==0 and '地デジ' or tab==1 and 'ワンセグ' or tab==2 and 'BS' or tab==3 and 'CS' or tab==4 and 'その他' or '')..'</a>\n<div class="jump"><div></div><ul>\n'
 se='<li class="select dividers"><select name="tabpage" onchange="location.href=value;">\n'
 
-u='="epg.html?tab=0&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..'">'
-pu=pu..'<li><a'..(tab==0 and ' class="active">' or ' href'..u)..'地デジ</a></li>\n'
+u='="epg.html?tab=0&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">'
+pu=pu..'<li><a'..(tab==0 and ' class="selected">' or ' href'..u)..'地デジ</a></li>\n'
 se=se..'<option' ..(tab==0 and ' selected>' or ' value'..u)..'地デジ</option>\n'
 if oneseg then
-  u='="epg.html?tab=1&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..'">'
-  pu=pu..'<li><a'..(tab==1 and ' class="active">' or ' href'..u)..'ワンセグ</a></li>\n'
+  u='="epg.html?tab=1&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">'
+  pu=pu..'<li><a'..(tab==1 and ' class="selected">' or ' href'..u)..'ワンセグ</a></li>\n'
   se=se..'<option' ..(tab==1 and ' selected>' or ' value'..u)..'ワンセグ</option>\n'
 end
-u='="epg.html?tab=2&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..'">'
-pu=pu..'<li><a'..(tab==2 and ' class="active">' or ' href'..u)..'BS</a></li>\n'
+u='="epg.html?tab=2&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">'
+pu=pu..'<li><a'..(tab==2 and ' class="selected">' or ' href'..u)..'BS</a></li>\n'
 se=se..'<option' ..(tab==2 and ' selected>' or ' value'..u)..'BS</option>\n'
-u='="epg.html?tab=3&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..'">'
-pu=pu..'<li><a'..(tab==3 and ' class="active">' or ' href'..u)..'CS</a></li>\n'
+u='="epg.html?tab=3&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">'
+pu=pu..'<li><a'..(tab==3 and ' class="selected">' or ' href'..u)..'CS</a></li>\n'
 se=se..'<option' ..(tab==3 and ' selected>' or ' value'..u)..'CS</option>\n'
-u='="epg.html?tab=4&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..'">'
-pu=pu..'<li><a'..(tab==4 and ' class="active">' or ' href'..u)..'その他</a></li>\n'
+u='="epg.html?tab=4&date='..date..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">'
+pu=pu..'<li><a'..(tab==4 and ' class="selected">' or ' href'..u)..'その他</a></li>\n'
 se=se..'<option' ..(tab==4 and ' selected>' or ' value'..u)..'その他</option>\n'
 
-pu=pu..'</ul></li>\n'
+pu=pu..'</ul></div></li>\n'
 se=se..'</select></li>\n'
 ct=ct..pu..se
 
-if minTime then
-    t=(hour==0 and baseHour+MARGIN_HOUR>24 and 1 or hour==24 and 1 or 0)
-    d=os.date('*t', (date+baseDate+t)*24*3600-timezone)
-    d=d.month..'/'..d.day..'('..({'日','月','火','水','木','金','土'})[d.wday]..')'
-  pu='<li class="pull date"><a>'..d..'</a><ul class="jump">\n'
-  se='<li class="select"><select name="date" onchange="location.href=value;">\n'
+if 0<CH_COUNT and CH_COUNT<#st then
+  pu='<li class="pull dividers"><a>'..(pageIndex+1)..'ページ</a><div class="jump"><div></div><ul>'
+  se='<li class="select dividers"><select onchange="location.href=value;">\n'
 
-  mindate=math.floor((minTime+timezone-(date~=0 and hour<nowHour and baseHour*3600 or 0))/(24*3600))
-  maxdate=math.floor((maxTime+timezone-baseHour*3600)/(24*3600))
-
-  for i=mindate,maxdate do
-    d=os.date('*t', i*24*3600-timezone)
-    d=d.month..'/'..d.day..'('..({'日','月','火','水','木','金','土'})[d.wday]..')<'
-    u='="epg.html?tab='..tab..'&date='..(i-baseDate-t)..(i-baseDate-t==0 and '' or hour~=0 and '&hour='..hour or '&hour=4')..'">'
-
-    pu=pu..'<li><a'..(i-baseDate-t==date and ' class="active">' or ' href'..u)..d..'/a></li>\n'
-    se=se..'<option'..(i-baseDate-t==date and ' selected>' or ' value'..u)..d..'/option>\n'
-  end
-  pu=pu..'</ul></li>\n'
-  se=se..'</select></li>\n'
-  ct=ct..'<li class="navi"><a class="prev'..(date<=mindate-baseDate-t and ' disabled"' or '" href="epg.html?tab='..tab..'&date='..(date-1)..'&hour='..hour..'"')..'></a></li>'
-       ..pu..se
-       ..'<li class="navi dividers"><a class="next'..(date>=maxdate-baseDate-t and ' disabled"' or '" href="epg.html?tab='..tab..'&date='..(date+1)..'&hour='..hour..'"')..'></a></li>'
-
-  pu='<li class="pull time"><a>時間</a><ul class="jump">\n'
-  se='<li class="select"><select name="time">\n<option>時間</option>\n'
-  k=1
-  for i=baseHour , baseHour+23 ,2 do
-    j=(i>27 and i-24 or i)
-    u=' value="'..k..'">'..j..'時<'
-    pu=pu..'<li><a'..u..'/a></li>\n'
-    se=se..'<option'..u..'/option>\n'
-    k=k+2
+  for i=0, math.ceil(#st/CH_COUNT-1) do
+    u='="epg.html?tab='..tab..'&date='..date..'&chpage='..i..(hour~=0 and '&hour='..hour or date~=0 and '&hour=4' or '')..(interval~=25 and '&interval='..interval or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">'
+    pu=pu..'<li><a'..(pageIndex==i and ' class="selected">' or ' href'..u)..(i+1)..'ページ</a></li>'
+    se=se..'<option' ..(pageIndex==i and ' selected>' or ' value'..u)..(i+1)..'ページ</option>\n'
   end
 
-  pu=pu..'</ul></li>\n'
+  pu=pu..'</ul></div></li>\n'
   se=se..'</select></li>\n'
   ct=ct..pu..se
 end
 
-ct=ct..'</ul></div>\n</div>\n\n'
+if minTime then
+    t=(hour==0 and baseHour+MARGIN_HOUR>24 or hour==24) and 1 or 0
+    d=os.date('*t', ((date+baseDate+t)*24-(baseHour<4 and 4 or 0))*3600-timezone)
+    d=d.month..'/'..d.day..'('..({'日','月','火','水','木','金','土'})[d.wday]..')'
 
-ct=ct..[=[
-<div class="sidemenu">
-<span class="title">EpgTimer</span>
-<nav>
-<span class="link toggle">サービス</span>
-<ul id="service-list">
-]=]
+  pu='<li class="pull date"><a>'..d..'</a><div class="jump"><div></div><ul>\n'
+  se='<li class="select"><select name="date" onchange="location.href=value;">\n'
 
-  for i,v in ipairs(st) do
-    hide=nil
-    for j,w in ipairs(hidelist) do
-      if w.onid==v.onid and w.tsid==v.tsid and w.sid==v.sid then
-        hide=true
-        break
-      end
+  minhour=math.floor((minTime+timezone-(interval==25 and 4 or baseHour)*3600)/3600)
+  mindate=math.floor((minTime+timezone-4*3600)/(24*3600))
+  maxhour=math.floor((maxTime+timezone-baseHour*3600)/3600)
+  maxdate=math.floor((maxTime+timezone-4*3600)/(24*3600))
+
+  for i=mindate,maxdate do
+    d=os.date('*t', i*24*3600-timezone)
+    d=d.month..'/'..d.day..'('..({'日','月','火','水','木','金','土'})[d.wday]..')<'
+    u='="epg.html?tab='..tab..'&date='..(interval==25 and (i-baseDate-t~=-1 and hour==24) and i-baseDate-t or i-baseDate)..((i-baseDate-t==0 and hour~=24 or i-baseDate-t==-1 and hour==24) and '' or hour~=0 and interval==25 and '&hour='..hour or '&hour=4')..(interval~=25 and '&interval='..interval or '')..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'"'
+
+    pu=pu..'<li><a'..(i-baseDate-t==date and ' class="selected"' or '')..(((i-baseDate-t==0 and NOW) or i-baseDate-t==date and (interval==25 or hour==4)) and '' or ' href'..u)..'>'..d..'/a></li>\n'
+    se=se..'<option'..(i-baseDate-t==date and ' selected' or '')..(((i-baseDate-t==0 and NOW) or i-baseDate-t==date and (interval==25 or hour==4)) and '' or ' value'..u)..'>'..d..'/option>\n'
+  end
+
+  pu=pu..'</ul></div></li>\n'
+  se=se..'</select></li>\n'
+
+  prevdate=baseHour-interval<1 and date-1 or date
+  prevhour=baseHour-interval<1 and baseHour-interval+24 or baseHour-interval
+  nextdate=baseHour+interval>24 and date+1 or date
+  nexthour=baseHour+interval>24 and baseHour+interval-24 or baseHour+interval
+  
+  ct=ct..'<li class="navi"><a class="prev'..(minhour>=date*24+nowDate*24 and ' disabled"' or interval==25 and '" href="epg.html?tab='..tab..'&date='..(date-1)..'&hour='..hour..'"'..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '') or '" href="epg.html?tab='..tab..'&date='..prevdate..'&hour='..prevhour..'&interval='..interval..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'"')..'></a></li>'
+       ..pu..se
+       ..'<li class="navi dividers"><a class="next'..(maxhour<nowDate*24+date*24+interval and ' disabled"' or interval==25 and '" href="epg.html?tab='..tab..'&date='..(date+1)..'&hour='..hour..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'"' or '" href="epg.html?tab='..tab..'&date='..nextdate..'&hour='..nexthour..'&interval='..interval..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'"')..'></a></li>'
+
+  pu='<li class="pull time"><a>時間</a><div class="jump"><div></div><ul>\n'
+  se='<li class="select"><select name="time">\n<option>時間</option>\n'
+
+  k=1
+  if interval==25 then
+    for i=baseHour , baseHour+23 ,2 do
+      j=i>27 and i-24 or i
+      u=' value="'..k..'">'..j..'時<'
+      pu=pu..'<li><a class="jumper"'..u..'/a></li>\n'
+      se=se..'<option'..u..'/option>\n'
+      k=k+2
     end
-    if (v.partialReceptionFlag or v.service_type==0x01 or v.service_type==0xA5) then
-      ct=ct..'<li><input id="c-'..v.onid..'-'..v.tsid..'-'..v.sid..'" type="checkbox" name="hide" value="'..v.onid..'-'..v.tsid..'-'..v.sid..'"'..(hide and ' checked="checked"' or '')..'><label class="switch reverse" for="c-'..v.onid..'-'..v.tsid..'-'..v.sid..'"></label><label for="c-'..v.onid..'-'..v.tsid..'-'..v.sid..'">'..v.service_name..'</label></li>\n'
+  else
+    for i=4, 27 ,2 do
+      linkdate=baseHour<4 and date-1 or date
+      linkdate=i>24 and linkdate+1 or linkdate
+      j=i>23 and i-24 or i
+      if 4<=baseHour and baseHour<=i and i<baseHour+interval or baseHour<4 and j<4 then
+        u=k..'">'..i..'時<'
+        pu=pu..'<li><a class="jumper selected" value="'..u..'/a></li>\n'
+        k=k+2
+      else
+        u='epg.html?tab='..tab..'&date='..linkdate..'&hour='..j..'&interval='..interval..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">'..i..'時<'
+        pu=pu..'<li><a href="'..u..'/a></li>\n'
+      end
+    se=se..'<option value="'..u..'/option>\n'
     end
   end
 
-ct=ct..'</ul>\n'
+  pu=pu..'</ul></div></li>\n'
+  se=se..'</select></li>\n'
+  ct=ct..pu..se
+end
+
+ct=ct..'</ul></div>\n</div>\n'
+
+add=[=[
+<span class="link toggle">サービス</span>
+<div id="service-list">
+]=]
+
+pagemin=math.max(1,pageIndex*CH_COUNT+1)
+pagemax=CH_COUNT==0 and #st or math.min(#st,(pageIndex+1)*CH_COUNT)
+
+  for i=pagemin,pagemax do
+    v=st[i]
+    if (v.partialReceptionFlag or v.service_type==0x01 or v.service_type==0xA5) then
+      add=add..'<div><input id="c-'..v.onid..'-'..v.tsid..'-'..v.sid..'" type="checkbox" name="hide" value="'..v.onid..'-'..v.tsid..'-'..v.sid..'"'..(v.hide and ' checked="checked"' or '')..'><label class="switch reverse" for="c-'..v.onid..'-'..v.tsid..'-'..v.sid..'"></label><label for="c-'..v.onid..'-'..v.tsid..'-'..v.sid..'">'..v.service_name..'</label></div>\n'
+    end
+  end
+
+add=add..'</div>\n'
      ..'<span class="link toggle">ジャンル</span>\n'
-     ..'<ul id="genre-list">\n'
+     ..'<div id="genre-list">\n'
 
   for i=0,15 do
     nibble1=edcb.GetGenreName(i*256+255)
     if nibble1~='' then
-      ct=ct..'<li><label id="g-'..(i*256+255)..'" for="g-'..(i*256+255)..'" data-value="'..CATEGORY[i+1]..'">'..nibble1..'</label></li>\n'
+      add=add..'<div><label id="g-'..(i*256+255)..'" for="g-'..(i*256+255)..'" data-value="'..CATEGORY[i+1]..'">'..nibble1..'</label></div>\n'
     end
   end
-ct=ct..[=[
-</ul>
-<div class="separator"></div>
-<a class="link" href="epg.html">番組表</a>
-<a class="link" href="reserve.html">予約一覧</a>
-<a class="link" href="tunerreserve.html">チューナー別</a>
-<a class="link" href="autoaddepg.html">EPG予約</a>
-<a class="link" href="recinfo.html">録画結果</a>
-<a class="link" href="search.html">検索</a>
-<a class="link" href="setting.html">設定</a>
-</nav>
-</div>
-<div class="obfuscator"></div>
-]=]
+add=add..'</div>\n<div class="separator"></div>\n'
+
+ct=ct..sidemenu(add)
 
 rowHead='<div id="head" class="shadow"><ul>\n'
-for i,v in ipairs(st) do
-  rowHead=rowHead..'<li class="id-'..v.onid..'-'..v.tsid..'-'..v.sid..'">'..v.service_name..'</li>\n'
+--for i,v in ipairs(st) do
+for i=pagemin,pagemax do
+  v=st[i]
+  rowHead=rowHead..'<li class="id-'..v.onid..'-'..v.tsid..'-'..v.sid..'"'..(v.hide and ' style="display:none;"' or '')..'><a href="epgweek.html?onid='..v.onid..'&tsid='..v.tsid..'&sid='..v.sid..'">'..v.service_name..'</a></li>\n'
 end
 rowHead=rowHead..'</ul></div>\n'
 
 colHead='<div id="wrap_tv_1">\n<div id="hour">\n'
-for i=baseHour,baseHour+24 do
+for i=baseHour,baseHour+interval-1 do
      j=(i>27 and i-24 or i)
-  colHead=colHead..'<div style="height:'..(ONE_MIN_PX*60)..'px"><p class="t'..j..'">'..j..'時</p></div>\n'
+  colHead=colHead..'<div><p class="t'..j..'"><span>'..j..'時</span></p></div>\n'
 end
 colHead=colHead..'</div>\n'
 
 ctt={ct}
-table.insert(ctt, rowHead..colHead..'<div id="wrap_tv_2">'..(date==0 and '<div id="line"></div>\n' or '')..'<div id="wrap_tv_3"><ul id="tvguide">\n')
-for i,v in ipairs(st) do
-  table.insert(ctt, '<li class="id-'..v.onid..'-'..v.tsid..'-'..v.sid..'">\n')
+table.insert(ctt, rowHead..colHead..'<div id="wrap_tv_2">'..[=[
+<div id="loading"><div><div class="spinner">
+<div class="spinner__layer spinner__layer-1"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-2"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-3"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+<div class="spinner__layer spinner__layer-4"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
+</div></div></div>
+]=]..(NOW and '<div id="line"></div>\n' or '')..'<div id="wrap_tv_3" class="drag"><ul id="tvguide">\n')
+--for i,v in ipairs(st) do
+for i=pagemin,pagemax do
+  v=st[i]
+  table.insert(ctt, '<li class="id-'..v.onid..'-'..v.tsid..'-'..v.sid..'"'..(v.hide and ' style="display:none;"' or '')..' data-service="'..v.onid..'-'..v.tsid..'-'..v.sid..'">\n')
   lastPx=0
   total=0
   for j,w in ipairs(v.et) do
     startTime=os.time(w.startTime)
-    startPx=math.min(math.floor((startTime-baseTime-date*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*25)
+    startPx=math.min(math.floor((startTime-baseTime)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
     endTime=w.durationSecond and startTime+w.durationSecond or (j<#v.et and os.time(v.et[j+1].startTime) or startTime) --終了時間未定
-    endPx=math.min(math.floor((endTime-baseTime-date*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*25)
+    endPx=math.min(math.floor((endTime-baseTime)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
     if startPx-lastPx>0 then
-      table.insert(ctt, '<div class="cell'..os.date(' %d-%H-%M', startTime)..'" style="height:'..(startPx-lastPx)..'px"><div class="content nothing"></div><div class="end'..(startTime-now<=0 and ' mask' or '')..'" style="height:'..(startPx-lastPx-2)..'px"></div></div>\n')
+      table.insert(ctt, '<div class="cell'..(NOW and startTime>now and os.date(' end_%d-%H-%M-%S', startTime) or '')..'" style="height:'..(startPx-lastPx)..'px"><div class="content nothing"></div>'..(NOW and startTime<=now and '<div class="end"></div>' or '')..'</div>\n')
       total=total+startPx-lastPx
       lastPx=startPx
     end
@@ -395,43 +424,46 @@ for i,v in ipairs(st) do
       end
       rs=r and r.recSetting or nil
 
-      time='<li class="start"><span>'..os.date('%M', startTime)..'</span>'									--開始時間
-        ..(r and '<span class="mark recable'..(rs.recMode==5 and ' no">無' or r.overlapMode==1 and '">部' or r.overlapMode==2 and '">不'  or '">録')..'</span>' or '')..'</li>'	--録画マーク
-      recmode=r and (rs.recMode==5 and ' disable' or r.overlapMode==1 and ' partially' or r.overlapMode==2 and ' shortage' or ' reserved') or ''	--録画モード
-      reURL='tab='..tab..'&date='..date..(hour~=0 and '&hour='..hour or '')
-      idURL='onid='..w.onid..'&tsid='..w.tsid..'&sid='..w.sid..'&eid='..w.eid
+      mark=(r and '<span class="mark recable'..(rs.recMode==5 and ' no">無' or r.overlapMode==1 and '">部' or r.overlapMode==2 and '">不' or rs.recMode==4 and ' view">視'or '">録')..'</span>' or '')	--録画マーク
+      recmode=r and (rs.recMode==5 and ' disable' or r.overlapMode==1 and ' partially' or r.overlapMode==2 and ' shortage' or rs.recMode==4 and ' viewing' or ' reserved') or ''	--録画モード
 
-      table.insert(ctt, '<div class="cell'..(endTime~=startTime and os.date(' %d-%H-%M', endTime) or '')..'" style="height:'..(endPx-lastPx)..'px'
-        ..'">\n<div class="content '..category..recmode..'"><ul>'..time
-        ..'<li>'..title..(w.durationSecond and w.durationSecond>=30*60 and info or '') 
-        ..'</li></ul></div>\n'
-
-        ..'<div class="popup '..category..recmode..'" style="min-height:'..(endPx-lastPx)..'px"><ul>'..time
-        ..'<li>'..title..info..search
-        ..'<ul class="tool"><li><a class="button raised" href=\"epginfo.html?onid='..w.onid..'&tsid='..w.tsid..'&sid='..w.sid..'&eid='..w.eid..'&tab='..tab..'&date='..date..(hour~=0 and '&hour='..hour or '')..'">番組詳細</a></li>'
-        ..(endTime~=startTime and endTime-now>0 and '<li class="reserve"><label class="button raised"'								--終了前
-        ..(r and ' data-reserve="'..id..'">'..(rs.recMode==5 and '有効' or '無効')		--予約あり有効無効
-          or 'data-onid="'..w.onid..'" data-tsid="'..w.tsid..'" data-sid="'..w.sid..'" data-eid="'..w.eid..'">録画予約')..'</label></li>' or '')			--なし新規追加
+      table.insert(ctt, '<div class="cell'..(NOW and endTime~=startTime and os.date(' end_%d-%H-%M-%S', endTime) or '')..'" style="height:'..(endPx-lastPx)..'px">\n'
+        ..'<div class="content '..category..recmode..'" style="min-height:'..(endPx-lastPx-2)..'px"><ul><li class="start">'..os.date('%M', startTime)..mark..'</li>'
+        ..'<li>'..title..(w.durationSecond and w.durationSecond>=30*60 and info..'<div class="popup">' or '<div class="popup">'..info)..search
+        ..'<ul class="tool"><li><a class="button raised" href=\"epginfo.html?onid='..w.onid..'&tsid='..w.tsid..'&sid='..w.sid..'&eid='..w.eid..'&tab='..tab..'&date='..date..(hour~=0 and '&hour='..hour or '')..(interval~=25 and '&interval='..interval or '')..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">番組詳細</a></li>'
+        ..(endTime~=startTime and endTime-now>0 and '<li><label class="button raised reserve"'								--終了前
+        ..(r and ' data-reserve="'..id..'">'..(rs.recMode==5 and '有効' or '無効')										--予約あり有効無効
+          or ' data-onid="'..w.onid..'" data-tsid="'..w.tsid..'" data-sid="'..w.sid..'" data-eid="'..w.eid..'">録画予約')..'</label></li>' or '')		--なし新規追加
+        ..'<li><a class="button raised addepg" data-andkey="'..(w.shortInfo and w.shortInfo.event_name or '')..'">EPG予約</a></li>'
         ..'</ul>'
         ..string.gsub(string.gsub((w.extInfo and '<p>'..w.extInfo.text_char..'</p>' or ''), 'https?://[%w/:%#%$&%?%(%)~%.=%+%-_]+', '<a href="%1" target="_blank">%1</a>'), '\r?\n', '<br>')
-        ..'</li></ul></div>\n'
-        ..'<div class="end'..(endTime~=startTime and endTime-now<0 and ' mask' or '')..'" style="height:'..(endPx-lastPx-2)..'px"></div></div>\n\n')
+        ..'</div></li></ul></div>\n'
+        ..(NOW and endTime<=now and '<div class="end"></div>' or '')..'</div>\n')
       total=total+endPx-lastPx
       lastPx=endPx
     end
   end
-  if total<25*60*ONE_MIN_PX then
-    table.insert(ctt, '<div class="cell" style="height:'..(25*60*ONE_MIN_PX-total)..'px"><div class="content nothing"></div></div>\n')
+  if total<interval*60*ONE_MIN_PX then
+    table.insert(ctt, '<div class="cell" style="height:'..(interval*60*ONE_MIN_PX-total)..'px"><div class="content nothing"></div></div>\n')
   end
   table.insert(ctt, '</li>\n')
 end
 
-table.insert(ctt, '</ul></div></div>\n')
+table.insert(ctt, '</ul></div></div>\n</div>\n'
+  ..'<form id="hidden" method="POST" action="autoaddepginfo.html?epg=&tab='..tab..'&date='..date..(hour~=0 and '&hour='..hour or '')..(interval~=25 and '&interval='..interval or '')..(pageIndex~=0 and '&chpage='..pageIndex or '')..(CH_COUNT~=DEF_CH_COUNT and '&chcount='..CH_COUNT or '')..'">\n')
 
 table.insert(ctt,[=[
+<input type="hidden" name="andKey" value="">
+<input type="hidden" name="notKey" value="">
+<input type="hidden" name="freeCAFlag" value="0">
+<input type="hidden" name="network" value="0">
+<input type="hidden" name="days" value="0">
+<select name="contentList" multiple size="0"></select>
+<input type="hidden" name="serviceList" value="">
+<input type="hidden" name="dateList" value="">
+</form>
 </div>
-</div>
-</boby>
+</body>
 </html>
 ]=])
 

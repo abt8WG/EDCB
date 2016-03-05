@@ -51,8 +51,9 @@ function ConvertSearch(title)
   title=string.gsub (title, "＜.-＞", "")
   title=string.gsub (title, "【.-】", "")
   title=string.gsub (title, "%[.-%]", "")
-  local search='<a href="search.html?andkey='..title..'"><img class="icon" src="img/search.png" alt="検索"></a>'
+  title=string.gsub (title, "（.-版）", "")
+  local search='<a href="search.html?andkey='..title..'"><i class="material-icons">search</i></a>'
   search=search..'<a href="https://www.google.co.jp/search?q='..title..'" target="_blank"><img class="icon" src="img/google.png" alt="Google検索"></a>'
-  --search=search..'<a href="http://www.google.com/search?q='..title..'&btnI=Im+Feeling+Lucky" target="_blank">◎</a>'
+  --search=search..'<a href="http://www.google.co.jp/search?q='..title..'&btnI=Im+Feeling+Lucky" target="_blank">◎</a>'
   return search
 end

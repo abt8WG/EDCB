@@ -411,7 +411,7 @@ vector<CTunerBankCtrl::CHECK_RESULT> CTunerBankCtrl::Check(vector<DWORD>* starte
 						val.SID = r.sid;
 						val.pfNextFlag = FALSE;
 						EPGDB_EVENT_INFO resVal;
-						if( ctrlCmd.SendViewGetEventPF(&val, &resVal) == CMD_SUCCESS &&
+						if( ctrlCmd.SendViewGetEventPF(val, &resVal) == CMD_SUCCESS &&
 						    resVal.StartTimeFlag && resVal.DurationFlag &&
 						    ConvertI64Time(resVal.start_time) <= r.startTime + 30 * I64_1SEC &&
 						    r.startTime + 30 * I64_1SEC < ConvertI64Time(resVal.start_time) + resVal.durationSec * I64_1SEC &&
@@ -577,7 +577,7 @@ vector<CTunerBankCtrl::CHECK_RESULT> CTunerBankCtrl::Check(vector<DWORD>* starte
 					chgCh.useBonCh = FALSE;
 					//「予約録画待機中」
 					ctrlCmd.SendViewSetStandbyRec(1);
-					if( ctrlCmd.SendViewSetCh(&chgCh) == CMD_SUCCESS ){
+					if( ctrlCmd.SendViewSetCh(chgCh) == CMD_SUCCESS ){
 						this->tunerChLocked = true;
 						this->tunerResetLock = false;
 						this->tunerChChgTick = GetTickCount();
@@ -834,60 +834,21 @@ bool CTunerBankCtrl::RecStart(const TUNER_RESERVE_WORK& reserve, __int64 now) co
 			}
 			//recNamePlugInを展開して実ファイル名をセット
 			for( size_t j = 0; j < param.saveFolder.size(); j++ ){
-				param.saveFolder[j].recFileName.clear();
-				if( param.saveFolder[j].recNamePlugIn.empty() == false ){
-					WORD sid = reserve.sid;
-					WORD eid = reserve.eid;
-					wstring stationName = reserve.stationName;
-					if( i != 0 ){
-						FindPartialService(reserve.onid, reserve.tsid, reserve.sid, &sid, &stationName);
-						eid = 0xFFFF;
-					}
-					wstring plugInPath;
-					GetModuleFolderPath(plugInPath);
-					plugInPath += L"\\RecName\\";
-					{
-						PLUGIN_RESERVE_INFO info;
-						ConvertSystemTime(reserve.startTime, &info.startTime);
-						info.durationSec = reserve.durationSecond;
-						wcscpy_s(info.eventName, reserve.title.c_str());
-						info.ONID = reserve.onid;
-						info.TSID = reserve.tsid;
-						info.SID = sid;
-						info.EventID = eid;
-						wcscpy_s(info.serviceName, stationName.c_str());
-						wcscpy_s(info.bonDriverName, this->bonFileName.c_str());
-						info.bonDriverID = this->tunerID >> 16;
-						info.tunerID = this->tunerID & 0xFFFF;
-						std::unique_ptr<EPG_EVENT_INFO> epgInfo;
-						if( info.EventID != 0xFFFF ){
-							EPGDB_EVENT_INFO epgDBInfo;
-							if( this->epgDBManager.SearchEpg(info.ONID, info.TSID, info.SID, info.EventID, &epgDBInfo) != FALSE ){
-								epgInfo.reset(new EPG_EVENT_INFO);
-								CopyEpgInfo(epgInfo.get(), &epgDBInfo);
-							}
-						}
-						info.reserveID = reserve.reserveID;
-						info.epgInfo = epgInfo.get();
-						info.sizeOfStruct = 0;
-						WCHAR name[512];
-						DWORD size = 512;
-						if( CReNamePlugInUtil::ConvertRecName3(&info, param.saveFolder[j].recNamePlugIn.c_str(), plugInPath.c_str(), name, &size) ){
-							param.saveFolder[j].recFileName = name;
-							CheckFileName(param.saveFolder[j].recFileName, this->recNameNoChkYen);
-						}
-					}
-					param.saveFolder[j].recNamePlugIn.clear();
+				WORD sid = reserve.sid;
+				WORD eid = reserve.eid;
+				wstring stationName = reserve.stationName;
+				if( i != 0 ){
+					FindPartialService(reserve.onid, reserve.tsid, reserve.sid, &sid, &stationName);
+					eid = 0xFFFF;
 				}
-				//実ファイル名は空にしない
-				if( param.saveFolder[j].recFileName.empty() ){
-					SYSTEMTIME st;
-					ConvertSystemTime(max(reserve.startTime, now), &st);
-					Format(param.saveFolder[j].recFileName, L"%04d%02d%02d%02d%02d%02X%02X%02d-%s.ts",
-					       st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute,
-					       this->tunerID >> 16, this->tunerID & 0xFFFF, param.ctrlID, reserve.title.c_str());
-					CheckFileName(param.saveFolder[j].recFileName);
-				}
+				SYSTEMTIME st;
+				ConvertSystemTime(reserve.startTime, &st);
+				SYSTEMTIME stDefault;
+				ConvertSystemTime(max(reserve.startTime, now), &stDefault);
+				param.saveFolder[j].recFileName = ConvertRecName(
+					param.saveFolder[j].recNamePlugIn.c_str(), st, reserve.durationSecond, reserve.title.c_str(), reserve.onid, reserve.tsid, sid, eid,
+					stationName.c_str(), this->bonFileName.c_str(), this->tunerID, reserve.reserveID, this->epgDBManager, stDefault, param.ctrlID, this->recNameNoChkYen);
+				param.saveFolder[j].recNamePlugIn.clear();
 			}
 			param.overWriteFlag = this->recOverWrite;
 			param.pittariFlag = reserve.eid != 0xFFFF && reserve.pittari;
@@ -958,7 +919,7 @@ bool CTunerBankCtrl::StartEpgCap(const vector<SET_CH_INFO>& setChList)
 			CSendCtrlCmd ctrlCmd;
 			ctrlCmd.SetPipeSetting(CMD2_VIEW_CTRL_WAIT_CONNECT, CMD2_VIEW_CTRL_PIPE, this->tunerPid);
 			//EPG取得開始
-			if( ctrlCmd.SendViewEpgCapStart(&setChList) == CMD_SUCCESS ){
+			if( ctrlCmd.SendViewEpgCapStart(setChList) == CMD_SUCCESS ){
 				this->specialState = TR_EPGCAP;
 				return true;
 			}
@@ -990,7 +951,7 @@ bool CTunerBankCtrl::SearchEpgInfo(WORD sid, WORD eid, EPGDB_EVENT_INFO* resVal)
 		val.SID = sid;
 		val.eventID = eid;
 		val.pfOnlyFlag = 0;
-		if( ctrlCmd.SendViewSearchEvent(&val, resVal) == CMD_SUCCESS ){
+		if( ctrlCmd.SendViewSearchEvent(val, resVal) == CMD_SUCCESS ){
 			if( resVal->shortInfo ){
 				//ごく稀にAPR(改行)を含むため
 				Replace(resVal->shortInfo->event_name, L"\r\n", L"");
@@ -1014,7 +975,7 @@ int CTunerBankCtrl::GetEventPF(WORD sid, bool pfNextFlag, EPGDB_EVENT_INFO* resV
 		val.TSID = this->tunerTSID;
 		val.SID = sid;
 		val.pfNextFlag = pfNextFlag;
-		DWORD ret = ctrlCmd.SendViewGetEventPF(&val, resVal);
+		DWORD ret = ctrlCmd.SendViewGetEventPF(val, resVal);
 		if( ret == CMD_SUCCESS ){
 			if( resVal->shortInfo ){
 				//ごく稀にAPR(改行)を含むため
@@ -1045,7 +1006,7 @@ bool CTunerBankCtrl::SetNWTVCh(bool nwUdp, bool nwTcp, const SET_CH_INFO& chInfo
 		CWatchBlock watchBlock(&this->watchContext);
 		CSendCtrlCmd ctrlCmd;
 		ctrlCmd.SetPipeSetting(CMD2_VIEW_CTRL_WAIT_CONNECT, CMD2_VIEW_CTRL_PIPE, this->tunerPid);
-		ctrlCmd.SendViewSetCh(&chInfo);
+		ctrlCmd.SendViewSetCh(chInfo);
 		return true;
 	}
 	return false;
@@ -1158,7 +1119,7 @@ bool CTunerBankCtrl::OpenTuner(bool minWake, bool nwUdp, bool nwTcp, bool standb
 					ctrlCmd.SendViewSetStandbyRec(1);
 				}
 				if( initCh ){
-					ctrlCmd.SendViewSetCh(initCh);
+					ctrlCmd.SendViewSetCh(*initCh);
 				}
 				return true;
 			}
@@ -1264,6 +1225,55 @@ bool CTunerBankCtrl::CloseOtherTuner()
 		}
 	}
 	return closed;
+}
+
+wstring CTunerBankCtrl::ConvertRecName(
+	LPCWSTR recNamePlugIn, const SYSTEMTIME& startTime, DWORD durationSec, LPCWSTR eventName, WORD onid, WORD tsid, WORD sid, WORD eid,
+	LPCWSTR serviceName, LPCWSTR bonDriverName, DWORD tunerID, DWORD reserveID, CEpgDBManager& epgDBManager_,
+	const SYSTEMTIME& startTimeForDefault, DWORD ctrlID, bool noChkYen)
+{
+	wstring ret;
+	if( recNamePlugIn[0] ){
+		wstring plugInPath;
+		GetModuleFolderPath(plugInPath);
+		plugInPath += L"\\RecName\\";
+		PLUGIN_RESERVE_INFO info;
+		info.startTime = startTime;
+		info.durationSec = durationSec;
+		wcsncpy_s(info.eventName, eventName, _TRUNCATE);
+		info.ONID = onid;
+		info.TSID = tsid;
+		info.SID = sid;
+		info.EventID = eid;
+		wcsncpy_s(info.serviceName, serviceName, _TRUNCATE);
+		wcsncpy_s(info.bonDriverName, bonDriverName, _TRUNCATE);
+		info.bonDriverID = HIWORD(tunerID);
+		info.tunerID = LOWORD(tunerID);
+		std::unique_ptr<EPG_EVENT_INFO> epgInfo;
+		if( eid != 0xFFFF ){
+			EPGDB_EVENT_INFO epgDBInfo;
+			if( epgDBManager_.SearchEpg(onid, tsid, sid, eid, &epgDBInfo) ){
+				epgInfo.reset(new EPG_EVENT_INFO);
+				CopyEpgInfo(epgInfo.get(), &epgDBInfo);
+			}
+		}
+		info.reserveID = reserveID;
+		info.epgInfo = epgInfo.get();
+		info.sizeOfStruct = 0;
+		WCHAR name[512];
+		DWORD size = 512;
+		if( CReNamePlugInUtil::ConvertRecName3(&info, recNamePlugIn, plugInPath.c_str(), name, &size) ){
+			ret = name;
+			CheckFileName(ret, noChkYen);
+		}
+	}
+	if( ret.empty() ){
+		const SYSTEMTIME& st = startTimeForDefault;
+		Format(ret, L"%04d%02d%02d%02d%02d%02X%02X%02d-%.159s.ts",
+		       st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, HIWORD(tunerID), LOWORD(tunerID), ctrlID, eventName);
+		CheckFileName(ret);
+	}
+	return ret;
 }
 
 void CTunerBankCtrl::Watch()
