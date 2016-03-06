@@ -99,7 +99,7 @@ namespace EpgTimer.DefineClass
         }
         DateTime _lastUpdate;
 
-        public string ShortInfo_event_name
+        public string tvProgramTitle
         {
             get { return epgEventInfoR.ShortInfo.event_name; }
         }
@@ -107,7 +107,7 @@ namespace EpgTimer.DefineClass
         /// <summary>
         /// 番組情報
         /// </summary>
-        public string ShortInfo_text_char
+        public string tvProgramSummary
         {
             get { return epgEventInfoR.ShortInfo.text_char; }
         }
@@ -138,7 +138,8 @@ namespace EpgTimer.DefineClass
                     {
                         _tvStationName = ChSet5.Instance.ChList[key].ServiceName;
                     }
-                    else {
+                    else
+                    {
                         _tvStationName = string.Empty;
                     }
                 }

@@ -1525,12 +1525,12 @@ namespace EpgTimer
         /// <summary>
         /// 
         /// </summary>
-        public bool RecLog_Enabled
+        public bool RecLog_IsEnabled
         {
-            get { return _RecLog_Enabled; }
-            set { _RecLog_Enabled = value; }
+            get { return _RecLog_IsEnabled; }
+            set { _RecLog_IsEnabled = value; }
         }
-        bool _RecLog_Enabled = false;
+        bool _RecLog_IsEnabled = false;
         /// <summary>
         /// 
         /// </summary>
@@ -1542,7 +1542,8 @@ namespace EpgTimer
                 {
                     return Environment.MachineName;
                 }
-                else {
+                else
+                {
                     return _RecLog_DB_MachineName;
                 }
             }

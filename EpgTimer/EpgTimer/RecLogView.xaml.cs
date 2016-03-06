@@ -48,12 +48,13 @@ namespace EpgTimer
             };
             //
             db_RecLog = new DB_RecLog(Settings.Instance.RecLog_DB_MachineName, Settings.Instance.RecLog_DB_InstanceName);
-            checkBox_RecLogEnabled.IsChecked = Settings.Instance.RecLog_Enabled;
+            checkBox_RecLogEnabled.IsChecked = Settings.Instance.RecLog_IsEnabled;
             if (!string.IsNullOrWhiteSpace(Settings.Instance.RecLog_DB_MachineName))
             {
                 textBox_MachineName.Text = Settings.Instance.RecLog_DB_MachineName;
             }
-            else {
+            else
+            {
                 textBox_MachineName.Text = Environment.MachineName;
             }
             textBox_InstanceName.Text = Settings.Instance.RecLog_DB_InstanceName;
@@ -69,7 +70,7 @@ namespace EpgTimer
             //
             grid_Edit.Visibility = Visibility.Collapsed;
             border_Button_DB_ConnectTest.BorderThickness = new Thickness(0);
-            if (Settings.Instance.RecLog_Enabled)
+            if (Settings.Instance.RecLog_IsEnabled)
             {
                 border_CheckBox_RecLogEnabled.BorderThickness = new Thickness(0);
                 grid_Setting.Visibility = Visibility.Collapsed;
@@ -89,7 +90,7 @@ namespace EpgTimer
 
         void search(string searchWord0)
         {
-            if (!Settings.Instance.RecLog_Enabled)
+            if (!Settings.Instance.RecLog_IsEnabled)
             {
                 MessageBox.Show(notEnabledMessage);
                 return;
@@ -106,7 +107,8 @@ namespace EpgTimer
             {
                 MessageBox.Show("エラー：録画ステータスを1つ以上選択してください。");
             }
-            else {
+            else
+            {
                 List<RecLogItem> recLogItemList1 = getRecLogList(searchWord0, searchResultLimit, recodeStatus, searchColumn);
                 foreach (var item in recLogItemList1)
                 {
@@ -139,45 +141,6 @@ namespace EpgTimer
             return recLogItemList1;
         }
 
-        searchMethods searchMethod
-        {
-            get
-            {
-                if (radioButton_SearchMethod_Like.IsChecked == true)
-                {
-                    return searchMethods.LIKE;
-                }
-                else if (radioButton_SearchMethod_Contains.IsChecked == true)
-                {
-                    return searchMethods.Contrains;
-                }
-                else if (radioButton_SearchMethod_Freetext.IsChecked == true)
-                {
-                    return searchMethods.Freetext;
-                }
-                else {
-                    throw new NotSupportedException();
-                }
-            }
-            set
-            {
-                switch (value)
-                {
-                    case searchMethods.LIKE:
-                        radioButton_SearchMethod_Like.IsChecked = true;
-                        break;
-                    case searchMethods.Contrains:
-                        radioButton_SearchMethod_Contains.IsChecked = true;
-                        break;
-                    case searchMethods.Freetext:
-                        radioButton_SearchMethod_Freetext.IsChecked = true;
-                        break;
-                    default:
-                        throw new NotSupportedException();
-                }
-            }
-        }
-
         public void update(UpdateNotifyItem notifyItem0)
         {
             if (CommonManager.Instance.NWMode == true) { return; }
@@ -185,32 +148,32 @@ namespace EpgTimer
             switch (notifyItem0)
             {
                 case UpdateNotifyItem.EpgData:
-                    System.Diagnostics.Trace.WriteLine(notifyItem0);
                     if (_bgw_EpgData.IsBusy)
                     {
                         ;
                     }
-                    else {
+                    else
+                    {
                         _bgw_EpgData.RunWorkerAsync();
                     }
                     break;
                 case UpdateNotifyItem.ReserveInfo:
-                    System.Diagnostics.Trace.WriteLine(notifyItem0);
                     if (_bgw_ReserveInfo.IsBusy)
                     {
                         ;
                     }
-                    else {
+                    else
+                    {
                         _bgw_ReserveInfo.RunWorkerAsync();
                     }
                     break;
                 case UpdateNotifyItem.RecInfo:
-                    System.Diagnostics.Trace.WriteLine(notifyItem0);
                     if (_bgw_RecInfo.IsBusy)
                     {
                         ;
                     }
-                    else {
+                    else
+                    {
                         _bgw_RecInfo.RunWorkerAsync();
                     }
                     break;
@@ -245,7 +208,7 @@ namespace EpgTimer
             sb1.AppendLine("削除しますか？");
             foreach (RecLogItem item in items0)
             {
-                sb1.AppendLine("・" + item.ShortInfo_event_name);
+                sb1.AppendLine("・" + item.tvProgramTitle);
             }
             if (MessageBox.Show(sb1.ToString(), "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel) == MessageBoxResult.OK)
             {
@@ -261,17 +224,19 @@ namespace EpgTimer
         void clearEditor()
         {
             _recLogItem_Edit = null;
-
+            //
             textBox_Edit_ProgramTitle.Clear();
             label_Editor_Date.Content = null;
             label_Editor_ServiceName.Content = null;
             comboBox_Edit_Status.SelectedItem = null;
             checkBox_AllowOverWrite.IsChecked = false;
+            textBox_RecFilePath.Clear();
             richTextBox_Comment.Document.Blocks.Clear();
             richTextBox_ShortInfo_text_char.Document.Blocks.Clear();
             richTextBox_ExtInfo_text_char.Document.Blocks.Clear();
             //
             textBox_Edit_ProgramTitle.BorderThickness = new Thickness(0);
+            textBox_RecFilePath.BorderThickness = new Thickness(0);
             border_RecStatus.BorderThickness = new Thickness(0);
             border_AllowOverWrite.BorderThickness = new Thickness(0);
             richTextBox_Comment.BorderThickness = new Thickness(0);
@@ -294,6 +259,7 @@ namespace EpgTimer
                 " (" + CommonManager.ConvertNetworkNameText(recLogItem_Edit1.epgEventInfoR.original_network_id) + ")";
             comboBox_Edit_Status.SelectedItem = recLogItem_Edit1.recodeStatus;
             checkBox_AllowOverWrite.IsChecked = recLogItem_Edit1.epgAlllowOverWrite;
+            textBox_RecFilePath.Text = recLogItem_Edit1.recFilePath;
             setText(richTextBox_Comment, recLogItem_Edit1.comment);
             setText(richTextBox_ShortInfo_text_char, recLogItem_Edit1.epgEventInfoR.ShortInfo.text_char);
             setText(richTextBox_ExtInfo_text_char, recLogItem_Edit1.epgEventInfoR.ExtInfo.text_char);
@@ -311,11 +277,6 @@ namespace EpgTimer
             richTextBox0.Document.Blocks.Add(
                 new Paragraph(
                     new Run(text0)));
-        }
-
-        void addDBLog(StringBuilder sb0)
-        {
-            addDBLog(sb0.ToString());
         }
 
         void addDBLog(string msg0)
@@ -347,7 +308,8 @@ namespace EpgTimer
                     {
                         addDBLog("データベースEDCBが見つかりません");
                     }
-                    else {
+                    else
+                    {
                         addDBLog("データベースを新規作成");
                         System.Threading.Thread.Sleep(5000);    // データベース作成完了を待機
                         db_RecLog.createTable_RecLog_EpgEventInfo();
@@ -366,9 +328,6 @@ namespace EpgTimer
 
         void updateReserveInfo()
         {
-
-            System.Diagnostics.Trace.WriteLine("予約更新 Start - " + DateTime.Now);
-
             DateTime lastUpdate1 = DateTime.Now;
             //
             int reservedCount_New1 = 0;
@@ -386,7 +345,7 @@ namespace EpgTimer
                     epgEventInfo1 = new EpgEventInfo();
                 }
                 EpgEventInfoR epgEventInfoR1 = new EpgEventInfoR(epgEventInfo1, lastUpdate1);
-                RecLogItem recLogItem1 = db_RecLog.exists_Reserved(rd1.OriginalNetworkID, rd1.TransportStreamID, rd1.ServiceID, rd1.EventID, rd1.StartTime);
+                RecLogItem recLogItem1 = db_RecLog.exists(rd1);
                 if (recLogItem1 == null)
                 {
                     // 新規登録
@@ -399,7 +358,8 @@ namespace EpgTimer
                     };
                     db_RecLog.insert(recLogItem2);
                 }
-                else {
+                else
+                {
                     //更新
                     reservedCount_Update1++;
                     recLogItem1.lastUpdate = lastUpdate1;
@@ -417,58 +377,20 @@ namespace EpgTimer
                 {   // 未来に放送
                     list_Deleted1.Add(item);
                 }
-                else {
+                else
+                {
                     ;   // 録画完了？
                 }
             }
             int deleted1 = db_RecLog.delete(list_Deleted1.ToArray());
             //
             addDBLog("予約更新(+" + reservedCount_New1 + ",-" + deleted1 + ") " + lastUpdate1.ToString(_timestampFormat));
-
-            System.Diagnostics.Trace.WriteLine("予約更新 End - " + DateTime.Now);
-
         }
 
         void hideEditor()
         {
             clearEditor();
             grid_Edit.Visibility = Visibility.Collapsed;
-        }
-
-        void saveSetting()
-        {
-            switch (searchMethod)
-            {
-                case searchMethods.LIKE:
-                    Settings.Instance.RecLog_SearchMethod = searchMethods.LIKE;
-                    break;
-                case searchMethods.Contrains:
-                    Settings.Instance.RecLog_SearchMethod = searchMethods.Contrains;
-                    break;
-                case searchMethods.Freetext:
-                    Settings.Instance.RecLog_SearchMethod = searchMethods.Freetext;
-                    break;
-                default:
-                    throw new NotSupportedException(); ;
-            }
-            int RecLogWindow_SearchResultLimit1;
-            if (int.TryParse(textBox_ResultLimit_RecLogWindow.Text, out RecLogWindow_SearchResultLimit1))
-            {
-                Settings.Instance.RecLogWindow_SearchResultLimit = RecLogWindow_SearchResultLimit1;
-            }
-            Settings.SaveToXmlFile();
-            addDBLog("設定を保存しました");
-        }
-
-        void saveSearchOption()
-        {
-            Settings.Instance.RecLog_SearchColumn = (int)searchColumn;
-            Settings.Instance.RecLog_RecodeStatus = (int)recodeStatus;
-            Settings.Instance.RecLog_SearchResultLimit = searchResultLimit;
-            //
-            Settings.SaveToXmlFile();
-            isSearchOptionChanged = false;
-            addDBLog("検索オプションを保存しました");
         }
 
         #region - Property -
@@ -514,7 +436,8 @@ namespace EpgTimer
                 {
                     border_Button_SaveSearchOption.Visibility = Visibility.Visible;
                 }
-                else {
+                else
+                {
                     border_Button_SaveSearchOption.Visibility = Visibility.Collapsed;
                 }
             }
@@ -538,6 +461,46 @@ namespace EpgTimer
             set { textBox_ResultLimit.Text = value.ToString(); }
         }
 
+        searchMethods searchMethod
+        {
+            get
+            {
+                if (radioButton_SearchMethod_Like.IsChecked == true)
+                {
+                    return searchMethods.LIKE;
+                }
+                else if (radioButton_SearchMethod_Contains.IsChecked == true)
+                {
+                    return searchMethods.Contrains;
+                }
+                else if (radioButton_SearchMethod_Freetext.IsChecked == true)
+                {
+                    return searchMethods.Freetext;
+                }
+                else
+                {
+                    throw new NotSupportedException();
+                }
+            }
+            set
+            {
+                switch (value)
+                {
+                    case searchMethods.LIKE:
+                        radioButton_SearchMethod_Like.IsChecked = true;
+                        break;
+                    case searchMethods.Contrains:
+                        radioButton_SearchMethod_Contains.IsChecked = true;
+                        break;
+                    case searchMethods.Freetext:
+                        radioButton_SearchMethod_Freetext.IsChecked = true;
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+        }
+
         #region - Event Handler -
         #endregion
 
@@ -548,8 +511,6 @@ namespace EpgTimer
         /// <param name="e"></param>
         void _bgw_EpgData_DoWork(object sender, DoWorkEventArgs e)
         {
-            System.Diagnostics.Trace.WriteLine("EPG更新 Start - " + DateTime.Now);
-
             DateTime lastUpdate1 = DateTime.Now;
             //
             int epgUpdatedCount1 = 0;
@@ -568,9 +529,6 @@ namespace EpgTimer
             }
             //
             addDBLog("EPG更新(" + epgUpdatedCount1 + ") " + lastUpdate1.ToString(_timestampFormat));
-
-            System.Diagnostics.Trace.WriteLine("EPG更新 End - " + DateTime.Now);
-
         }
 
         /// <summary>
@@ -580,15 +538,13 @@ namespace EpgTimer
         /// <param name="e"></param>
         void _bgw_RecInfo_DoWork(object sender, DoWorkEventArgs e)
         {
-            System.Diagnostics.Trace.WriteLine("録画完了更新 Start - " + DateTime.Now);
-
             DateTime lastUpdate1 = DateTime.Now;
             //
             CommonManager.Instance.DB.ReloadrecFileInfo();
             int recordedCount_New1 = 0;
             foreach (RecFileInfo rfi1 in CommonManager.Instance.DB.RecFileInfo.Values)
             {
-                RecLogItem recLogItem1 = db_RecLog.exists_Reserved(rfi1.OriginalNetworkID, rfi1.TransportStreamID, rfi1.ServiceID, rfi1.EventID, rfi1.StartTime);
+                RecLogItem recLogItem1 = db_RecLog.exists(RecLogItem.RecodeStatuses.予約済み, rfi1.OriginalNetworkID, rfi1.TransportStreamID, rfi1.ServiceID, rfi1.EventID, rfi1.StartTime);
                 if (recLogItem1 != null)
                 {
                     //  録画済みに変更
@@ -597,22 +553,21 @@ namespace EpgTimer
                     {
                         recLogItem1.recodeStatus = RecLogItem.RecodeStatuses.録画完了;
                     }
-                    else {
+                    else
+                    {
                         recLogItem1.recodeStatus = RecLogItem.RecodeStatuses.録画異常;
                     }
                     recLogItem1.recFilePath = rfi1.RecFilePath;
                     recLogItem1.lastUpdate = lastUpdate1;
                     db_RecLog.update(recLogItem1);
                 }
-                else {
+                else
+                {
                     //addMessage("*** RecLogItemが見つからない?");
                 }
             }
             //
             addDBLog("録画完了(" + recordedCount_New1 + ") " + lastUpdate1.ToString(_timestampFormat));
-
-            System.Diagnostics.Trace.WriteLine("録画完了更新 End - " + DateTime.Now);
-
         }
 
         /// <summary>
@@ -697,8 +652,8 @@ namespace EpgTimer
                             DateTime lastUpdate1 = DateTime.Now;
                             foreach (RecFileInfo rfi1 in CommonManager.Instance.DB.RecFileInfo.Values)
                             {
-                                bool exist1 = db_RecLog.exists_RecInfo(rfi1);
-                                if (!exist1)
+                                RecLogItem recLogItem1 = db_RecLog.exists(rfi1);
+                                if (recLogItem1 == null)
                                 {
                                     db_RecLog.insert(rfi1, lastUpdate1);
                                     recFileInfoCount1++;
@@ -707,7 +662,7 @@ namespace EpgTimer
                             StringBuilder sb1 = new StringBuilder();
                             sb1.AppendLine("録画完了リストを登録");
                             sb1.Append("　登録数：" + recFileInfoCount1);
-                            addDBLog(sb1);
+                            addDBLog(sb1.ToString());
                             //
                             updateReserveInfo();
                         };
@@ -724,7 +679,7 @@ namespace EpgTimer
                 }
             }
             //
-            Settings.Instance.RecLog_Enabled = (bool)checkBox_RecLogEnabled.IsChecked;
+            Settings.Instance.RecLog_IsEnabled = (bool)checkBox_RecLogEnabled.IsChecked;
         }
 
         private void richTextBox_Comment_TextChanged(object sender, TextChangedEventArgs e)
@@ -769,6 +724,7 @@ namespace EpgTimer
             _recLogItem_Edit.epgEventInfoR.ShortInfo.event_name = textBox_Edit_ProgramTitle.Text;
             _recLogItem_Edit.recodeStatus = (RecLogItem.RecodeStatuses)comboBox_Edit_Status.SelectedItem;
             _recLogItem_Edit.epgAlllowOverWrite = (checkBox_AllowOverWrite.IsChecked == true);
+            _recLogItem_Edit.recFilePath = textBox_RecFilePath.Text;
             _recLogItem_Edit.comment = getText(richTextBox_Comment);
             _recLogItem_Edit.epgEventInfoR.ShortInfo.text_char = getText(richTextBox_ShortInfo_text_char);
             _recLogItem_Edit.epgEventInfoR.ExtInfo.text_char = getText(richTextBox_ExtInfo_text_char);
@@ -792,7 +748,8 @@ namespace EpgTimer
             {
                 hideEditor();
             }
-            else {
+            else
+            {
                 setRecLogItem2editor();
             }
         }
@@ -810,11 +767,33 @@ namespace EpgTimer
                 border_ToggleButton_Setting.BorderThickness = new Thickness(2);
                 toggleButton_Setting.Content = "設定を閉じる";
             }
-            else {
+            else
+            {
                 grid_Setting.Visibility = Visibility.Collapsed;
                 border_ToggleButton_Setting.BorderThickness = new Thickness(0);
                 toggleButton_Setting.Content = "設定";
-                saveSetting();
+                //
+                switch (searchMethod)
+                {
+                    case searchMethods.LIKE:
+                        Settings.Instance.RecLog_SearchMethod = searchMethods.LIKE;
+                        break;
+                    case searchMethods.Contrains:
+                        Settings.Instance.RecLog_SearchMethod = searchMethods.Contrains;
+                        break;
+                    case searchMethods.Freetext:
+                        Settings.Instance.RecLog_SearchMethod = searchMethods.Freetext;
+                        break;
+                    default:
+                        throw new NotSupportedException(); ;
+                }
+                int RecLogWindow_SearchResultLimit1;
+                if (int.TryParse(textBox_ResultLimit_RecLogWindow.Text, out RecLogWindow_SearchResultLimit1))
+                {
+                    Settings.Instance.RecLogWindow_SearchResultLimit = RecLogWindow_SearchResultLimit1;
+                }
+                Settings.SaveToXmlFile();
+                addDBLog("設定を保存しました");
             }
         }
 
@@ -835,7 +814,14 @@ namespace EpgTimer
 
         private void button_SaveSearchOption_Click(object sender, RoutedEventArgs e)
         {
-            saveSearchOption();
+            Settings.Instance.RecLog_SearchColumn = (int)searchColumn;
+            Settings.Instance.RecLog_RecodeStatus = (int)recodeStatus;
+            Settings.Instance.RecLog_SearchResultLimit = searchResultLimit;
+            //
+            Settings.SaveToXmlFile();
+            isSearchOptionChanged = false;
+            addDBLog("検索オプションを保存しました");
+
             border_Button_SaveSearchOption.Visibility = Visibility.Collapsed;
         }
 
@@ -846,7 +832,8 @@ namespace EpgTimer
             {
                 searchColumn |= DB_RecLog.searchColumns.title;
             }
-            else {
+            else
+            {
                 searchColumn &= ~DB_RecLog.searchColumns.title;
             }
         }
@@ -858,7 +845,8 @@ namespace EpgTimer
             {
                 searchColumn |= DB_RecLog.searchColumns.content;
             }
-            else {
+            else
+            {
                 searchColumn &= ~DB_RecLog.searchColumns.content;
             }
         }
@@ -870,7 +858,8 @@ namespace EpgTimer
             {
                 searchColumn |= DB_RecLog.searchColumns.comment;
             }
-            else {
+            else
+            {
                 searchColumn &= ~DB_RecLog.searchColumns.comment;
             }
         }
@@ -882,7 +871,8 @@ namespace EpgTimer
             {
                 searchColumn |= DB_RecLog.searchColumns.recFilePath;
             }
-            else {
+            else
+            {
                 searchColumn &= ~DB_RecLog.searchColumns.recFilePath;
             }
         }
@@ -894,7 +884,8 @@ namespace EpgTimer
             {
                 recodeStatus |= RecLogItem.RecodeStatuses.録画完了;
             }
-            else {
+            else
+            {
                 recodeStatus &= ~RecLogItem.RecodeStatuses.録画完了;
             }
         }
@@ -906,7 +897,8 @@ namespace EpgTimer
             {
                 recodeStatus |= RecLogItem.RecodeStatuses.録画異常;
             }
-            else {
+            else
+            {
                 recodeStatus &= ~RecLogItem.RecodeStatuses.録画異常;
             }
         }
@@ -918,7 +910,8 @@ namespace EpgTimer
             {
                 recodeStatus |= RecLogItem.RecodeStatuses.視聴済み;
             }
-            else {
+            else
+            {
                 recodeStatus &= ~RecLogItem.RecodeStatuses.視聴済み;
             }
         }
@@ -930,8 +923,34 @@ namespace EpgTimer
             {
                 recodeStatus |= RecLogItem.RecodeStatuses.予約済み;
             }
-            else {
+            else
+            {
                 recodeStatus &= ~RecLogItem.RecodeStatuses.予約済み;
+            }
+        }
+
+        private void button_Reset_Click(object sender, RoutedEventArgs e)
+        {
+            this.textBox_Search.Clear();
+            this._recLogItemList.Clear();
+            this.listView_RecLog.Items.Refresh();
+        }
+
+        private void button_CreateIndex_Click(object sender, RoutedEventArgs e)
+        {
+            if (CommonManager.Instance.NWMode != true)
+            {
+                if (checkBox_RecLogEnabled.IsChecked == true)
+                {
+                    System.Threading.Tasks.Task.Factory.StartNew(() =>
+                    {
+                        if (dbConnectTest())
+                        {
+                            db_RecLog.createIndex();
+                            addDBLog("Indexを作成しました。");
+                        }
+                    });
+                }
             }
         }
 
@@ -940,8 +959,9 @@ namespace EpgTimer
 
 １．できること
 
-　・「録画ログ」タブでキーワード検索、検索結果の編集。
-　・「予約一覧」、「番組表」、「検索ウインドウ」などの右クリック・メニューから録画ログを検索
+　予約済みまたは録画済み番組情報の検索および編集。
+　・「録画ログ」タブではキーワード検索、検索結果を編集できます。
+　・「予約一覧」、「番組表」、「検索ウインドウ」などの右クリック・メニューから録画ログを検索できます。
 
 ２．準備
 

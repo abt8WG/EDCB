@@ -4,14 +4,17 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
-namespace EpgTimer.Common {
-    public class DB_EpgEventInfo : DBBase {
+namespace EpgTimer.Common
+{
+    public class DB_EpgEventInfo : DBBase
+    {
 
-        public static readonly string startTimeStrFormat = "yyyy-MM-dd HH:mm";
-        public static readonly string timeStampStrFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
-        public const string TABLENAME = "EpgEventInfo";
-
+        public const string TABLE_NAME = "EpgEventInfo";
+        /// <summary>
+        /// 略記
+        /// </summary>
+        public const string TABLE_NAME_ABBR = "eei";
         public const string COLUMN_ID = "ID", COLUMN_lastUpdate = "lastUpdate",
             COLUMN_original_network_id = "original_network_id", COLUMN_transport_stream_id = "transport_stream_id",
             COLUMN_service_id = "service_id", COLUMN_event_id = "event_id",
@@ -20,6 +23,7 @@ namespace EpgTimer.Common {
             COLUMN_ShortInfo_event_name = "ShortInfo_event_name", COLUMN_ShortInfo_text_char = "ShortInfo_text_char",
             COLUMN_ExtInfo_text_char = "ExtInfo_text_char",
             COLUMN_ContentInfo = "ContentInfo";
+        const string INDEX_NAME = "UX_Epg";
         long _id = -1;
 
         #region - Constructor -
@@ -28,44 +32,59 @@ namespace EpgTimer.Common {
         #region - Method -
         #endregion
 
-        public EpgEventInfoR select(long epgEventInfoID0) {
+        public EpgEventInfoR select(long epgEventInfoID0)
+        {
             string where1 = COLUMN_ID + "=" + epgEventInfoID0;
             List<EpgEventInfoR> itemList1 = select(where0: where1);
-            if (0 == itemList1.Count) {
+            if (0 == itemList1.Count)
+            {
                 return null;
-            } else {
+            }
+            else
+            {
                 return itemList1[0];
             }
         }
 
-        public List<EpgEventInfoR> select(string where0 = "", string orderBy0 = "", bool ascending0 = true, int amount0 = 0) {
+        public List<EpgEventInfoR> select(string where0 = "", string orderBy0 = "", bool ascending0 = true, int amount0 = 0)
+        {
             string query1 = base.getQuery_Select(where0, orderBy0, ascending0, amount0);
             List<EpgEventInfoR> itemList1 = new List<EpgEventInfoR>();
-            try {
-                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr)) {
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
                     sqlConn1.Open();
                     using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
-                    using (SqlDataReader reader1 = cmd1.ExecuteReader()) {
-                        while (reader1.Read()) {
+                    using (SqlDataReader reader1 = cmd1.ExecuteReader())
+                    {
+                        while (reader1.Read())
+                        {
                             EpgEventInfoR epgEventInfo1 = getEpgEventInfo(reader1);
                             itemList1.Add(epgEventInfo1);
                         }
                     }
                 }
-            } catch (Exception ex0) {
+            }
+            catch (Exception ex0)
+            {
                 System.Diagnostics.Trace.WriteLine(ex0);
             }
 
             return itemList1;
         }
 
-        public EpgEventInfoR getEpgEventInfo(SqlDataReader reader0) {
-            EpgContentInfo epgContentInfo1 = new EpgContentInfo();
-            byte[] nibbles1 = (byte[])reader0[COLUMN_ContentInfo];
-            if (1 < nibbles1.Length) {
-                for (int i1 = 0; i1 < nibbles1.Length; i1 += 4) {
-                    epgContentInfo1.nibbleList.Add(
-                         new EpgContentData() {
+        public static List<EpgContentData> getEpgContentData(SqlDataReader reader0, string column0)
+        {
+            List<EpgContentData> nibbleList1 = new List<EpgContentData>();
+            byte[] nibbles1 = (byte[])reader0[column0];
+            if (1 < nibbles1.Length)
+            {
+                for (int i1 = 0; i1 < nibbles1.Length; i1 += 4)
+                {
+                    nibbleList1.Add(
+                         new EpgContentData()
+                         {
                              content_nibble_level_1 = nibbles1[i1],
                              content_nibble_level_2 = nibbles1[i1 + 1],
                              user_nibble_1 = nibbles1[i1 + 2],
@@ -73,7 +92,18 @@ namespace EpgTimer.Common {
                          });
                 }
             }
-            EpgEventInfoR epgEventInfoR1 = new EpgEventInfoR() {
+
+            return nibbleList1;
+        }
+
+        public EpgEventInfoR getEpgEventInfo(SqlDataReader reader0)
+        {
+            EpgContentInfo epgContentInfo1 = new EpgContentInfo()
+            {
+                nibbleList = getEpgContentData(reader0, COLUMN_ContentInfo)
+            };
+            EpgEventInfoR epgEventInfoR1 = new EpgEventInfoR()
+            {
                 ID = (long)reader0[COLUMN_ID],
                 lastUpdate = (DateTime)reader0[COLUMN_lastUpdate],
                 original_network_id = (ushort)(int)reader0[COLUMN_original_network_id],
@@ -84,11 +114,13 @@ namespace EpgTimer.Common {
                 start_time = (DateTime)reader0[COLUMN_start_time],
                 DurationFlag = Convert.ToByte(reader0[COLUMN_DurationFlag]),
                 durationSec = (uint)(long)reader0[COLUMN_durationSec],
-                ShortInfo = new EpgShortEventInfo() {
+                ShortInfo = new EpgShortEventInfo()
+                {
                     event_name = (string)reader0[COLUMN_ShortInfo_event_name],
                     text_char = (string)reader0[COLUMN_ShortInfo_text_char]
                 },
-                ExtInfo = new EpgExtendedEventInfo() {
+                ExtInfo = new EpgExtendedEventInfo()
+                {
                     text_char = (string)reader0[COLUMN_ExtInfo_text_char]
                 },
                 ContentInfo = epgContentInfo1
@@ -97,33 +129,57 @@ namespace EpgTimer.Common {
             return epgEventInfoR1;
         }
 
-        public int insert(EpgEventInfoR item0) {
-            if (item0.ID < 0) {
-                item0.ID = getId();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item0"></param>
+        /// <returns>EpgEventInfoR.ID</returns>
+        public long insert(EpgEventInfoR item0)
+        {
+            List<EpgEventInfoR> infoList1 = select(
+               COLUMN_original_network_id + "=" + item0.original_network_id + " AND " + COLUMN_transport_stream_id + "=" + item0.transport_stream_id +
+               " AND " + COLUMN_service_id + "=" + item0.service_id + " AND " + COLUMN_event_id + "=" + item0.event_id +
+               " AND " + COLUMN_start_time + "=" + q(item0.start_time.ToString(startTimeStrFormat)));
+            if (0 < infoList1.Count)
+            {
+                return infoList1[0].ID;
             }
-            Dictionary<string, string> keyValueDict1 = getKeyValueDict(item0);
-            keyValueDict1.Add(COLUMN_ID, item0.ID.ToString());
+            else
+            {
+                if (item0.ID < 0)
+                {
+                    item0.ID = getId();
+                }
+                Dictionary<string, string> keyValueDict1 = getFieldNameValues(item0);
+                keyValueDict1.Add(COLUMN_ID, item0.ID.ToString());
+                base.insert(keyValueDict1);
 
-            return base.insert(keyValueDict1);
+                return item0.ID;
+            }
         }
 
-        public int update(EpgEventInfoR item0) {
-            Dictionary<string, string> keyValueDict1 = getKeyValueDict(item0);
+        public int update(EpgEventInfoR item0)
+        {
+            Dictionary<string, string> keyValueDict1 = getFieldNameValues(item0);
             string where1 = COLUMN_ID + "=" + item0.ID;
 
             return base.update(keyValueDict1, where1);
         }
 
-        public int delete(long epgEventInfoID0) {
+        public int delete(long epgEventInfoID0)
+        {
             string where1 = COLUMN_ID + "=" + epgEventInfoID0;
 
             return base.delete(where1);
         }
 
-        public int delete(long[] epgEventInfoIDs0) {
+        public int delete(long[] epgEventInfoIDs0)
+        {
             StringBuilder where1 = new StringBuilder();
-            foreach (var item in epgEventInfoIDs0) {
-                if (0 < where1.Length) {
+            foreach (var item in epgEventInfoIDs0)
+            {
+                if (0 < where1.Length)
+                {
                     where1.Append(" OR ");
                 }
                 where1.Append(COLUMN_ID + "=" + item);
@@ -132,18 +188,21 @@ namespace EpgTimer.Common {
             return base.delete(where1);
         }
 
-        Dictionary<string, string> getKeyValueDict(EpgEventInfoR item0) {
+        Dictionary<string, string> getFieldNameValues(EpgEventInfoR item0)
+        {
             string shortInfo_event_name1 = string.Empty;
             string shortInfo_text_char1 = string.Empty;
-            if (item0.ShortInfo != null) {
+            if (item0.ShortInfo != null)
+            {
                 shortInfo_event_name1 = item0.ShortInfo.event_name;
                 shortInfo_text_char1 = item0.ShortInfo.text_char;
             }
             string extInfo_text_char1 = string.Empty;
-            if (item0.ExtInfo != null) {
+            if (item0.ExtInfo != null)
+            {
                 extInfo_text_char1 = item0.ExtInfo.text_char;
             }
-            Dictionary<string, string> keyValueDict1 = new Dictionary<string, string>() {
+            Dictionary<string, string> dict1 = new Dictionary<string, string>() {
                 { COLUMN_lastUpdate, q(item0.lastUpdate.ToString(timeStampStrFormat)) },
                 { COLUMN_original_network_id, item0.original_network_id.ToString() },
                 { COLUMN_transport_stream_id, item0.transport_stream_id.ToString() },
@@ -156,35 +215,52 @@ namespace EpgTimer.Common {
                 { COLUMN_ShortInfo_text_char, base.createTextValue(shortInfo_text_char1) },
                 { COLUMN_ExtInfo_text_char, base.createTextValue(extInfo_text_char1) }
             };
-            if (item0.start_time < base.minValue_SmallDateTime) {
-                keyValueDict1.Add(COLUMN_start_time, q(base.minValue_SmallDateTime.ToString(startTimeStrFormat)));
-            } else {
-                keyValueDict1.Add(COLUMN_start_time, q(item0.start_time.ToString(startTimeStrFormat)));
+            if (item0.start_time < base.minValue_SmallDateTime)
+            {
+                dict1.Add(COLUMN_start_time, q(base.minValue_SmallDateTime.ToString(startTimeStrFormat)));
             }
-            if (item0.ContentInfo != null) {
-                StringBuilder contentInfo1 = new StringBuilder();
-                foreach (EpgContentData epgContentData1 in item0.ContentInfo.nibbleList) {
-                    if (contentInfo1.Length == 0) {
-                        contentInfo1.Append("0x");
-                    }
-                    contentInfo1.Append(epgContentData1.content_nibble_level_1.ToString("X2"));
-                    contentInfo1.Append(epgContentData1.content_nibble_level_2.ToString("X2"));
-                    contentInfo1.Append(epgContentData1.user_nibble_1.ToString("X2"));
-                    contentInfo1.Append(epgContentData1.user_nibble_2.ToString("X2"));
-                }
-                if (contentInfo1.Length == 0) {
-                    contentInfo1.Append(0);
-                }
-                keyValueDict1.Add(COLUMN_ContentInfo, contentInfo1.ToString());
+            else
+            {
+                dict1.Add(COLUMN_start_time, q(item0.start_time.ToString(startTimeStrFormat)));
+            }
+            if (item0.ContentInfo != null)
+            {
+                addEpgContentData(ref dict1, item0.ContentInfo.nibbleList);
             }
 
-            return keyValueDict1;
+            return dict1;
         }
 
-        long getId() {
-            if (_id < 0) {
+        public static void addEpgContentData(ref Dictionary<string, string> dict0, List<EpgContentData> ecdList0)
+        {
+            if (ecdList0.Count == 0) { return; }
+            //
+            StringBuilder contentInfo1 = new StringBuilder();
+            foreach (EpgContentData epgContentData1 in ecdList0)
+            {
+                if (contentInfo1.Length == 0)
+                {
+                    contentInfo1.Append("0x");
+                }
+                contentInfo1.Append(epgContentData1.content_nibble_level_1.ToString("X2"));
+                contentInfo1.Append(epgContentData1.content_nibble_level_2.ToString("X2"));
+                contentInfo1.Append(epgContentData1.user_nibble_1.ToString("X2"));
+                contentInfo1.Append(epgContentData1.user_nibble_2.ToString("X2"));
+            }
+            if (contentInfo1.Length == 0)
+            {
+                contentInfo1.Append(0);
+            }
+            dict0.Add(COLUMN_ContentInfo, contentInfo1.ToString());
+        }
+
+        long getId()
+        {
+            if (_id < 0)
+            {
                 List<EpgEventInfoR> epgEventInfoList1 = select(orderBy0: COLUMN_ID, ascending0: false, amount0: 1);
-                if (0 < epgEventInfoList1.Count) {
+                if (0 < epgEventInfoList1.Count)
+                {
                     _id = epgEventInfoList1[0].ID;
                 }
             }
@@ -192,7 +268,8 @@ namespace EpgTimer.Common {
             return System.Threading.Interlocked.Increment(ref _id);
         }
 
-        public void createTable() {
+        public void createTable()
+        {
             //epgサンプル数: 37073
             //MAX_ShortInfo_event_name.Length: 62
             //MAX_ShortInfo_text_char.Length: 130
@@ -205,7 +282,7 @@ namespace EpgTimer.Common {
             //Max_ExtInfo_text_char.Length: 1893
             //Max_ContentInfo_nibbleList_Count1: 4
 
-            string query1 = "CREATE TABLE [dbo].[" + TABLENAME + "](" +
+            string query1 = "CREATE TABLE [dbo].[" + TABLE_NAME + "](" +
                     "[" + COLUMN_ID + "] [bigint] NOT NULL," +
                     "[" + COLUMN_lastUpdate + "] [datetime] NOT NULL," +
                     "[" + COLUMN_original_network_id + "] [int] NOT NULL," +
@@ -222,23 +299,51 @@ namespace EpgTimer.Common {
                     "[" + COLUMN_ContentInfo + "] [varbinary](20) NOT NULL," +
                     "CONSTRAINT [PK_EpgEventInfo] PRIMARY KEY CLUSTERED ([" + COLUMN_ID + "] ASC))";
 
-            string query2 = "CREATE FULLTEXT INDEX ON " + TABLENAME + "(" +
+            string query2 = "CREATE FULLTEXT INDEX ON " + TABLE_NAME + "(" +
                 COLUMN_ShortInfo_event_name + " Language 1041," +
                 COLUMN_ShortInfo_text_char + " Language 1041," +
                 COLUMN_ExtInfo_text_char + " Language 1041" +
                 ") KEY INDEX PK_EpgEventInfo ON " + FULLTEXTCATALOG + ";";
 
-            try {
-                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr)) {
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
                     sqlConn1.Open();
-                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1)) {
+                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
+                    {
                         cmd1.ExecuteNonQuery();
                     }
-                    using (SqlCommand cmd1 = new SqlCommand(query2, sqlConn1)) {
+                    using (SqlCommand cmd1 = new SqlCommand(query2, sqlConn1))
+                    {
                         cmd1.ExecuteNonQuery();
                     }
                 }
-            } catch (Exception ex0) {
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+        }
+
+        public void createIndex()
+        {
+            string query1 = "IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = N'" + INDEX_NAME + "')" +
+                " CREATE INDEX " + INDEX_NAME + " ON [dbo].[" + TABLE_NAME + "](" +
+                COLUMN_start_time + ", " + COLUMN_original_network_id + ", " + COLUMN_transport_stream_id + ", " + COLUMN_service_id + ", " + COLUMN_event_id + ")";
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
+                    {
+                        cmd1.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
                 System.Diagnostics.Trace.WriteLine(ex0);
             }
         }
@@ -246,8 +351,9 @@ namespace EpgTimer.Common {
         #region - Property -
         #endregion
 
-        protected override string tableName {
-            get { return TABLENAME; }
+        protected override string tableName
+        {
+            get { return TABLE_NAME; }
         }
 
         #region - Event Handler -
@@ -258,33 +364,39 @@ namespace EpgTimer.Common {
     /// <summary>
     /// DBレコード
     /// </summary>
-    public class EpgEventInfoR : EpgEventInfo {
+    public class EpgEventInfoR : EpgEventInfo
+    {
 
         #region - Constructor -
         #endregion
 
-        public EpgEventInfoR() {
+        public EpgEventInfoR()
+        {
             ShortInfo = new EpgShortEventInfo();
             ExtInfo = new EpgExtendedEventInfo();
             ContentInfo = new EpgContentInfo();
         }
 
-        public EpgEventInfoR(RecFileInfo recFileInfo0, DateTime lastUpdate0) {
+        public EpgEventInfoR(RecFileInfo recFileInfo0, DateTime lastUpdate0)
+        {
             base.original_network_id = recFileInfo0.OriginalNetworkID;
             base.transport_stream_id = recFileInfo0.TransportStreamID;
             base.service_id = recFileInfo0.ServiceID;
             base.event_id = recFileInfo0.EventID;
             base.start_time = recFileInfo0.StartTime;
             base.durationSec = recFileInfo0.DurationSecond;
-            base.ShortInfo = new EpgShortEventInfo() {
+            base.ShortInfo = new EpgShortEventInfo()
+            {
                 event_name = recFileInfo0.Title
             };
 
             lastUpdate = lastUpdate0;
         }
 
-        public EpgEventInfoR(EpgEventInfo epgEventInfo0, DateTime lastUpdate0) {
-            if (epgEventInfo0 != null) {
+        public EpgEventInfoR(EpgEventInfo epgEventInfo0, DateTime lastUpdate0)
+        {
+            if (epgEventInfo0 != null)
+            {
                 base.original_network_id = epgEventInfo0.original_network_id;
                 base.transport_stream_id = epgEventInfo0.transport_stream_id;
                 base.service_id = epgEventInfo0.service_id;
@@ -307,7 +419,8 @@ namespace EpgTimer.Common {
         #region - Property -
         #endregion
 
-        public long ID {
+        public long ID
+        {
             get { return _ID; }
             set { _ID = value; }
         }

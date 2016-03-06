@@ -12,6 +12,8 @@ namespace EpgTimer.Common
         protected const string FULLTEXTCATALOG = "epg_catalog";
 
         protected readonly DateTime minValue_SmallDateTime = new DateTime(1900, 1, 1);
+        protected static readonly string startTimeStrFormat = "yyyy-MM-dd HH:mm";
+        protected static readonly string timeStampStrFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
         public enum connectTestResults
         {
@@ -74,7 +76,7 @@ namespace EpgTimer.Common
             return connectTestResults.unKnownError;
         }
 
-        protected string getQuery_Select(string where0, string orderBy0, bool ascending0, int amount0)
+        protected string getQuery_Select(string where0 = "", string orderBy0 = "", bool ascending0 = true, int amount0 = 0)
         {
             StringBuilder query1 = new StringBuilder("SELECT");
             if (0 < amount0)
@@ -200,29 +202,6 @@ namespace EpgTimer.Common
             }
 
             return res1;
-        }
-
-        protected bool exists(string where0)
-        {
-            bool isExist1 = false;
-            string query1 = "SELECT TOP 1 * FROM " + tableName + " WHERE " + where0;
-            try
-            {
-                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
-                {
-                    sqlConn1.Open();
-                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
-                    {
-                        isExist1 = (cmd1.ExecuteNonQuery() == 1);
-                    }
-                }
-            }
-            catch (Exception ex0)
-            {
-                System.Diagnostics.Trace.WriteLine(ex0);
-            }
-
-            return isExist1;
         }
 
         /// <summary>

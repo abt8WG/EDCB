@@ -28,6 +28,10 @@ namespace EpgTimer
         ReserveData _reserveData;
         RecFileInfo _recFileInfo;
         List<RecLogItem> _resultList = new List<RecLogItem>();
+        MenuItem _menuItem = new MenuItem() { };
+        SolidColorBrush _background = new SolidColorBrush(Color.FromRgb(250, 250, 250));
+        SolidColorBrush _background_Selected = new SolidColorBrush(Colors.LightYellow);
+        bool _isVisible = false;
 
         #region - Constructor -
         #endregion
@@ -45,13 +49,17 @@ namespace EpgTimer
         public void showResult(EpgEventInfo epgEventInfo0)
         {
             resset();
-            if (Settings.Instance.RecLog_Enabled)
+            if (Settings.Instance.RecLog_IsEnabled)
             {
-                MenuItem_Recorded.Header = "録画完了で登録 (_R)";
                 _epgEventInfo = epgEventInfo0;
-                search(epgEventInfo0.ShortInfo.event_name);
+                RecLogItem selectedRecLogItem1 = _mainWindow.recLogView.db_RecLog.exists(RecLogItem.RecodeStatuses.ALL,
+                    epgEventInfo0.original_network_id, epgEventInfo0.transport_stream_id, epgEventInfo0.service_id, epgEventInfo0.event_id, epgEventInfo0.start_time);
+                menuItem_ChangeStatus.Header = "録画完了で登録 (_R)";
+                menuItem_ChangeStatus.IsEnabled = (selectedRecLogItem1 == null);
+                search(epgEventInfo0.ShortInfo.event_name, selectedRecLogItem1);
             }
-            else {
+            else
+            {
                 drawText(RecLogView.notEnabledMessage);
             }
             show();
@@ -60,13 +68,16 @@ namespace EpgTimer
         public void showResult(ReserveData reserveData0)
         {
             resset();
-            if (Settings.Instance.RecLog_Enabled)
+            if (Settings.Instance.RecLog_IsEnabled)
             {
-                MenuItem_Recorded.Header = "録画完了に変更 (_R)";
                 _reserveData = reserveData0;
-                search(reserveData0.Title);
+                RecLogItem selectedRecLogItem1 = _mainWindow.recLogView.db_RecLog.exists(reserveData0);
+                menuItem_ChangeStatus.Header = "録画完了に変更 (_R)";
+                menuItem_ChangeStatus.IsEnabled = (selectedRecLogItem1 == null || selectedRecLogItem1.recodeStatus != RecLogItem.RecodeStatuses.録画完了);
+                search(reserveData0.Title, selectedRecLogItem1);
             }
-            else {
+            else
+            {
                 drawText(RecLogView.notEnabledMessage);
             }
             show();
@@ -75,46 +86,71 @@ namespace EpgTimer
         public void showResult(RecFileInfo recFileInfo0)
         {
             resset();
-            if (Settings.Instance.RecLog_Enabled)
+            if (Settings.Instance.RecLog_IsEnabled)
             {
-                MenuItem_Recorded.Header = "録画完了で登録 (_R)";
                 _recFileInfo = recFileInfo0;
-                search(recFileInfo0.Title);
+                RecLogItem selectedRecLogItem1 = _mainWindow.recLogView.db_RecLog.exists(recFileInfo0);
+                menuItem_ChangeStatus.Header = "録画完了で登録 (_R)";
+                menuItem_ChangeStatus.IsEnabled = (selectedRecLogItem1 == null);
+                search(recFileInfo0.Title, selectedRecLogItem1);
             }
-            else {
+            else
+            {
                 drawText(RecLogView.notEnabledMessage);
             }
             show();
         }
 
-        void search(string searchWord0)
+        void search(string searchWord0, RecLogItem selectedRecLogItem = null)
         {
-            string searchWord1 = CommonManager.Instance.MUtil.TrimKeyword(searchWord0); // 前後の記号類
+            string selectedItem1 = "(NOT FOUND)";
+            string searchWord1 = trimKeyword(searchWord0);
             _resultList = _mainWindow.recLogView.getRecLogList(searchWord1, Settings.Instance.RecLogWindow_SearchResultLimit);
             List<string> lines1 = new List<string>();
-            foreach (var item in _resultList)
+            if (0 < _resultList.Count)
             {
-                string line1 = "[" + item.recodeStatus_Abbr + "]" + "[’" + item.epgEventInfoR.start_time.ToString("yy/MM/dd") + "] " +
-                    item.epgEventInfoR.ShortInfo.event_name;
-                lines1.Add(line1);
+                foreach (RecLogItem item in _resultList)
+                {
+                    string line1 = "[" + item.recodeStatus_Abbr + "]" + "[’" + item.epgEventInfoR.start_time.ToString("yy/MM/dd") + "] " +
+                        item.epgEventInfoR.ShortInfo.event_name;
+                    if (selectedRecLogItem != null && selectedRecLogItem.id == item.id)
+                    {
+                        selectedItem1 = line1;
+                    }
+                    else
+                    {
+                        lines1.Add(line1);
+                    }
+                }
             }
+            else
+            {
+                lines1.Add("(NOT FOUND)");
+            }
+            //
+            drawText(richTextBox_SelectedItem, new List<string>() { selectedItem1 }, _background_Selected);
             textBox.Text = searchWord1;
             drawText(lines1);
         }
 
-        void drawText(List<string> texts0)
+        /// <summary>
+        /// 前後の記号を取り除く
+        /// </summary>
+        /// <param name="txtKey"></param>
+        /// <returns></returns>
+        string trimKeyword(string txtKey)
         {
-            richTextBox.Document.Blocks.Clear();
-            foreach (var item in texts0)
-            {
-                Paragraph paragraph1 =
-                    new Paragraph(
-                        new Run(item))
-                    {
-                        Background = new SolidColorBrush(Color.FromRgb(250, 250, 250))
-                    };
-                richTextBox.Document.Blocks.Add(paragraph1);
-            }
+            string markExp1 =
+                "(" +
+                    "(\\[[^\\]]+\\])+" +
+                    "|" +
+                    "(【[^】]+】)+" +
+                    "|" +
+                    "(［[^］]+］)+" +
+                    "|" +
+                     "^(\\(５\\．１\\)|\\(5\\.1\\))" +
+                ")";
+            return Regex.Replace(txtKey, markExp1, string.Empty).Trim();
         }
 
         void drawText(string text0)
@@ -122,26 +158,54 @@ namespace EpgTimer
             drawText(new List<string>() { text0 });
         }
 
+        void drawText(List<string> texts0)
+        {
+            drawText(richTextBox, texts0, _background);
+        }
+
+        void drawText(RichTextBox rtBox0, List<string> texts0, SolidColorBrush background0)
+        {
+            rtBox0.Document.Blocks.Clear();
+            foreach (var text1 in texts0)
+            {
+                Paragraph paragraph1 =
+                    new Paragraph(
+                        new Run(text1))
+                    {
+                        Background = background0
+                    };
+                rtBox0.Document.Blocks.Add(paragraph1);
+            }
+        }
+
         void show()
         {
+            _isVisible = true;
+
             Point pnt_Client1 = Mouse.GetPosition(Owner);
             Point pnt_Screen1 = Owner.PointToScreen(pnt_Client1);
             Left = pnt_Screen1.X;
-            if (SystemParameters.WorkArea.Width < (Left + Width))
+            if (SystemParameters.WorkArea.Width < Right)
             {
                 Left -= Width;
             }
             Top = pnt_Screen1.Y;
-            if (SystemParameters.WorkArea.Height < (Top + Height))
+            if (SystemParameters.WorkArea.Height < Bottom)
             {
                 Top -= Height;
             }
             //
-            Show();
+          base.Show();
+        }
+
+        void hide() {
+            _isVisible = false;
+            base.Hide();
         }
 
         void resset()
         {
+            richTextBox_SelectedItem.Visibility = Visibility.Visible;
             _resultList.Clear();
             _epgEventInfo = null;
             _reserveData = null;
@@ -196,7 +260,7 @@ namespace EpgTimer
 
             if (pnt_Screen1.X < left1 || right1 < pnt_Screen1.X || pnt_Screen1.Y < top1 || bottom1 < pnt_Screen1.Y)
             {
-                Hide();
+                hide();
             }
         }
 
@@ -205,44 +269,51 @@ namespace EpgTimer
             switch (e.Key)
             {
                 case Key.Enter:
+                    richTextBox_SelectedItem.Visibility = Visibility.Collapsed;
+                    menuItem_ChangeStatus.IsEnabled = false;
                     search(textBox.Text);
                     break;
             }
         }
 
-        void MenuItem_Recorded_Click(object sender, RoutedEventArgs e)
+        void menuItem_ChangeStatus_Click(object sender, RoutedEventArgs e)
         {
             DateTime lastUpdate1 = DateTime.Now;
+            RecLogItem recLogItem1 = null;
             if (_reserveData != null)
             {
-                RecLogItem recLogItem1 = db_RecLog.exists_Reserved(
-                    _reserveData.OriginalNetworkID, _reserveData.TransportStreamID, _reserveData.ServiceID, _reserveData.EventID, _reserveData.StartTime);
+                recLogItem1 = db_RecLog.exists(_reserveData);
                 if (recLogItem1 != null)
                 {
                     recLogItem1.recodeStatus = RecLogItem.RecodeStatuses.録画完了;
                     db_RecLog.update(recLogItem1);
-                    showResult(_reserveData);
+                    //showResult(_reserveData);
                 }
             }
             else if (_epgEventInfo != null)
             {
-                RecLogItem recLogItem2 = new RecLogItem()
+                recLogItem1 = new RecLogItem()
                 {
                     lastUpdate = lastUpdate1,
                     recodeStatus = RecLogItem.RecodeStatuses.録画完了,
                     epgEventInfoR = new EpgEventInfoR(_epgEventInfo, lastUpdate1)
                 };
-                db_RecLog.insert(recLogItem2);
-                showResult(_epgEventInfo);
+                db_RecLog.insert(recLogItem1);
+                //showResult(_epgEventInfo);
             }
             else if (_recFileInfo != null)
             {
-                bool exist1 = db_RecLog.exists_RecInfo(_recFileInfo);
-                if (!exist1)
+                recLogItem1 = db_RecLog.exists(_recFileInfo);
+                if (recLogItem1 == null)
                 {
-                    db_RecLog.insert(_recFileInfo, lastUpdate1);
+                    recLogItem1 = db_RecLog.insert(_recFileInfo, lastUpdate1);
                 }
-                showResult(_recFileInfo);
+                //showResult(_recFileInfo);
+            }
+            if (recLogItem1 != null)
+            {
+                string line1 = "[録]" + "[’" + recLogItem1.epgEventInfoR.start_time.ToString("yy/MM/dd") + "] " + recLogItem1.epgEventInfoR.ShortInfo.event_name;
+                drawText(richTextBox_SelectedItem, new List<string>() { line1 }, _background_Selected);
             }
         }
 
@@ -254,5 +325,16 @@ namespace EpgTimer
             }
         }
 
+        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (_isVisible)
+            {
+                Visibility = Visibility.Visible;
+            }
+            else
+            {
+                Visibility = Visibility.Hidden;
+            }
+        }
     }
 }
