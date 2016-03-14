@@ -820,6 +820,26 @@ namespace EpgTimer
             r.Read(ref user_nibble_2);
             r.End();
         }
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            EpgContentData ecd0 = obj as EpgContentData;
+            if (ecd0 == null)
+            {
+                return false;
+            }
+            return (content_nibble_level_1 == ecd0.content_nibble_level_1
+                && content_nibble_level_2 == ecd0.content_nibble_level_2 
+                && user_nibble_1 == ecd0.user_nibble_1
+                && user_nibble_2 == ecd0.user_nibble_2);
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     /// <summary>EPGジャンル情報</summary>
@@ -1311,6 +1331,16 @@ namespace EpgTimer
             r.Read(ref endMin);
             r.End();
         }
+        public override bool Equals(object obj)
+        {
+            EpgSearchDateInfo info1 = (EpgSearchDateInfo)obj;
+            return (startDayOfWeek == info1.startDayOfWeek && startHour == info1.startHour && startMin == info1.startMin
+                && endDayOfWeek == info1.endDayOfWeek && endHour == info1.endHour && endMin == info1.endMin);
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     /// <summary>検索条件</summary>
@@ -1346,7 +1376,8 @@ namespace EpgTimer
             set { andKey_.andKey = value; }
         }
         /// <summary>大文字小文字を区別する</summary>
-        public byte caseFlag {
+        public byte caseFlag
+        {
             get { return andKey_.caseFlag; }
             set { andKey_.caseFlag = value; }
         }

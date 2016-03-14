@@ -16,25 +16,20 @@
                 <Button x:Name="button_SaveSearchOption" Click="button_SaveSearchOption_Click" Height="35">変更の保存</Button>
             </Border>
             <DockPanel  Name="stackPanel_Search" Background="White">
+                <Button DockPanel.Dock="Top" Height="27" Name="button_Search"  Click="button_Search_Click">検索</Button>
                 <TextBox DockPanel.Dock="Top" Name="textBox_Search" Height="25"  VerticalContentAlignment="Center"  KeyDown="textBox_Search_KeyDown" ToolTip="Enter 実行" />
-                <DockPanel  DockPanel.Dock="Top" Height="27">
-                    <Button x:Name="button_Search" Width="100" Click="button_Search_Click">検索</Button>
-                    <Button x:Name="button_Reset" Click="button_Reset_Click">消去</Button>
-                </DockPanel>
+                <Button DockPanel.Dock="Top" x:Name="button_Reset" Click="button_Reset_Click">消去</Button>
                 <Label DockPanel.Dock="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" >検索対象</Label>
-                <StackPanel DockPanel.Dock="Top" Margin="2,0,0,0">
-                    <CheckBox Name="checkBox_Search_Title" Margin="3" IsChecked="True" Click="checkBox_Search_Title_Click">番組名</CheckBox>
-                    <CheckBox Name="checkBox_Search_Content" Margin="3" IsChecked="True" Click="checkBox_Search_Content_Click">番組内容</CheckBox>
-                    <CheckBox Name="checkBox_Search_Comment" Margin="3" IsChecked="True" Click="checkBox_Search_Comment_Click">コメント</CheckBox>
-                    <CheckBox Name="checkBox_Search_RecFileName" Margin="3" IsChecked="True" Click="checkBox_Search_RecFileName_Click">録画ファイル名</CheckBox>
-                </StackPanel>
+                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Title" Margin="3" IsChecked="True" Click="checkBox_Search_Title_Click">番組名</CheckBox>
+                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Content" Margin="3" IsChecked="True" Click="checkBox_Search_Content_Click">番組内容</CheckBox>
+                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Comment" Margin="3" IsChecked="True" Click="checkBox_Search_Comment_Click">コメント</CheckBox>
+                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_RecFileName" Margin="3" IsChecked="True" Click="checkBox_Search_RecFileName_Click">録画ファイル名</CheckBox>
                 <Label DockPanel.Dock="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" >録画ステータス</Label>
-                <StackPanel DockPanel.Dock="Top" Margin="2,0,0,0">
-                    <CheckBox   Name="checkBox_RecStatus_Reserved" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Reserved_Click">予約済み</CheckBox>
-                    <CheckBox  Name="checkBox_RecStatus_Recoded" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Recoded_Click">録画完了</CheckBox>
-                    <CheckBox  Name="checkBox_RecStatus_Recoded_Abnormal" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Recoded_Abnormal_Click">録画異常</CheckBox>
-                    <CheckBox  Name="checkBox_RecStatus_Viewed" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Viewed_Click">視聴済み</CheckBox>
-                </StackPanel>
+                <CheckBox  DockPanel.Dock="Top"  Name="checkBox_RecStatus_Reserved" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Reserved_Click">予約済み</CheckBox>
+                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Recoded" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Recoded_Click">録画完了</CheckBox>
+                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Recoded_Abnormal" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Recoded_Abnormal_Click">録画異常</CheckBox>
+                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Viewed" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Viewed_Click">視聴済み</CheckBox>
+                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Reserved_Null" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Reserved_Null_Click">無効登録</CheckBox>
                 <Grid DockPanel.Dock="Top" >
                     <Label Width="50" HorizontalAlignment="Left" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">表示数</Label>
                     <TextBox Name="textBox_ResultLimit" Margin="50,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" KeyDown="textBox_ResultLimit_KeyDown">50</TextBox>
@@ -84,9 +79,9 @@
                 <Button Grid.Column="1"  Name="button_Edit_Cancel" Click="button_Edit_Cancel_Click" >キャンセル</Button>
             </DockPanel>
             <Label DockPanel.Dock="Top" HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" VerticalContentAlignment="Center" VerticalAlignment="Center"  Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" FontFamily="Meiryo">編　集</Label>
-            <TextBox DockPanel.Dock="Top" Margin="1" Name="textBox_Edit_ProgramTitle" VerticalContentAlignment="Center" BorderBrush="Yellow" >タイトル</TextBox>
-            <Label DockPanel.Dock="Top" x:Name="label_Editor_Date" Background="#EEEEEE">2015/01/01(月) 00:00 ~ 12/31 23:59</Label>
-            <Label DockPanel.Dock="Top" x:Name="label_Editor_ServiceName" Background="#EEEEEE">NHK総合（地デジ）</Label>
+            <TextBox DockPanel.Dock="Top" Margin="1" Name="textBox_Edit_ProgramTitle" Height="25" VerticalContentAlignment="Center" BorderBrush="Yellow" >タイトル</TextBox>
+            <Label DockPanel.Dock="Top" x:Name="label_Editor_Date" Background="WhiteSmoke">2015/01/01(月) 00:00 ~ 12/31 23:59</Label>
+            <Label DockPanel.Dock="Top" x:Name="label_Editor_ServiceName" Background="WhiteSmoke">NHK総合（地デジ）</Label>
             <Border DockPanel.Dock="Top" x:Name="border_RecStatus" BorderBrush="Yellow" BorderThickness="1">
                 <Grid  Margin="1">
                     <Grid.ColumnDefinitions>

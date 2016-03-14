@@ -96,6 +96,7 @@
     <Compile Include="Common\DBBase.cs" />
     <Compile Include="Common\DB_EpgEventInfo.cs" />
     <Compile Include="Common\DB_RecLog.cs" />
+    <Compile Include="DefineClass\IDBRecord.cs" />
     <Compile Include="DefineClass\InfoWindowViewModel.cs" />
     <Compile Include="DefineClass\RecLogItem.cs" />
     <Compile Include="DefineClass\SerializableDictionary.cs" />

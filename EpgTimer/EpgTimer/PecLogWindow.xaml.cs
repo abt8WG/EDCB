@@ -103,7 +103,7 @@ namespace EpgTimer
 
         void search(string searchWord0, RecLogItem selectedRecLogItem = null)
         {
-            string selectedItem1 = "(NOT FOUND)";
+            string selectedItem1 = null;
             string searchWord1 = trimKeyword(searchWord0);
             _resultList = _mainWindow.recLogView.getRecLogList(searchWord1, Settings.Instance.RecLogWindow_SearchResultLimit);
             List<string> lines1 = new List<string>();
@@ -113,7 +113,7 @@ namespace EpgTimer
                 {
                     string line1 = "[" + item.recodeStatus_Abbr + "]" + "[’" + item.epgEventInfoR.start_time.ToString("yy/MM/dd") + "] " +
                         item.epgEventInfoR.ShortInfo.event_name;
-                    if (selectedRecLogItem != null && selectedRecLogItem.id == item.id)
+                    if (selectedRecLogItem != null && selectedRecLogItem.ID == item.ID)
                     {
                         selectedItem1 = line1;
                     }
@@ -128,7 +128,15 @@ namespace EpgTimer
                 lines1.Add("(NOT FOUND)");
             }
             //
-            drawText(richTextBox_SelectedItem, new List<string>() { selectedItem1 }, _background_Selected);
+            if (string.IsNullOrEmpty(selectedItem1))
+            {
+                richTextBox_SelectedItem.Visibility =  Visibility.Collapsed;
+            }
+            else
+            {
+                richTextBox_SelectedItem.Visibility = Visibility.Visible;
+                drawText(richTextBox_SelectedItem, new List<string>() { selectedItem1 }, _background_Selected);
+            }
             textBox.Text = searchWord1;
             drawText(lines1);
         }
@@ -195,10 +203,11 @@ namespace EpgTimer
                 Top -= Height;
             }
             //
-          base.Show();
+            base.Show();
         }
 
-        void hide() {
+        void hide()
+        {
             _isVisible = false;
             base.Hide();
         }

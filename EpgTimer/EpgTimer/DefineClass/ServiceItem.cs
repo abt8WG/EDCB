@@ -16,6 +16,10 @@ namespace EpgTimer
         {
             get { return ServiceInfo.service_name; }
         }
+        public ushort SID
+        {
+            get { return ServiceInfo.SID; }
+        }
         public String NetworkName
         {
             get { return CommonManager.ConvertNetworkNameText(ServiceInfo.ONID, true); }

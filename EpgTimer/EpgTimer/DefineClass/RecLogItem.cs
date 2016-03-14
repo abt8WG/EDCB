@@ -10,7 +10,7 @@ namespace EpgTimer.DefineClass
     /// <summary>
     /// DBのレコード
     /// </summary>
-    public class RecLogItem
+    public class RecLogItem: IDBRecord
     {
 
         public enum RecodeStatuses
@@ -20,10 +20,11 @@ namespace EpgTimer.DefineClass
             録画完了 = 2,
             視聴済み = 4,
             録画異常 = 8,
-            ALL = 15
+            無効登録 = 16,
+            ALL = 31
         };
 
-        public long id { get; set; }
+        public long ID { get; set; }
 
         public string recFilePath
         {
@@ -78,6 +79,8 @@ namespace EpgTimer.DefineClass
                         return "視";
                     case RecodeStatuses.録画異常:
                         return "異";
+                    case RecodeStatuses.無効登録:
+                        return "無";
                     default:
                         return "?";
                 }

@@ -24,5 +24,13 @@ namespace EpgTimer
         {
             return ViewText;
         }
+        public override bool Equals(object obj)
+        {
+            return DateInfo.Equals(((DateItem)obj).DateInfo);
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

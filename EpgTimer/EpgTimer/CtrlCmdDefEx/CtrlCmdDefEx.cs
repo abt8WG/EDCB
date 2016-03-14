@@ -239,5 +239,17 @@ namespace EpgTimer
             return (startTime + TimeSpan.FromSeconds(duration) >= System.DateTime.Now);
         }
 
+        /// <summary>
+        /// 放送終了
+        /// </summary>
+        /// <param name="eventInfo"></param>
+        /// <returns></returns>
+        public static bool isBroadcasted(this EpgEventInfo eventInfo)
+        {
+            if (eventInfo == null) return false;
+            //
+            return (eventInfo.start_time.AddSeconds(eventInfo.durationSec) < DateTime.Now);
+        }
+
     }
 }

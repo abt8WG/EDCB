@@ -44,7 +44,8 @@ namespace EpgTimer
             //
             listView_RecLog.DataContext = _recLogItemList;
             comboBox_Edit_Status.DataContext = new object[] {
-                RecLogItem.RecodeStatuses.予約済み, RecLogItem.RecodeStatuses.録画完了, RecLogItem.RecodeStatuses.録画異常,  RecLogItem.RecodeStatuses.視聴済み
+                RecLogItem.RecodeStatuses.予約済み, RecLogItem.RecodeStatuses.録画完了, RecLogItem.RecodeStatuses.録画異常,  RecLogItem.RecodeStatuses.視聴済み,
+                RecLogItem.RecodeStatuses.無効登録
             };
             //
             db_RecLog = new DB_RecLog(Settings.Instance.RecLog_DB_MachineName, Settings.Instance.RecLog_DB_InstanceName);
@@ -114,7 +115,6 @@ namespace EpgTimer
                 {
                     _recLogItemList.Add(item);
                 }
-                Console.WriteLine();
             }
             listView_RecLog.Items.Refresh();
         }
@@ -150,7 +150,7 @@ namespace EpgTimer
                 case UpdateNotifyItem.EpgData:
                     if (_bgw_EpgData.IsBusy)
                     {
-                        ;
+                        System.Diagnostics.Trace.WriteLine("RecLogView._bgw_EpgData.IsBusy");
                     }
                     else
                     {
@@ -160,7 +160,7 @@ namespace EpgTimer
                 case UpdateNotifyItem.ReserveInfo:
                     if (_bgw_ReserveInfo.IsBusy)
                     {
-                        ;
+                        System.Diagnostics.Trace.WriteLine("RecLogView._bgw_ReserveInfo.IsBusy");
                     }
                     else
                     {
@@ -170,7 +170,7 @@ namespace EpgTimer
                 case UpdateNotifyItem.RecInfo:
                     if (_bgw_RecInfo.IsBusy)
                     {
-                        ;
+                        System.Diagnostics.Trace.WriteLine("RecLogView._bgw_RecInfo.IsBusy");
                     }
                     else
                     {
@@ -297,13 +297,13 @@ namespace EpgTimer
         {
             addDBLog("DB接続テスト");
             bool isTestOnly1 = Settings.Instance.NWMode;
-            DBBase.connectTestResults connectTestResult1 = db_RecLog.connectionTest(isTestOnly1);
+            DB.connectTestResults connectTestResult1 = db_RecLog.connectionTest(isTestOnly1);
             switch (connectTestResult1)
             {
-                case DBBase.connectTestResults.success:
+                case DB.connectTestResults.success:
                     addDBLog("成功");
                     return true;
-                case DBBase.connectTestResults.createDB:
+                case DB.connectTestResults.createDB:
                     if (isTestOnly1)
                     {
                         addDBLog("データベースEDCBが見つかりません");
@@ -315,10 +315,10 @@ namespace EpgTimer
                         db_RecLog.createTable_RecLog_EpgEventInfo();
                     }
                     return true;
-                case DBBase.connectTestResults.serverNotFound:
+                case DB.connectTestResults.serverNotFound:
                     addDBLog("SQLServerが見つかりません");
                     return false;
-                case DBBase.connectTestResults.unKnownError:
+                case DB.connectTestResults.unKnownError:
                     addDBLog("Unknown Error");
                     return false;
                 default:
@@ -332,17 +332,14 @@ namespace EpgTimer
             //
             int reservedCount_New1 = 0;
             int reservedCount_Update1 = 0;
-            foreach (ReserveData rd1 in CommonManager.Instance.DB.ReserveList.Values.Where(
-                (x1) =>
-                {
-                    return (x1.RecSetting.RecMode != 0x05);  // 録画モード：無効
-                }))
+            foreach (ReserveData rd1 in CommonManager.Instance.DB.ReserveList.Values)
             {
                 EpgEventInfo epgEventInfo1 = getEpgEventInfo(rd1.OriginalNetworkID, rd1.TransportStreamID, rd1.ServiceID, rd1.EventID);
                 if (epgEventInfo1 == null)
                 {
                     //addMessage("*** EPGデータが見つからない?");
-                    epgEventInfo1 = new EpgEventInfo();
+                    continue;
+                    //epgEventInfo1 = new EpgEventInfo();
                 }
                 EpgEventInfoR epgEventInfoR1 = new EpgEventInfoR(epgEventInfo1, lastUpdate1);
                 RecLogItem recLogItem1 = db_RecLog.exists(rd1);
@@ -353,9 +350,16 @@ namespace EpgTimer
                     RecLogItem recLogItem2 = new RecLogItem()
                     {
                         lastUpdate = lastUpdate1,
-                        recodeStatus = RecLogItem.RecodeStatuses.予約済み,
                         epgEventInfoR = epgEventInfoR1
                     };
+                    if (rd1.RecSetting.RecMode == 0x05)   // 録画モード：無効
+                    {
+                        recLogItem2.recodeStatus = RecLogItem.RecodeStatuses.無効登録;
+                    }
+                    else
+                    {
+                        recLogItem2.recodeStatus = RecLogItem.RecodeStatuses.予約済み;
+                    }
                     db_RecLog.insert(recLogItem2);
                 }
                 else
@@ -371,17 +375,30 @@ namespace EpgTimer
             //
             List<RecLogItem> list_NotUpdated1 = db_RecLog.select_Reserved_NotUpdated(lastUpdate1);
             List<RecLogItem> list_Deleted1 = new List<RecLogItem>();
-            foreach (var item in list_NotUpdated1)
+            List<RecLogItem> list_RecstatusUpdateErr1 = new List<RecLogItem>();
+            foreach (var item1 in list_NotUpdated1)
             {
-                if (item.epgEventInfoR != null && lastUpdate1 < item.epgEventInfoR.start_time)
+                if (item1.epgEventInfoR != null && lastUpdate1 < item1.epgEventInfoR.start_time)
                 {   // 未来に放送
-                    list_Deleted1.Add(item);
+                    list_Deleted1.Add(item1);
                 }
                 else
                 {
-                    ;   // 録画完了？
+                    // 録画完了？
+                    list_RecstatusUpdateErr1.Add(item1);
                 }
             }
+            //
+            if (0 < list_RecstatusUpdateErr1.Count)
+            {
+                addDBLog("ステータス更新失敗：" + list_RecstatusUpdateErr1.Count);
+                foreach (var item1 in list_RecstatusUpdateErr1)
+                {
+                    item1.recodeStatus = RecLogItem.RecodeStatuses.録画完了;
+                    db_RecLog.update(item1);
+                }
+            }
+            //
             int deleted1 = db_RecLog.delete(list_Deleted1.ToArray());
             //
             addDBLog("予約更新(+" + reservedCount_New1 + ",-" + deleted1 + ") " + lastUpdate1.ToString(_timestampFormat));
@@ -422,6 +439,7 @@ namespace EpgTimer
                 checkBox_RecStatus_Recoded.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.録画完了);
                 checkBox_RecStatus_Recoded_Abnormal.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.録画異常);
                 checkBox_RecStatus_Viewed.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.視聴済み);
+                checkBox_RecStatus_Reserved_Null.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.無効登録);
             }
         }
         RecLogItem.RecodeStatuses _recodeStatus = RecLogItem.RecodeStatuses.無し;
@@ -929,6 +947,19 @@ namespace EpgTimer
             }
         }
 
+        private void checkBox_RecStatus_Reserved_Null_Click(object sender, RoutedEventArgs e)
+        {
+            isSearchOptionChanged = true;
+            if (((CheckBox)sender).IsChecked == true)
+            {
+                recodeStatus |= RecLogItem.RecodeStatuses.無効登録;
+            }
+            else
+            {
+                recodeStatus &= ~RecLogItem.RecodeStatuses.無効登録;
+            }
+        }
+
         private void button_Reset_Click(object sender, RoutedEventArgs e)
         {
             this.textBox_Search.Clear();
@@ -959,9 +990,8 @@ namespace EpgTimer
 
 １．できること
 
-　予約済みまたは録画済み番組情報の検索および編集。
-　・「録画ログ」タブではキーワード検索、検索結果を編集できます。
-　・「予約一覧」、「番組表」、「検索ウインドウ」などの右クリック・メニューから録画ログを検索できます。
+　・「録画ログ」タブでキーワード検索、検索結果の編集。
+　・「予約一覧」、「番組表」、「検索ウインドウ」などの右クリック・メニューから録画ログを検索
 
 ２．準備
 
