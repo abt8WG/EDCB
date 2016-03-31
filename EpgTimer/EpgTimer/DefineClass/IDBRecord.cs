@@ -6,10 +6,11 @@ using System.Text;
 namespace EpgTimer.DefineClass
 {
     /// <summary>
-    /// DataBase Recored
+    /// DataBase Record
     /// </summary>
     public interface IDBRecord
     {
         long ID { get; set; }
     }
+
 }

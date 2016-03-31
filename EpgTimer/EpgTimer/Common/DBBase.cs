@@ -166,7 +166,7 @@ namespace EpgTimer.Common
             return insert(out id1, item0);
         }
 
-        public int insert(out long id0, T item0)
+        public virtual int insert(out long id0, T item0)
         {
             if (isSetIdByManual)
             {
@@ -321,7 +321,7 @@ namespace EpgTimer.Common
             return exists(id0, COLUMN_ID);
         }
 
-        public virtual bool exists(long id0, string columnName0)
+        public bool exists(long id0, string columnName0)
         {
             if (id0 < 0) { return false; }
             //
@@ -438,7 +438,8 @@ namespace EpgTimer.Common
             {
                 return null;
             }
-            else {
+            else
+            {
                 return itemList1[0];
             }
         }

@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace EpgTimer.Common
 {
-    public class DB_RecLog : DBBase<RecLogItem>
+    public class DB_RecLog : DBBase<RecLogItem>, IDB_EpgEventInfo
     {
 
         public enum searchColumns
@@ -316,6 +316,7 @@ namespace EpgTimer.Common
         List<RecLogItem> seach(string searchWordQuery0, RecLogItem.RecodeStatuses recodeStatuse0, int count0)
         {
             List<RecLogItem> itemList1 = new List<RecLogItem>();
+            if (recodeStatuse0 == RecLogItem.RecodeStatuses.NONE) { return itemList1; }
             //
             StringBuilder query1 = new StringBuilder();
             query1.Append("SELECT");
@@ -328,7 +329,7 @@ namespace EpgTimer.Common
             query1.Append(" WHERE " + getRecodeStatusQuery(recodeStatuse0));
             if (!string.IsNullOrEmpty(searchWordQuery0))
             {
-                query1.Append(" AND " + searchWordQuery0);
+                query1.Append(" AND (" + searchWordQuery0 + ")");
             }
             query1.Append(" ORDER BY " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_start_time + " DESC");
             try
@@ -360,15 +361,21 @@ namespace EpgTimer.Common
             return itemList1;
         }
 
-        string getRecodeStatusQuery(RecLogItem.RecodeStatuses recodeStatuse0)
+        string getRecodeStatusQuery(RecLogItem.RecodeStatuses recodeStatuse0, string tableNameAbbr0 = TABLE_NAME_ABBR)
             {
             StringBuilder sb1 = new StringBuilder();
+            string tableNameAbbr1 = null;
+            if (!string.IsNullOrEmpty(tableNameAbbr0))
+            {
+                tableNameAbbr1 = tableNameAbbr0 + ".";
+            }
             foreach (var item1 in new RecLogItem.RecodeStatuses[] {
                 RecLogItem.RecodeStatuses.予約済み,
                 RecLogItem.RecodeStatuses.視聴済み,
                 RecLogItem.RecodeStatuses.録画完了,
                 RecLogItem.RecodeStatuses.録画異常,
-                RecLogItem.RecodeStatuses.無効登録 })
+                RecLogItem.RecodeStatuses.無効登録,
+                 RecLogItem.RecodeStatuses.不明 })
                 {
                 if (recodeStatuse0.HasFlag(item1))
                 {
@@ -376,7 +383,8 @@ namespace EpgTimer.Common
                     {
                         sb1.Append(" OR ");
                     }
-                    sb1.Append(TABLE_NAME_ABBR + "." + COLUMN_recodeStatus + "=" + (int)item1);
+
+                    sb1.Append(tableNameAbbr1 + COLUMN_recodeStatus + "=" + (int)item1);
                 }
             }
 
@@ -408,6 +416,8 @@ namespace EpgTimer.Common
         /// <summary>
         /// 
         /// </summary>
+     /// <param name="reserveData0"></param>
+     /// <returns></returns>
         public RecLogItem exists(ReserveData reserveData0)
         {
             return exists(RecLogItem.RecodeStatuses.ALL, reserveData0.OriginalNetworkID, reserveData0.TransportStreamID, reserveData0.ServiceID, reserveData0.EventID, reserveData0.StartTime);
@@ -470,7 +480,8 @@ namespace EpgTimer.Common
         /// <returns></returns>
         public List<RecLogItem> select_Reserved_NotUpdated(DateTime lastUpdate0)
         {
-            string where1 = COLUMN_recodeStatus + "=" + (int)RecLogItem.RecodeStatuses.予約済み +
+            RecLogItem.RecodeStatuses recodeStatuse1 = RecLogItem.RecodeStatuses.予約済み | RecLogItem.RecodeStatuses.無効登録;
+            string where1 = getRecodeStatusQuery(recodeStatuse1, string.Empty) +
                 " AND " + COLUMN_lastUpdate + "<" + q(lastUpdate0.ToString(DB_EpgEventInfo.timeStampStrFormat));
             List<RecLogItem> recLogItemList1 = select(where0: where1);
 
@@ -650,6 +661,11 @@ namespace EpgTimer.Common
         }
 
         public DB_EpgEventInfo db_EpgEventInfo { get; private set; }
+
+        public string columnName_epgEventInfoID
+        {
+            get { return COLUMN_epgEventInfoID; }
+        }
 
         #region - Event Handler -
         #endregion

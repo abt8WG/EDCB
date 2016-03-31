@@ -4,13 +4,26 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Windows.Controls;
 
 namespace EpgTimer.Common
 {
+    /// <summary>
+    /// DB_EpgEventInfoへの参照を持つテーブルを管理
+    /// </summary>
+    public interface IDB_EpgEventInfo
+    {
+        bool exists(long id0, string columnName0);
+        string tableName { get; }
+        string columnName_epgEventInfoID { get; }
+    }
+
     public class DB_EpgEventInfo : DBBase<EpgEventInfoR>
     {
-
-        public static Dictionary<string, DB> linkedTables = new Dictionary<string, DB>();
+        /// <summary>
+        /// key: table name
+        /// </summary>
+        public static Dictionary<string, IDB_EpgEventInfo> linkedTables = new Dictionary<string, IDB_EpgEventInfo>();
 
         public const string TABLE_NAME = "EpgEventInfo";
         /// <summary>
@@ -31,7 +44,7 @@ namespace EpgTimer.Common
         #region - Constructor -
         #endregion
 
-        public DB_EpgEventInfo(DB linkedTable0)
+        public DB_EpgEventInfo(IDB_EpgEventInfo linkedTable0)
         {
             if (!linkedTables.ContainsKey(linkedTable0.tableName))
             {
@@ -41,6 +54,26 @@ namespace EpgTimer.Common
 
         #region - Method -
         #endregion
+
+        /// <summary>
+        /// epgが登録済みであれば、既存データのIDを返す
+        /// </summary>
+        /// <param name="id0"></param>
+        /// <param name="item0"></param>
+        /// <returns></returns>
+        public override int insert(out long id0, EpgEventInfoR item0)
+        {
+            long id1 = exists(item0);
+            if (id1 < 0)
+            {
+                return base.insert(out id0, item0);
+            }
+            else
+            {
+                id0 = id1;
+                return 0;
+            }
+        }
 
         public static List<EpgContentData> getEpgContentData(SqlDataReader reader0, string column0)
         {
@@ -143,30 +176,37 @@ namespace EpgTimer.Common
             {
                 dict1.Add(COLUMN_start_time, q(item0.start_time.ToString(startTimeStrFormat)));
             }
+            if (item0.ContentInfo != null)
             {
-                StringBuilder sb1 = new StringBuilder();
-                if (item0.ContentInfo != null)
-                {
-                    foreach (EpgContentData epgContentData1 in item0.ContentInfo.nibbleList)
-                    {
-                        if (sb1.Length == 0)
-                        {
-                            sb1.Append("0x");
-                        }
-                        sb1.Append(epgContentData1.content_nibble_level_1.ToString("X2"));
-                        sb1.Append(epgContentData1.content_nibble_level_2.ToString("X2"));
-                        sb1.Append(epgContentData1.user_nibble_1.ToString("X2"));
-                        sb1.Append(epgContentData1.user_nibble_2.ToString("X2"));
-                    }
-                }
-                if (sb1.Length == 0)
-                {
-                    sb1.Append(0);
-                }
-                dict1.Add(COLUMN_ContentInfo, sb1.ToString());
+                addEpgContentData(ref dict1, COLUMN_ContentInfo, item0.ContentInfo.nibbleList);
+            }
+            else
+            {
+                dict1.Add(COLUMN_ContentInfo, "0");
             }
 
             return dict1;
+        }
+
+        public static void addEpgContentData(ref Dictionary<string, string> dict0, string column0, List<EpgContentData> ecdList0)
+        {
+            StringBuilder sb1 = new StringBuilder();
+            foreach (EpgContentData epgContentData1 in ecdList0)
+            {
+                if (sb1.Length == 0)
+                {
+                    sb1.Append("0x");
+                }
+                sb1.Append(epgContentData1.content_nibble_level_1.ToString("X2"));
+                sb1.Append(epgContentData1.content_nibble_level_2.ToString("X2"));
+                sb1.Append(epgContentData1.user_nibble_1.ToString("X2"));
+                sb1.Append(epgContentData1.user_nibble_2.ToString("X2"));
+            }
+            if (sb1.Length == 0)
+            {
+                sb1.Append(0);
+            }
+            dict0.Add(column0, sb1.ToString());
         }
 
         protected override long getId()
@@ -244,15 +284,20 @@ namespace EpgTimer.Common
                     COLUMN_event_id });
         }
 
+        /// <summary>
+        /// 参照されていなければ削除
+        /// </summary>
+        /// <param name="ids0"></param>
+        /// <returns></returns>
         public override int delete(IEnumerable<long> ids0)
         {
             List<long> ids1 = new List<long>();
             foreach (long id1 in ids0)
             {
                 bool isExist1 = false;
-                foreach (DB db1 in linkedTables.Values)
+                foreach (IDB_EpgEventInfo db1 in linkedTables.Values)
                 {
-                    if (db1.exists(id1))
+                    if (db1.exists(id1, db1.columnName_epgEventInfoID))
                     {
                         isExist1 = true;
                         break;
@@ -375,18 +420,47 @@ namespace EpgTimer.Common
         #region - Method -
         #endregion
 
-        public override bool Equals(object obj)
+        public void reserveAdd()
         {
-            EpgEventInfo info0 = (EpgEventInfo)obj;
-            return (original_network_id == info0.original_network_id
-                && transport_stream_id == info0.transport_stream_id
-                && service_id == info0.service_id
-                && event_id == info0.event_id);
+            CommonManager.Instance.MUtil.ReserveAdd(
+                new List<EpgEventInfo>() { this },
+                null);
         }
 
-        public override int GetHashCode()
+        public void reserveChangeOnOff()
         {
-            return base.GetHashCode();
+            ReserveData reserveData1 = getReserveData();
+            CommonManager.Instance.MUtil.ReserveChangeOnOff(
+                new List<ReserveData>() { reserveData1 });
+        }
+
+        public void openEpgReserveDialog(Control owner0)
+        {
+            CommonManager.Instance.MUtil.OpenEpgReserveDialog(this, owner0, 1);
+        }
+
+        public void openChgReserveDialog(Control owner0)
+        {
+            ReserveData reserveData1 = getReserveData();
+            CommonManager.Instance.MUtil.OpenChgReserveDialog(reserveData1, owner0, 1);
+        }
+
+        ReserveData getReserveData()
+        {
+            var query1 = CommonManager.Instance.DB.ReserveList.Values.Where(
+                x1 =>
+                {
+                    return (transport_stream_id == x1.TransportStreamID
+                    && original_network_id == x1.OriginalNetworkID
+                    && service_id == x1.ServiceID
+                    && event_id == x1.EventID);
+                });
+            foreach (ReserveData reserveData1 in query1)
+            {
+                return reserveData1;
+            }
+
+            return null;
         }
 
         #region - Property -

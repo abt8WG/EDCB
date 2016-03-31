@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:EpgTimer.UserCtrlView"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800" >
+             d:DesignHeight="600" d:DesignWidth="800">
     <DockPanel>
         <!-- 検索 Panel -->
         <DockPanel  DockPanel.Dock="Left" Width="130">
@@ -16,20 +16,33 @@
                 <Button x:Name="button_SaveSearchOption" Click="button_SaveSearchOption_Click" Height="35">変更の保存</Button>
             </Border>
             <DockPanel  Name="stackPanel_Search" Background="White">
-                <Button DockPanel.Dock="Top" Height="27" Name="button_Search"  Click="button_Search_Click">検索</Button>
                 <TextBox DockPanel.Dock="Top" Name="textBox_Search" Height="25"  VerticalContentAlignment="Center"  KeyDown="textBox_Search_KeyDown" ToolTip="Enter 実行" />
-                <Button DockPanel.Dock="Top" x:Name="button_Reset" Click="button_Reset_Click">消去</Button>
-                <Label DockPanel.Dock="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" >検索対象</Label>
-                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Title" Margin="3" IsChecked="True" Click="checkBox_Search_Title_Click">番組名</CheckBox>
-                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Content" Margin="3" IsChecked="True" Click="checkBox_Search_Content_Click">番組内容</CheckBox>
-                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Comment" Margin="3" IsChecked="True" Click="checkBox_Search_Comment_Click">コメント</CheckBox>
-                <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_RecFileName" Margin="3" IsChecked="True" Click="checkBox_Search_RecFileName_Click">録画ファイル名</CheckBox>
-                <Label DockPanel.Dock="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" >録画ステータス</Label>
-                <CheckBox  DockPanel.Dock="Top"  Name="checkBox_RecStatus_Reserved" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Reserved_Click">予約済み</CheckBox>
-                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Recoded" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Recoded_Click">録画完了</CheckBox>
-                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Recoded_Abnormal" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Recoded_Abnormal_Click">録画異常</CheckBox>
-                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Viewed" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Viewed_Click">視聴済み</CheckBox>
-                <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Reserved_Null" Margin="3" IsChecked="True" Click="checkBox_RecStatus_Reserved_Null_Click">無効登録</CheckBox>
+                <DockPanel DockPanel.Dock="Top">
+                    <Button DockPanel.Dock= "Left" x:Name="button_Search" Width="100" Height="27" Click="button_Search_Click">検索</Button>
+                    <Button x:Name="button_Reset" Click="button_Reset_Click" ToolTip="検索ワード・ボックスと検索結果リストビューをクリア">クリア</Button>
+                </DockPanel>
+                <DockPanel DockPanel.Dock="Top" Background="#E6E6E6">
+                    <CheckBox x:Name="checkBox_Search_All" Margin="3, 7, 3, 0" Click="checkBox_Search_All_Click" IsChecked="True"/>
+                    <Label DockPanel.Dock="Top" VerticalContentAlignment="Center" FontSize="13.333">検索対象</Label>
+                </DockPanel>
+                <StackPanel x:Name="panel_Search_CheckBox" DockPanel.Dock="Top">
+                    <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Title" Margin="3" IsChecked="True" Checked="checkBox_Search_Title_Checked" Unchecked="checkBox_Search_Title_Unchecked">番組名</CheckBox>
+                    <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Content" Margin="3" IsChecked="True" Checked="checkBox_Search_Content_Checked" Unchecked="checkBox_Search_Content_Unchecked" >番組内容</CheckBox>
+                    <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_Comment" Margin="3" IsChecked="True" Checked="checkBox_Search_Comment_Checked" Unchecked="checkBox_Search_Comment_Unchecked">コメント</CheckBox>
+                    <CheckBox DockPanel.Dock="Top"   Name="checkBox_Search_RecFileName" Margin="3" IsChecked="True" Checked="checkBox_Search_RecFileName_Checked" Unchecked="checkBox_Search_RecFileName_Unchecked">録画ファイル名</CheckBox>
+                </StackPanel>
+                <DockPanel DockPanel.Dock="Top" Background="#E6E6E6">
+                    <CheckBox x:Name="checkBox_RecStatus_All" Margin="3, 7, 3, 0" Click="checkBox_RecStatus_All_Click" IsChecked="True"/>
+                    <Label DockPanel.Dock="Top" VerticalContentAlignment="Center" FontSize="13.333">録画ステータス</Label>
+                </DockPanel>
+                <StackPanel x:Name="panel_RecStatus_CheckBox" DockPanel.Dock="Top">
+                    <CheckBox  DockPanel.Dock="Top"  Name="checkBox_RecStatus_Reserved" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Reserved_Checked" Unchecked="checkBox_RecStatus_Reserved_Unchecked">予約済み</CheckBox>
+                    <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Recoded" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Recoded_Checked" Unchecked="checkBox_RecStatus_Recoded_Unchecked">録画完了</CheckBox>
+                    <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Recoded_Abnormal" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Recoded_Abnormal_Checked" Unchecked="checkBox_RecStatus_Recoded_Abnormal_Unchecked">録画異常</CheckBox>
+                    <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Viewed" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Viewed_Checked" Unchecked="checkBox_RecStatus_Viewed_Unchecked">視聴済み</CheckBox>
+                    <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Reserved_Null" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Reserved_Null_Checked" Unchecked="checkBox_RecStatus_Reserved_Null_Unchecked">無効登録</CheckBox>
+                    <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Unkown" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Unkown_Checked" Unchecked="checkBox_RecStatus_Unkown_Unchecked">不明</CheckBox>
+                </StackPanel>
                 <Grid DockPanel.Dock="Top" >
                     <Label Width="50" HorizontalAlignment="Left" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">表示数</Label>
                     <TextBox Name="textBox_ResultLimit" Margin="50,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" KeyDown="textBox_ResultLimit_KeyDown">50</TextBox>
@@ -40,15 +53,19 @@
         <!-- 設定Grid  -->
         <Grid x:Name="grid_Setting"  Visibility="Visible">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="130"></ColumnDefinition>
+                <ColumnDefinition Width="140"></ColumnDefinition>
                 <!--<ColumnDefinition Width="50"></ColumnDefinition>-->
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <DockPanel  Grid.Column="0">
-                <Button DockPanel.Dock="Bottom" x:Name="button_CreateIndex" Height="27" Click="button_CreateIndex_Click" ToolTip="データベースにインデックスを追加します。これから導入する方は必要ありません。">インデックス作成</Button>
+                <!--<Button DockPanel.Dock="Bottom" x:Name="button_CreateIndex" Height="27" Click="button_CreateIndex_Click" ToolTip="データベースにインデックスを追加します。これから導入する方は必要ありません。">インデックス作成</Button>-->
                 <StackPanel  DockPanel.Dock="Top" x:Name="stackPanel_Setting" Background="#FFCDDCDE">
                     <Border x:Name="border_CheckBox_RecLogEnabled" BorderBrush="Yellow" BorderThickness="2">
-                        <CheckBox x:Name="checkBox_RecLogEnabled" Margin="3,7,0,7" VerticalContentAlignment="Center" Click="checkBox_RecLogEnabled_Click">RecLogを有効にする</CheckBox>
+                        <CheckBox x:Name="checkBox_RecLogEnabled" Margin="3,7,0,7" VerticalContentAlignment="Center" Click="checkBox_RecLogEnabled_Click">
+                            <TextBlock TextWrapping="Wrap">
+                            録画ログを有効にする
+                            </TextBlock>
+                        </CheckBox>
                     </Border>
                     <Label Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">SQLServerコンピュータ名</Label>
                     <TextBox x:Name="textBox_MachineName" Height="25" KeyDown="textBox_MachineName_KeyDown"/>
@@ -105,10 +122,18 @@
             <RichTextBox x:Name="richTextBox_ExtInfo_text_char" BorderBrush="Yellow" TextChanged="richTextBox_ExtInfo_text_char_TextChanged"/>
         </DockPanel>
         <!-- 検索結果ListView -->
-        <ListView Name="listView_RecLog"  SelectionMode="Extended" ItemsSource="{Binding}" AllowDrop="False" BorderThickness="3,1,1,3" SelectionChanged="listView_RecLog_SelectionChanged" KeyDown="listView_RecLog_KeyDown_1">
+        <ListView x:Name="listView_RecLog"  SelectionMode="Extended" ItemsSource="{Binding}" AllowDrop="False" BorderThickness="3,1,1,3" SelectionChanged="listView_RecLog_SelectionChanged" KeyDown="listView_RecLog_KeyDown_1">
             <ListView.Resources>
-                <ContextMenu x:Key="itemMenu" x:Name="cmdMenu">
-                    <MenuItem Name="cmdMenu_Del" Header="削除 (_D)" Click="cmdMenu_Del_Click" InputGestureText="Delete"  />
+                <ContextMenu x:Key="itemMenu" x:Name="menu_RecLog">
+                    <MenuItem x:Name="menu_RecLog_Del" Header="削除 (_D)" Click="menu_RecLog_Del_Click" InputGestureText="Delete"  />
+                    <MenuItem x:Name="menu_RecLog_ChangeStatus" Header="ステータス変更(_C)" >
+                        <MenuItem x:Name="menu_RecLog_ChangeStatus_Reserve" Header="予約済み(_1)" Click="menu_RecLog_ChangeStatus_Reserve_Click"/>
+                        <MenuItem x:Name="menu_RecLog_ChangeStatus_Recorded" Header="録画完了(_2)" Click="menu_RecLog_ChangeStatus_Recorded_Click"/>
+                        <MenuItem x:Name="menu_RecLog_ChangeStatus_Error" Header="録画異常(_3)" Click="menu_RecLog_ChangeStatus_Error_Click"/>
+                        <MenuItem x:Name="menu_RecLog_ChangeStatus_Viewed" Header="視聴済み(_4)" Click="menu_RecLog_ChangeStatus_Viewed_Click"/>
+                        <MenuItem x:Name="menu_RecLog_ChangeStatus_Disabled" Header="無効登録(_5)" Click="menu_RecLog_ChangeStatus_Disabled_Click"/>
+                        <MenuItem x:Name="menu_RecLog_ChangeStatus_Unknown" Header="不明(_6)" Click="menu_RecLog_ChangeStatus_Unknown_Click"/>
+                    </MenuItem>
                 </ContextMenu>
                 <Style TargetType="ListViewItem">
                     <Setter Property="ContextMenu" Value="{DynamicResource itemMenu}" />
@@ -117,6 +142,7 @@
                     <Setter Property="VerticalContentAlignment" Value="Top" />
                     <Setter Property="BorderThickness" Value="5,0,0,1" />
                     <Setter Property="BorderBrush" Value="{Binding borderBrush}" />
+                    <EventSetter Event="ContextMenuOpening" Handler="menu_RecLog_ContextMenuOpening" />
                     <EventSetter Event="KeyDown" Handler="listView_RecLog_KeyDown" />
                 </Style>
             </ListView.Resources>

@@ -1202,6 +1202,21 @@ namespace EpgTimer
             r.Read(ref FreeCAFlag);
             r.End();
         }
+
+        public override bool Equals(object obj)
+        {
+            EpgEventInfo info0 = (EpgEventInfo)obj;
+            return (original_network_id == info0.original_network_id
+                && transport_stream_id == info0.transport_stream_id
+                && service_id == info0.service_id
+                && event_id == info0.event_id);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
     }
 
     public class EpgServiceInfo : ICtrlCmdReadWrite

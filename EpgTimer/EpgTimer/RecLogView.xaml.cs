@@ -28,24 +28,50 @@ namespace EpgTimer
         public enum searchMethods { LIKE, Contrains, Freetext };
         public static readonly string notEnabledMessage = "RecLogが無効に設定されています。";
 
-        BackgroundWorker _bgw_ReserveInfo = new BackgroundWorker();
-        BackgroundWorker _bgw_RecInfo = new BackgroundWorker();
-        BackgroundWorker _bgw_EpgData = new BackgroundWorker();
+        public event EventHandler recLogUpdated;
+
+        BackgroundWorker _bgw_Update_ReserveInfo = new BackgroundWorker();
+        BackgroundWorker _bgw_Update_RecInfo = new BackgroundWorker();
+        BackgroundWorker _bgw_Update_EpgData = new BackgroundWorker();
         List<RecLogItem> _recLogItemList = new List<RecLogItem>();
         readonly string _timestampFormat = "MM/dd HH:mm";
         RecLogItem _recLogItem_Edit;
+        bool _isReserveInfoChanged = false;
+        MenuItem _menu_ReserveChangeOnOff = new MenuItem();
+        MenuItem _menu_OpenChgReserveDialog = new MenuItem();
 
         #region - Constructor -
         #endregion
 
         public RecLogView()
         {
+#if DEBUG
+            System.Diagnostics.DefaultTraceListener dtl = (System.Diagnostics.DefaultTraceListener)System.Diagnostics.Debug.Listeners["Default"];
+            dtl.LogFileName = Environment.CurrentDirectory + "\\_DEBUG_LOG.txt";
+#endif
+
             InitializeComponent();
+            //
+            _menu_ReserveChangeOnOff.Header = "簡易予約/有効←→無効(_S)";
+            _menu_ReserveChangeOnOff.Click += (object sender, RoutedEventArgs e) =>
+            {
+                MenuItem menuItem1 = (MenuItem)sender;
+                RecLogItem recLogItem1 = (RecLogItem)menuItem1.DataContext;
+                recLogItem1.epgEventInfoR.reserveChangeOnOff();
+            };
+            //
+            _menu_OpenChgReserveDialog.Header = "予約ダイアログを開く(_O)";
+            _menu_OpenChgReserveDialog.Click += (object sender, RoutedEventArgs e) =>
+            {
+                MenuItem menuItem1 = (MenuItem)sender;
+                RecLogItem recLogItem1 = (RecLogItem)menuItem1.DataContext;
+                recLogItem1.epgEventInfoR.openChgReserveDialog(this);
+            };
             //
             listView_RecLog.DataContext = _recLogItemList;
             comboBox_Edit_Status.DataContext = new object[] {
                 RecLogItem.RecodeStatuses.予約済み, RecLogItem.RecodeStatuses.録画完了, RecLogItem.RecodeStatuses.録画異常,  RecLogItem.RecodeStatuses.視聴済み,
-                RecLogItem.RecodeStatuses.無効登録
+                RecLogItem.RecodeStatuses.無効登録, RecLogItem.RecodeStatuses.不明
             };
             //
             db_RecLog = new DB_RecLog(Settings.Instance.RecLog_DB_MachineName, Settings.Instance.RecLog_DB_InstanceName);
@@ -65,9 +91,31 @@ namespace EpgTimer
             searchResultLimit = Settings.Instance.RecLog_SearchResultLimit;
             textBox_ResultLimit_RecLogWindow.Text = Settings.Instance.RecLogWindow_SearchResultLimit.ToString();
             //
-            _bgw_ReserveInfo.DoWork += _bgw_ReserveInfo_DoWork;
-            _bgw_RecInfo.DoWork += _bgw_RecInfo_DoWork;
-            _bgw_EpgData.DoWork += _bgw_EpgData_DoWork;
+            _bgw_Update_ReserveInfo.DoWork += delegate
+            {
+                updateReserveInfo();
+            };
+            _bgw_Update_ReserveInfo.RunWorkerCompleted += delegate
+            {
+                if (_isReserveInfoChanged)
+                {
+                    if (recLogUpdated != null)
+                    {
+                        recLogUpdated(this, EventArgs.Empty);
+                    }
+                    _isReserveInfoChanged = false;
+                    if (IsVisible)
+                    {
+                        search();
+                    }
+                    else
+                    {
+                        _recLogItemList.Clear();
+                    }
+                }
+            };
+            _bgw_Update_RecInfo.DoWork += _bgw_RecInfo_DoWork;
+            _bgw_Update_EpgData.DoWork += _bgw_EpgData_DoWork;
             //
             grid_Edit.Visibility = Visibility.Collapsed;
             border_Button_DB_ConnectTest.BorderThickness = new Thickness(0);
@@ -89,7 +137,7 @@ namespace EpgTimer
         #region - Method -
         #endregion
 
-        void search(string searchWord0)
+        void search()
         {
             if (!Settings.Instance.RecLog_IsEnabled)
             {
@@ -104,13 +152,9 @@ namespace EpgTimer
             {
                 MessageBox.Show("エラー：検索対象を1つ以上選択してください。");
             }
-            else if (recodeStatus == RecLogItem.RecodeStatuses.無し)
-            {
-                MessageBox.Show("エラー：録画ステータスを1つ以上選択してください。");
-            }
             else
             {
-                List<RecLogItem> recLogItemList1 = getRecLogList(searchWord0, searchResultLimit, recodeStatus, searchColumn);
+                List<RecLogItem> recLogItemList1 = getRecLogList(textBox_Search.Text, searchResultLimit, recodeStatus, searchColumn);
                 foreach (var item in recLogItemList1)
                 {
                     _recLogItemList.Add(item);
@@ -143,38 +187,40 @@ namespace EpgTimer
 
         public void update(UpdateNotifyItem notifyItem0)
         {
+#if !DEBUG
             if (CommonManager.Instance.NWMode == true) { return; }
+#endif
 
             switch (notifyItem0)
             {
                 case UpdateNotifyItem.EpgData:
-                    if (_bgw_EpgData.IsBusy)
+                    if (_bgw_Update_EpgData.IsBusy)
                     {
-                        System.Diagnostics.Trace.WriteLine("RecLogView._bgw_EpgData.IsBusy");
+                        ;
                     }
                     else
                     {
-                        _bgw_EpgData.RunWorkerAsync();
+                        _bgw_Update_EpgData.RunWorkerAsync();
                     }
                     break;
                 case UpdateNotifyItem.ReserveInfo:
-                    if (_bgw_ReserveInfo.IsBusy)
+                    if (_bgw_Update_ReserveInfo.IsBusy)
                     {
-                        System.Diagnostics.Trace.WriteLine("RecLogView._bgw_ReserveInfo.IsBusy");
+                        ;
                     }
                     else
                     {
-                        _bgw_ReserveInfo.RunWorkerAsync();
+                        _bgw_Update_ReserveInfo.RunWorkerAsync();
                     }
                     break;
                 case UpdateNotifyItem.RecInfo:
-                    if (_bgw_RecInfo.IsBusy)
+                    if (_bgw_Update_RecInfo.IsBusy)
                     {
-                        System.Diagnostics.Trace.WriteLine("RecLogView._bgw_RecInfo.IsBusy");
+                        ;
                     }
                     else
                     {
-                        _bgw_RecInfo.RunWorkerAsync();
+                        _bgw_Update_RecInfo.RunWorkerAsync();
                     }
                     break;
             }
@@ -182,6 +228,11 @@ namespace EpgTimer
 
         EpgEventInfo getEpgEventInfo(ushort original_network_id0, ushort transport_stream_id0, ushort service_id0, ushort event_id0)
         {
+            for (int i1 = 0; i1 < 10; i1++)
+            {
+                if (!CommonManager.Instance.DB.isEpgDataLoading) { break; }
+                System.Threading.Thread.Sleep(500);
+            }
             UInt64 key1 = CommonManager.Create64Key(original_network_id0, transport_stream_id0, service_id0);
             if (CommonManager.Instance.DB.ServiceEventList.ContainsKey(key1) == true)
             {
@@ -197,22 +248,17 @@ namespace EpgTimer
             return null;
         }
 
-        void delete(RecLogItem item0)
-        {
-            delete(new RecLogItem[] { item0 });
-        }
-
-        void delete(System.Collections.IList items0)
+        void deleteRecLogItems()
         {
             StringBuilder sb1 = new StringBuilder();
             sb1.AppendLine("削除しますか？");
-            foreach (RecLogItem item in items0)
+            foreach (RecLogItem item in listView_RecLog.SelectedItems)
             {
                 sb1.AppendLine("・" + item.tvProgramTitle);
             }
-            if (MessageBox.Show(sb1.ToString(), "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel) == MessageBoxResult.OK)
+            if (MessageBox.Show(sb1.ToString(), "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation, MessageBoxResult.OK) == MessageBoxResult.OK)
             {
-                foreach (RecLogItem item in items0)
+                foreach (RecLogItem item in listView_RecLog.SelectedItems)
                 {
                     db_RecLog.delete(item);
                     _recLogItemList.Remove(item);
@@ -281,6 +327,7 @@ namespace EpgTimer
 
         void addDBLog(string msg0)
         {
+            //System.Diagnostics.Trace.WriteLine(msg0);
             listBox_DBLog.Dispatcher.BeginInvoke(
                  new Action(
                      () =>
@@ -337,8 +384,10 @@ namespace EpgTimer
                 EpgEventInfo epgEventInfo1 = getEpgEventInfo(rd1.OriginalNetworkID, rd1.TransportStreamID, rd1.ServiceID, rd1.EventID);
                 if (epgEventInfo1 == null)
                 {
-                    //addMessage("*** EPGデータが見つからない?");
-                    continue;
+                    // EPGデータが見つからない
+                    // １．EpgEventInfo.eventIDが変更された
+                    // ２．放送が中止になった
+                    continue;   // 無視する
                     //epgEventInfo1 = new EpgEventInfo();
                 }
                 EpgEventInfoR epgEventInfoR1 = new EpgEventInfoR(epgEventInfo1, lastUpdate1);
@@ -367,19 +416,39 @@ namespace EpgTimer
                     //更新
                     reservedCount_Update1++;
                     recLogItem1.lastUpdate = lastUpdate1;
+                    if (rd1.RecSetting.RecMode == 0x05)   // 録画モード：無効
+                    {
+                        if (recLogItem1.recodeStatus != RecLogItem.RecodeStatuses.無効登録)
+                        {
+                            recLogItem1.recodeStatus = RecLogItem.RecodeStatuses.無効登録;
+                            reservedCount_New1++;
+                        }
+                    }
+                    else
+                    {
+                        if (recLogItem1.recodeStatus != RecLogItem.RecodeStatuses.予約済み)
+                        {
+                            recLogItem1.recodeStatus = RecLogItem.RecodeStatuses.予約済み;
+                            reservedCount_New1++;
+                        }
+                    }
                     db_RecLog.update(recLogItem1, false);
                 }
             }
             //
-            // 予約削除
+            // 予約削除 - 更新されなかったものを対象とする
             //
             List<RecLogItem> list_NotUpdated1 = db_RecLog.select_Reserved_NotUpdated(lastUpdate1);
             List<RecLogItem> list_Deleted1 = new List<RecLogItem>();
             List<RecLogItem> list_RecstatusUpdateErr1 = new List<RecLogItem>();
-            foreach (var item1 in list_NotUpdated1)
+            foreach (RecLogItem item1 in list_NotUpdated1)
             {
                 if (item1.epgEventInfoR != null && lastUpdate1 < item1.epgEventInfoR.start_time)
                 {   // 未来に放送
+                    list_Deleted1.Add(item1);
+                }
+                else if (item1.recodeStatus == RecLogItem.RecodeStatuses.無効登録)
+                {
                     list_Deleted1.Add(item1);
                 }
                 else
@@ -392,22 +461,73 @@ namespace EpgTimer
             if (0 < list_RecstatusUpdateErr1.Count)
             {
                 addDBLog("ステータス更新失敗：" + list_RecstatusUpdateErr1.Count);
-                foreach (var item1 in list_RecstatusUpdateErr1)
+                foreach (RecLogItem logItem1 in list_RecstatusUpdateErr1)
                 {
-                    item1.recodeStatus = RecLogItem.RecodeStatuses.録画完了;
-                    db_RecLog.update(item1);
+                    RecFileInfo rfi1 = null;
+                    foreach (RecFileInfo rfi2 in CommonManager.Instance.DB.RecFileInfo.Values)
+                    {
+                        if (logItem1.equals(rfi2))
+                        {
+                            rfi1 = rfi2;
+                            break;
+                        }
+                    }
+                    if (rfi1 != null)
+                    {
+                        if ((RecEndStatus)rfi1.RecStatus == RecEndStatus.NORMAL)
+                        {
+                            logItem1.recodeStatus = RecLogItem.RecodeStatuses.録画完了;
+                        }
+                        else
+                {
+                            logItem1.recodeStatus = RecLogItem.RecodeStatuses.録画異常;
+                        }
+                    }
+                    else
+                    {
+                        logItem1.recodeStatus = RecLogItem.RecodeStatuses.不明;
+                    }
+                    logItem1.lastUpdate = lastUpdate1;
+                    db_RecLog.update(logItem1);
                 }
             }
             //
-            int deleted1 = db_RecLog.delete(list_Deleted1.ToArray());
+            int reservedCount_Removed1 = db_RecLog.delete(list_Deleted1.ToArray());
             //
-            addDBLog("予約更新(+" + reservedCount_New1 + ",-" + deleted1 + ") " + lastUpdate1.ToString(_timestampFormat));
+            addDBLog("予約更新(+" + reservedCount_New1 + ",-" + reservedCount_Removed1 + ") " + lastUpdate1.ToString(_timestampFormat));
+            //
+            if (0 < reservedCount_New1 || 0 < reservedCount_Removed1)
+            {
+                _isReserveInfoChanged = true;
+            }
         }
 
         void hideEditor()
         {
             clearEditor();
             grid_Edit.Visibility = Visibility.Collapsed;
+        }
+
+        void changeRecordStatus(RecLogItem.RecodeStatuses status0)
+        {
+            //string caption1 = "ステータスの変更";
+            //StringBuilder sb1 = new StringBuilder();
+            //sb1.AppendLine("ステータスを変更します");
+            //foreach (RecLogItem item in listView_RecLog.SelectedItems)
+            //{
+            //    sb1.AppendLine("・" + item.tvProgramTitle);
+            //}
+            //if (MessageBox.Show(sb1.ToString(), caption1, MessageBoxButton.OKCancel, MessageBoxImage.Exclamation, MessageBoxResult.OK) == MessageBoxResult.OK)
+            {
+                List<RecLogItem> list1 = new List<RecLogItem>();
+                foreach (RecLogItem item in listView_RecLog.SelectedItems)
+                {
+                    item.recodeStatus = status0;
+                    list1.Add(item);
+                }
+                listView_RecLog.Items.Refresh();
+                db_RecLog.update(list1);
+            }
         }
 
         #region - Property -
@@ -440,9 +560,10 @@ namespace EpgTimer
                 checkBox_RecStatus_Recoded_Abnormal.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.録画異常);
                 checkBox_RecStatus_Viewed.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.視聴済み);
                 checkBox_RecStatus_Reserved_Null.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.無効登録);
+                checkBox_RecStatus_Unkown.IsChecked = value.HasFlag(RecLogItem.RecodeStatuses.不明);
             }
         }
-        RecLogItem.RecodeStatuses _recodeStatus = RecLogItem.RecodeStatuses.無し;
+        RecLogItem.RecodeStatuses _recodeStatus = RecLogItem.RecodeStatuses.NONE;
 
         bool isSearchOptionChanged
         {
@@ -600,13 +721,12 @@ namespace EpgTimer
 
         private void button_Search_Click(object sender, RoutedEventArgs e)
         {
-            search(textBox_Search.Text);
+            search();
         }
 
-        private void cmdMenu_Del_Click(object sender, RoutedEventArgs e)
+        private void menu_RecLog_Del_Click(object sender, RoutedEventArgs e)
         {
-            RecLogItem recLogItem_Selected1 = listView_RecLog.SelectedItem as RecLogItem;
-            delete(recLogItem_Selected1);
+            deleteRecLogItems();
         }
 
         private void listView_RecLog_KeyDown(object sender, KeyEventArgs e)
@@ -617,7 +737,7 @@ namespace EpgTimer
                     setRecLogItem2editor();
                     break;
                 case Key.Delete:
-                    delete(listView_RecLog.SelectedItems);
+                    deleteRecLogItems();
                     break;
                 case Key.Escape:
                     listView_RecLog.SelectedItem = null;
@@ -630,7 +750,7 @@ namespace EpgTimer
             switch (e.Key)
             {
                 case Key.Enter:
-                    search(textBox_Search.Text);
+                    search();
                     break;
             }
         }
@@ -762,7 +882,7 @@ namespace EpgTimer
 
         private void listView_RecLog_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (listView_RecLog.SelectedItems.Count == 0)
+            if (listView_RecLog.SelectedItems.Count == 0 || 1 < listView_RecLog.SelectedItems.Count)
             {
                 hideEditor();
             }
@@ -843,45 +963,6 @@ namespace EpgTimer
             border_Button_SaveSearchOption.Visibility = Visibility.Collapsed;
         }
 
-        private void checkBox_Search_Title_Click(object sender, RoutedEventArgs e)
-        {
-            isSearchOptionChanged = true;
-            if (((CheckBox)sender).IsChecked == true)
-            {
-                searchColumn |= DB_RecLog.searchColumns.title;
-            }
-            else
-            {
-                searchColumn &= ~DB_RecLog.searchColumns.title;
-            }
-        }
-
-        private void checkBox_Search_Content_Click(object sender, RoutedEventArgs e)
-        {
-            isSearchOptionChanged = true;
-            if (((CheckBox)sender).IsChecked == true)
-            {
-                searchColumn |= DB_RecLog.searchColumns.content;
-            }
-            else
-            {
-                searchColumn &= ~DB_RecLog.searchColumns.content;
-            }
-        }
-
-        private void checkBox_Search_Comment_Click(object sender, RoutedEventArgs e)
-        {
-            isSearchOptionChanged = true;
-            if (((CheckBox)sender).IsChecked == true)
-            {
-                searchColumn |= DB_RecLog.searchColumns.comment;
-            }
-            else
-            {
-                searchColumn &= ~DB_RecLog.searchColumns.comment;
-            }
-        }
-
         private void checkBox_Search_RecFileName_Click(object sender, RoutedEventArgs e)
         {
             isSearchOptionChanged = true;
@@ -934,29 +1015,16 @@ namespace EpgTimer
             }
         }
 
-        private void checkBox_RecStatus_Reserved_Click(object sender, RoutedEventArgs e)
+        private void checkBox_RecStatus_Unkown_Click(object sender, RoutedEventArgs e)
         {
             isSearchOptionChanged = true;
             if (((CheckBox)sender).IsChecked == true)
             {
-                recodeStatus |= RecLogItem.RecodeStatuses.予約済み;
+                recodeStatus |= RecLogItem.RecodeStatuses.不明;
             }
             else
             {
-                recodeStatus &= ~RecLogItem.RecodeStatuses.予約済み;
-            }
-        }
-
-        private void checkBox_RecStatus_Reserved_Null_Click(object sender, RoutedEventArgs e)
-        {
-            isSearchOptionChanged = true;
-            if (((CheckBox)sender).IsChecked == true)
-            {
-                recodeStatus |= RecLogItem.RecodeStatuses.無効登録;
-            }
-            else
-            {
-                recodeStatus &= ~RecLogItem.RecodeStatuses.無効登録;
+                recodeStatus &= ~RecLogItem.RecodeStatuses.不明;
             }
         }
 
@@ -967,21 +1035,274 @@ namespace EpgTimer
             this.listView_RecLog.Items.Refresh();
         }
 
-        private void button_CreateIndex_Click(object sender, RoutedEventArgs e)
+        //private void button_CreateIndex_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (CommonManager.Instance.NWMode != true)
+        //    {
+        //        if (checkBox_RecLogEnabled.IsChecked == true)
+        //        {
+        //            System.Threading.Tasks.Task.Factory.StartNew(() =>
+        //            {
+        //                if (dbConnectTest())
+        //                {
+        //                    db_RecLog.createIndex();
+        //                    addDBLog("Indexを作成しました。");
+        //                }
+        //            });
+        //        }
+        //    }
+        //}
+
+        private void menu_RecLog_ChangeStatus_Reserve_Click(object sender, RoutedEventArgs e)
         {
-            if (CommonManager.Instance.NWMode != true)
+            changeRecordStatus(RecLogItem.RecodeStatuses.予約済み);
+        }
+
+        private void menu_RecLog_ChangeStatus_Recorded_Click(object sender, RoutedEventArgs e)
+        {
+            changeRecordStatus(RecLogItem.RecodeStatuses.録画完了);
+        }
+
+        private void menu_RecLog_ChangeStatus_Error_Click(object sender, RoutedEventArgs e)
+        {
+            changeRecordStatus(RecLogItem.RecodeStatuses.録画異常);
+        }
+
+        private void menu_RecLog_ChangeStatus_Viewed_Click(object sender, RoutedEventArgs e)
+        {
+            changeRecordStatus(RecLogItem.RecodeStatuses.視聴済み);
+        }
+
+        private void menu_RecLog_ChangeStatus_Disabled_Click(object sender, RoutedEventArgs e)
+        {
+            changeRecordStatus(RecLogItem.RecodeStatuses.無効登録);
+        }
+
+        private void menu_RecLog_ChangeStatus_Unknown_Click(object sender, RoutedEventArgs e)
+        {
+            changeRecordStatus(RecLogItem.RecodeStatuses.不明);
+        }
+
+        private void checkBox_RecStatus_All_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (CheckBox item in panel_RecStatus_CheckBox.Children)
             {
-                if (checkBox_RecLogEnabled.IsChecked == true)
-                {
-                    System.Threading.Tasks.Task.Factory.StartNew(() =>
-                    {
-                        if (dbConnectTest())
-                        {
-                            db_RecLog.createIndex();
-                            addDBLog("Indexを作成しました。");
-                        }
-                    });
-                }
+                item.IsChecked = (((CheckBox)sender).IsChecked == true);
+            }
+        }
+
+        private void checkBox_Search_All_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (CheckBox item in panel_Search_CheckBox.Children)
+            {
+                item.IsChecked = (((CheckBox)sender).IsChecked == true);
+            }
+        }
+
+        private void checkBox_Search_Title_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!searchColumn.HasFlag(DB_RecLog.searchColumns.title))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn |= DB_RecLog.searchColumns.title;
+            }
+        }
+
+        private void checkBox_Search_Title_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (searchColumn.HasFlag(DB_RecLog.searchColumns.title))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn &= ~DB_RecLog.searchColumns.title;
+            }
+        }
+
+        private void checkBox_Search_Content_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!searchColumn.HasFlag(DB_RecLog.searchColumns.content))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn |= DB_RecLog.searchColumns.content;
+            }
+        }
+
+        private void checkBox_Search_Content_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (searchColumn.HasFlag(DB_RecLog.searchColumns.content))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn &= ~DB_RecLog.searchColumns.content;
+            }
+        }
+
+        private void checkBox_Search_Comment_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!searchColumn.HasFlag(DB_RecLog.searchColumns.comment))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn |= DB_RecLog.searchColumns.comment;
+            }
+        }
+
+        private void checkBox_Search_Comment_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (searchColumn.HasFlag(DB_RecLog.searchColumns.comment))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn &= ~DB_RecLog.searchColumns.comment;
+            }
+        }
+
+        private void checkBox_Search_RecFileName_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!searchColumn.HasFlag(DB_RecLog.searchColumns.recFilePath))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn |= DB_RecLog.searchColumns.recFilePath;
+            }
+        }
+
+        private void checkBox_Search_RecFileName_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (searchColumn.HasFlag(DB_RecLog.searchColumns.recFilePath))
+            {
+                isSearchOptionChanged = true;
+                _searchColumn &= ~DB_RecLog.searchColumns.recFilePath;
+            }
+        }
+
+        private void checkBox_RecStatus_Reserved_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!recodeStatus.HasFlag(RecLogItem.RecodeStatuses.予約済み))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus |= RecLogItem.RecodeStatuses.予約済み;
+            }
+        }
+
+        private void checkBox_RecStatus_Reserved_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (recodeStatus.HasFlag(RecLogItem.RecodeStatuses.予約済み))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus &= ~RecLogItem.RecodeStatuses.予約済み;
+            }
+        }
+
+        private void checkBox_RecStatus_Recoded_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!recodeStatus.HasFlag(RecLogItem.RecodeStatuses.録画完了))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus |= RecLogItem.RecodeStatuses.録画完了;
+            }
+        }
+
+        private void checkBox_RecStatus_Recoded_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (recodeStatus.HasFlag(RecLogItem.RecodeStatuses.録画完了))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus &= ~RecLogItem.RecodeStatuses.録画完了;
+            }
+        }
+
+        private void checkBox_RecStatus_Recoded_Abnormal_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!recodeStatus.HasFlag(RecLogItem.RecodeStatuses.録画異常))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus |= RecLogItem.RecodeStatuses.録画異常;
+            }
+        }
+
+        private void checkBox_RecStatus_Recoded_Abnormal_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (recodeStatus.HasFlag(RecLogItem.RecodeStatuses.録画異常))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus &= ~RecLogItem.RecodeStatuses.録画異常;
+            }
+        }
+
+        private void checkBox_RecStatus_Viewed_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!recodeStatus.HasFlag(RecLogItem.RecodeStatuses.視聴済み))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus |= RecLogItem.RecodeStatuses.視聴済み;
+            }
+        }
+
+        private void checkBox_RecStatus_Viewed_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (recodeStatus.HasFlag(RecLogItem.RecodeStatuses.視聴済み))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus &= ~RecLogItem.RecodeStatuses.視聴済み;
+            }
+        }
+
+        private void checkBox_RecStatus_Reserved_Null_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!recodeStatus.HasFlag(RecLogItem.RecodeStatuses.無効登録))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus |= RecLogItem.RecodeStatuses.無効登録;
+            }
+        }
+
+        private void checkBox_RecStatus_Reserved_Null_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (recodeStatus.HasFlag(RecLogItem.RecodeStatuses.無効登録))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus &= ~RecLogItem.RecodeStatuses.無効登録;
+            }
+        }
+
+        private void checkBox_RecStatus_Unkown_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!recodeStatus.HasFlag(RecLogItem.RecodeStatuses.不明))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus |= RecLogItem.RecodeStatuses.不明;
+            }
+        }
+
+        private void checkBox_RecStatus_Unkown_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (recodeStatus.HasFlag(RecLogItem.RecodeStatuses.不明))
+            {
+                isSearchOptionChanged = true;
+                _recodeStatus &= ~RecLogItem.RecodeStatuses.不明;
+            }
+        }
+
+        private void menu_RecLog_ContextMenuOpening(object sender, RoutedEventArgs e)
+        {
+            ListViewItem listViewItem1 = (ListViewItem)sender;
+            RecLogItem item1 = (RecLogItem)listViewItem1.Content;
+            ContextMenu menu1 = listViewItem1.ContextMenu;
+            if (!menu1.Items.Contains(_menu_ReserveChangeOnOff))
+            {
+                menu1.Items.Add(_menu_ReserveChangeOnOff);
+            }
+            if (!menu1.Items.Contains(_menu_OpenChgReserveDialog))
+            {
+                menu1.Items.Add(_menu_OpenChgReserveDialog);
+            }
+            //
+            if (listView_RecLog.SelectedItems.Count == 1
+                && (item1.recodeStatus == RecLogItem.RecodeStatuses.予約済み || item1.recodeStatus == RecLogItem.RecodeStatuses.無効登録))
+            {
+                _menu_ReserveChangeOnOff.IsEnabled = true;
+                _menu_OpenChgReserveDialog.IsEnabled = true;
+            }
+            else
+            {
+                _menu_ReserveChangeOnOff.IsEnabled = false;
+                _menu_OpenChgReserveDialog.IsEnabled = false;
             }
         }
 
@@ -990,8 +1311,9 @@ namespace EpgTimer
 
 １．できること
 
-　・「録画ログ」タブでキーワード検索、検索結果の編集。
-　・「予約一覧」、「番組表」、「検索ウインドウ」などの右クリック・メニューから録画ログを検索
+　予約済みまたは録画済み番組情報の検索および編集。
+　・「録画ログ」タブではキーワード検索、検索結果を編集できます。
+　・「予約一覧」、「番組表」、「検索ウインドウ」などの右クリック・メニューから録画ログを検索できます。
 
 ２．準備
 
@@ -1010,7 +1332,7 @@ namespace EpgTimer
 
 　SQLServerをリモート接続できるように設定（ファイアウォールなど）すれば、ネットワークモードのEpgTimerでも検索や録画ログの編集をすることができます。
 
-　SQL Server Expressのリモート接続設定
+　SQL Server Expressのリモート接続設定メモ
 　　・SQL Server構成マネージャ「ネットワーク構成」「TCP/IP」を「有効」
 　　　SQL Server 2014 構成マネージャの起動コマンド：「SQLServerManager12.msc」
 　　・ServerBrowerを起動

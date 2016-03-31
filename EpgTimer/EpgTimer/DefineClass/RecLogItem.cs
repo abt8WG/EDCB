@@ -10,19 +10,37 @@ namespace EpgTimer.DefineClass
     /// <summary>
     /// DBのレコード
     /// </summary>
-    public class RecLogItem: IDBRecord
+    public class RecLogItem : IDBRecord
     {
 
         public enum RecodeStatuses
         {
-            無し = 0,
+            NONE = 0,
             予約済み = 1,
             録画完了 = 2,
             視聴済み = 4,
             録画異常 = 8,
             無効登録 = 16,
-            ALL = 31
+            不明 = 32,
+            ALL = 63
         };
+
+        #region - Constructor -
+        #endregion
+
+        #region - Method -
+        #endregion
+
+        public bool equals(RecFileInfo rfi0)
+        {
+            return (rfi0.OriginalNetworkID == epgEventInfoR.original_network_id
+                && rfi0.TransportStreamID == epgEventInfoR.transport_stream_id
+                && rfi0.ServiceID == epgEventInfoR.service_id
+                && rfi0.EventID == epgEventInfoR.event_id);
+        }
+
+        #region - Property -
+        #endregion
 
         public long ID { get; set; }
 
@@ -164,6 +182,9 @@ namespace EpgTimer.DefineClass
                 return CommonManager.Instance.VUtil.EpgDataContentBrush(epgEventInfoR.ContentInfo.nibbleList);
             }
         }
+
+        #region - Event Handler -
+        #endregion
 
     }
 

@@ -177,6 +177,16 @@ namespace EpgTimer
             return retv;
         }
 
+        /// <summary>
+        /// EpgData読み込み中
+        /// </summary>
+        public bool isEpgDataLoading
+        {
+            get { return this._isEpgDataLoading; }
+            set { this._isEpgDataLoading = value; }
+        }
+        bool _isEpgDataLoading = false;
+
         public DBManager(CtrlCmdUtil ctrlCmd)
         {
             cmd = ctrlCmd;
@@ -260,13 +270,16 @@ namespace EpgTimer
                 {
                     if (cmd == null) return ErrCode.CMD_ERR;
 
-                    serviceEventList = new Dictionary<ulong, EpgServiceEventInfo>();
+                    //serviceEventList = new Dictionary<ulong, EpgServiceEventInfo>();
                     var list = new List<EpgServiceEventInfo>();
 
                     ret = (ErrCode)cmd.SendEnumPgAll(ref list);
                     if (ret != ErrCode.CMD_SUCCESS) return ret;
 
+                    isEpgDataLoading = true;
+                    serviceEventList.Clear();
                     list.ForEach(info => serviceEventList.Add(info.serviceInfo.Create64Key(), info));
+                    isEpgDataLoading = false;
 
                     updateEpgData = false;
                     oneTimeReloadEpg = false;
