@@ -98,17 +98,17 @@ namespace EpgTimer
             this.recLogWindow.showResult(dataList[0]);
             IsCommandExecuted = true;
         }
-        PecLogWindow recLogWindow
+        RecLogWindow recLogWindow
         {
             get
             {
                 if (this._recLogWindow == null)
                 {
-                    this._recLogWindow = new PecLogWindow(Window.GetWindow(this.Owner));
+                    this._recLogWindow = new RecLogWindow(Window.GetWindow(this.Owner));
                 }
                 return this._recLogWindow;
             }
         }
-        PecLogWindow _recLogWindow = null;
+        RecLogWindow _recLogWindow = null;
     }
 }

@@ -18,7 +18,7 @@
             <DockPanel  Name="stackPanel_Search" Background="White">
                 <TextBox DockPanel.Dock="Top" Name="textBox_Search" Height="25"  VerticalContentAlignment="Center"  KeyDown="textBox_Search_KeyDown" ToolTip="Enter 実行" />
                 <DockPanel DockPanel.Dock="Top">
-                    <Button DockPanel.Dock= "Left" x:Name="button_Search" Width="100" Height="27" Click="button_Search_Click">検索</Button>
+                    <Button DockPanel.Dock= "Left" x:Name="button_Search" Width="95" Height="27" Click="button_Search_Click">検索</Button>
                     <Button x:Name="button_Reset" Click="button_Reset_Click" ToolTip="検索ワード・ボックスと検索結果リストビューをクリア">クリア</Button>
                 </DockPanel>
                 <DockPanel DockPanel.Dock="Top" Background="#E6E6E6">
@@ -58,6 +58,7 @@
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <DockPanel  Grid.Column="0">
+                <Button DockPanel.Dock="Bottom" x:Name="button_ChangeDatabase" Height="27" Click="button_ChangeDatabase_Click" ToolTip="データベースにインデックスを追加します。これから導入する方は必要ありません。">データベースを変更</Button>
                 <!--<Button DockPanel.Dock="Bottom" x:Name="button_CreateIndex" Height="27" Click="button_CreateIndex_Click" ToolTip="データベースにインデックスを追加します。これから導入する方は必要ありません。">インデックス作成</Button>-->
                 <StackPanel  DockPanel.Dock="Top" x:Name="stackPanel_Setting" Background="#FFCDDCDE">
                     <Border x:Name="border_CheckBox_RecLogEnabled" BorderBrush="Yellow" BorderThickness="2">

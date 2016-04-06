@@ -165,9 +165,9 @@ namespace EpgTimer.Common
             dict1.Add(COLUMN_StartTimeFlag, "0x" + item0.StartTimeFlag.ToString("X"));
             dict1.Add(COLUMN_DurationFlag, "0x" + item0.DurationFlag.ToString("X"));
             dict1.Add(COLUMN_durationSec, item0.durationSec.ToString());
-            dict1.Add(COLUMN_ShortInfo_event_name, base.createTextValue(shortInfo_event_name1));
-            dict1.Add(COLUMN_ShortInfo_text_char, base.createTextValue(shortInfo_text_char1));
-            dict1.Add(COLUMN_ExtInfo_text_char, base.createTextValue(extInfo_text_char1));
+            dict1.Add(COLUMN_ShortInfo_event_name, createTextValue(shortInfo_event_name1));
+            dict1.Add(COLUMN_ShortInfo_text_char, createTextValue(shortInfo_text_char1));
+            dict1.Add(COLUMN_ExtInfo_text_char, createTextValue(extInfo_text_char1));
             if (item0.start_time < minValue_DateTime)
             {
                 dict1.Add(COLUMN_start_time, q(minValue_DateTime.ToString(startTimeStrFormat)));
@@ -214,6 +214,33 @@ namespace EpgTimer.Common
             return base._getId(ref _id);
         }
 
+        public void alterTable_COLUMN_ExtInfo_text_char()
+        {
+            string query1 = "DROP FULLTEXT INDEX ON [dbo].[" + TABLE_NAME + "]";
+            string query2 = "ALTER TABLE [dbo].[" + TABLE_NAME + "] ALTER COLUMN " + COLUMN_ExtInfo_text_char + " nvarchar(3000) NOT NULL";
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
+                    {
+                        cmd1.ExecuteNonQuery();
+                    }
+                    using (SqlCommand cmd1 = new SqlCommand(query2, sqlConn1))
+                    {
+                        cmd1.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            createFulltext();
+        }
+
         public void createTable()
         {
             //epgサンプル数: 37073
@@ -225,7 +252,7 @@ namespace EpgTimer.Common
             //epg_Sample: 32352
             //Max_ShortInfo_event_name.Length: 62
             //Max_ShortInfo_text_char.Length: 123
-            //Max_ExtInfo_text_char.Length: 1893
+            //Max_ExtInfo_text_char.Length: 2503
             //Max_ContentInfo_nibbleList_Count1: 4
 
             string query1 = "CREATE TABLE [dbo].[" + TABLE_NAME + "](" +
@@ -241,15 +268,9 @@ namespace EpgTimer.Common
                     "[" + COLUMN_durationSec + "] [bigint] NOT NULL," +
                     "[" + COLUMN_ShortInfo_event_name + "] [nvarchar](100) NOT NULL," +
                     "[" + COLUMN_ShortInfo_text_char + "] [nvarchar](200) NOT NULL," +
-                    "[" + COLUMN_ExtInfo_text_char + "] [nvarchar](2000) NOT NULL," +
+                    "[" + COLUMN_ExtInfo_text_char + "] [nvarchar](3000) NOT NULL," +
                     "[" + COLUMN_ContentInfo + "] [varbinary](20) NOT NULL," +
                     "CONSTRAINT [PK_EpgEventInfo] PRIMARY KEY CLUSTERED ([" + COLUMN_ID + "] ASC))";
-
-            string query2 = "CREATE FULLTEXT INDEX ON " + TABLE_NAME + "(" +
-                COLUMN_ShortInfo_event_name + " Language 1041," +
-                COLUMN_ShortInfo_text_char + " Language 1041," +
-                COLUMN_ExtInfo_text_char + " Language 1041" +
-                ") KEY INDEX PK_EpgEventInfo ON " + FULLTEXTCATALOG + ";";
 
             try
             {
@@ -260,7 +281,29 @@ namespace EpgTimer.Common
                     {
                         cmd1.ExecuteNonQuery();
                     }
-                    using (SqlCommand cmd1 = new SqlCommand(query2, sqlConn1))
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            createFulltext();
+        }
+
+        void createFulltext()
+        {
+            string query1 = "CREATE FULLTEXT INDEX ON " + TABLE_NAME + "(" +
+                COLUMN_ShortInfo_event_name + " Language 1041," +
+                COLUMN_ShortInfo_text_char + " Language 1041," +
+                COLUMN_ExtInfo_text_char + " Language 1041" +
+                ") KEY INDEX PK_EpgEventInfo ON " + FULLTEXTCATALOG + ";";
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
                     {
                         cmd1.ExecuteNonQuery();
                     }
@@ -312,7 +355,7 @@ namespace EpgTimer.Common
             return base.delete(ids1.ToArray());
         }
 
-        public long exists(EpgEventInfoR epgInfo0)
+        public long exists(EpgEventInfo epgInfo0)
         {
             long? id1 = null;
             string query1 = "SELECT " + COLUMN_ID + " FROM " + tableName

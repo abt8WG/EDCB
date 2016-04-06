@@ -20,7 +20,7 @@ namespace EpgTimer
     /// <summary>
     /// PopupWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class PecLogWindow : Window
+    public partial class RecLogWindow : Window
     {
 
         MainWindow _mainWindow = Application.Current.MainWindow as MainWindow;
@@ -32,11 +32,12 @@ namespace EpgTimer
         SolidColorBrush _background = new SolidColorBrush(Color.FromRgb(250, 250, 250));
         SolidColorBrush _background_Selected = new SolidColorBrush(Colors.LightYellow);
         bool _isVisible = false;
+        bool _isClosed = false;
 
         #region - Constructor -
         #endregion
 
-        public PecLogWindow(Window owner0)
+        public RecLogWindow(Window owner0)
         {
             InitializeComponent();
             //
@@ -334,8 +335,15 @@ namespace EpgTimer
             }
         }
 
+        /// <summary>
+        /// HideしたWindowsがOwnerとともに表示されてしまうのを防ぐ
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            if (_isClosed) { return; }
+            //
             if (_isVisible)
             {
                 Visibility = Visibility.Visible;
@@ -345,5 +353,11 @@ namespace EpgTimer
                 Visibility = Visibility.Hidden;
             }
         }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            _isClosed = true;
+        }
+
     }
 }

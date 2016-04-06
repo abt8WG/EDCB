@@ -567,8 +567,8 @@ namespace EpgTimer.Common
             Dictionary<string, string> dict1 = new Dictionary<string, string>();
             dict1.Add(COLUMN_lastUpdate, q(item0.lastUpdate.ToString(DB_EpgEventInfo.timeStampStrFormat)));
             dict1.Add(COLUMN_recodeStatus, ((int)item0.recodeStatus).ToString());
-            dict1.Add(COLUMN_comment, base.createTextValue(item0.comment));
-            dict1.Add(COLUMN_RecFilePath, base.createTextValue(item0.recFilePath));
+            dict1.Add(COLUMN_comment, createTextValue(item0.comment));
+            dict1.Add(COLUMN_RecFilePath, createTextValue(item0.recFilePath));
             dict1.Add(COLUMN_epgEventInfoID, item0.epgEventInfoID.ToString());
             dict1.Add(COLUMN_epgAllowOverWrite, (item0.epgAlllowOverWrite ? 1 : 0).ToString());
 
@@ -583,6 +583,11 @@ namespace EpgTimer.Common
             createTable();
             db_EpgEventInfo.createTable();
             createIndex();
+        }
+
+        public void alterTable_EpgEventInfo()
+        {
+            db_EpgEventInfo.alterTable_COLUMN_ExtInfo_text_char();
         }
 
         void createTable()

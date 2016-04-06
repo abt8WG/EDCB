@@ -28,8 +28,6 @@ namespace EpgTimer
         public enum searchMethods { LIKE, Contrains, Freetext };
         public static readonly string notEnabledMessage = "RecLogが無効に設定されています。";
 
-        public event EventHandler recLogUpdated;
-
         BackgroundWorker _bgw_Update_ReserveInfo = new BackgroundWorker();
         BackgroundWorker _bgw_Update_RecInfo = new BackgroundWorker();
         BackgroundWorker _bgw_Update_EpgData = new BackgroundWorker();
@@ -99,10 +97,6 @@ namespace EpgTimer
             {
                 if (_isReserveInfoChanged)
                 {
-                    if (recLogUpdated != null)
-                    {
-                        recLogUpdated(this, EventArgs.Empty);
-                    }
                     _isReserveInfoChanged = false;
                     if (IsVisible)
                     {
@@ -449,7 +443,8 @@ namespace EpgTimer
                 }
                 else if (item1.recodeStatus == RecLogItem.RecodeStatuses.無効登録)
                 {
-                    list_Deleted1.Add(item1);
+                    // 無効登録は残す
+                    //list_Deleted1.Add(item1);
                 }
                 else
                 {
@@ -1304,6 +1299,12 @@ namespace EpgTimer
                 _menu_ReserveChangeOnOff.IsEnabled = false;
                 _menu_OpenChgReserveDialog.IsEnabled = false;
             }
+        }
+
+        private void button_ChangeDatabase_Click(object sender, RoutedEventArgs e)
+        {
+            db_RecLog.alterTable_EpgEventInfo();
+            addDBLog("データベースを変更しました。");
         }
 
         string _howto = @"

@@ -104,8 +104,8 @@
     <Compile Include="InfoWindow.xaml.cs">
       <DependentUpon>InfoWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PecLogWindow.xaml.cs">
-      <DependentUpon>PecLogWindow.xaml</DependentUpon>
+    <Compile Include="RecLogWindow.xaml.cs">
+      <DependentUpon>RecLogWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="RecLogView.xaml.cs">
       <DependentUpon>RecLogView.xaml</DependentUpon>
@@ -321,7 +321,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="PecLogWindow.xaml">
+    <Page Include="RecLogWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
