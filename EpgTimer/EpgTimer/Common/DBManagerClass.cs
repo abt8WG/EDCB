@@ -338,7 +338,11 @@ namespace EpgTimer
                     recFileInfo = new Dictionary<uint, RecFileInfo>();
                     var list = new List<RecFileInfo>();
 
-                    ret = (ErrCode)cmd.SendEnumRecInfo(ref list);
+                    ret = cmd.SendEnumRecInfoBasic(ref list);
+                    if (ret == ErrCode.CMD_NON_SUPPORT)
+                    {
+                        ret = cmd.SendEnumRecInfo(ref list);
+                    }
                     if (ret != ErrCode.CMD_SUCCESS) return ret;
 
                     list.ForEach(info => recFileInfo.Add(info.ID, info));

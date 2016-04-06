@@ -1,38 +1,5 @@
-dofile(mg.document_root..'\\util.lua')
+﻿dofile(mg.document_root..'\\util.lua')
 
-ct=[=[
-<!doctype html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.5">
-<title>EpgTimer</title>
-<link rel="shortcut icon" href="img/EpgTimer.ico">
-<link href="css/default.css" rel="stylesheet" type="text/css">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<script src="js/jquery.min.js"></script>
-<script src="js/hammer.min.js"></script>
-<script src="js/jquery.hammer.js"></script>
-<script src="js/common.js"></script>
-</head>
-<body>
-<div id="wrap">
-<div id="wrap2">
-<div id="header" class="shadow">
-]=]..menu()
- ..'</div>\n'
- ..sidemenu()..[=[
-<div id="main">
-<div id="loading"><div><div class="spinner">
-<div class="spinner__layer spinner__layer-1"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-2"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-3"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-4"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-</div></div></div>
-</div>
-</div>
-</div>
-</body>
-</html>
-]=]
+ct=template({main='  <main class="mdl-layout__content">\n'})
+
 mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: '..#ct..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n', ct)

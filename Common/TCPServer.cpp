@@ -4,9 +4,11 @@
 #include "ErrDef.h"
 #include "CtrlCmdUtil.h"
 #include "CryptUtil.h"
+#include "BlockLock.h"
 
 CTCPServer::CTCPServer(void)
 {
+	InitializeCriticalSection(&m_lock);
 	m_pCmdProc = NULL;
 	m_pParam = NULL;
 	m_dwPort = 8081;
@@ -24,6 +26,7 @@ CTCPServer::~CTCPServer(void)
 {
 	StopServer();
 	WSACleanup();
+	DeleteCriticalSection(&m_lock);
 }
 
 BOOL CTCPServer::StartServer(DWORD dwPort, DWORD dwResponseTimeout, LPCWSTR acl, LPCWSTR password, CMD_CALLBACK_PROC pfnCmdProc, void* pParam)
@@ -32,16 +35,18 @@ BOOL CTCPServer::StartServer(DWORD dwPort, DWORD dwResponseTimeout, LPCWSTR acl,
 		return FALSE;
 	}
 
-#if 0
 	if( m_hThread != NULL &&
 	    m_pCmdProc == pfnCmdProc &&
 	    m_pParam == pParam &&
-	    m_dwPort == dwPort &&
-	    m_dwResponseTimeout == dwResponseTimeout &&
-	    m_acl == acl ){
+	    m_dwPort == dwPort ){
+		// m_dwResponseTimeout, m_acl, m_hmac ‚É‚Â‚¢‚Ä‚Í ServerThread ‚ðI—¹‚³‚¹‚¸‚É’u‚«Š·‚¦‚é
+		CBlockLock lock(&m_lock);
+		m_dwResponseTimeout = dwResponseTimeout;
+		m_acl = acl;
+		m_hmac.Close();
+		m_hmac.Create(password);
 		return TRUE;
 	}
-#endif
 
 	StopServer();
 
@@ -319,6 +324,7 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 		}
 
 		if( FD_ISSET(pSys->m_sock, &ready) ){
+			CBlockLock lock(&pSys->m_lock); // for pSys->m_acl
 			struct sockaddr_in client;
 			int len = sizeof(client);
 			SOCKET sock = accept(pSys->m_sock, (struct sockaddr *)&client, &len);

@@ -35,15 +35,14 @@ namespace EpgTimer.UserCtrlView
         protected bool isDragMoved = false;
 
         protected Point lastPopupPos;
-        protected object lastPopupInfo = null;
+        protected ViewPanelItemBase lastPopupInfo = null;
 
         protected virtual bool IsSingleClickOpen { get { return false; } }
         protected virtual double DragScroll { get { return 1; } }
         protected virtual bool IsMouseScrollAuto { get { return false; } }
         protected virtual double ScrollSize { get { return 240; } }
         protected virtual bool IsPopupEnabled { get { return false; } }
-        protected virtual object GetPopupItem(Point cursorPos) { return null; }
-        protected virtual void SetPopup(object item) { return; }
+        protected virtual ViewPanelItemBase GetPopupItem(Point cursorPos) { return null; }
         protected virtual FrameworkElement PopUp { get { return new FrameworkElement(); } }
         protected ScrollViewer scroll;
         protected Canvas cnvs;
@@ -56,18 +55,6 @@ namespace EpgTimer.UserCtrlView
 
             cnvs.Height = 0;
             cnvs.Width = 0;
-
-/*
-            for(int i = 0; i < cnvs.Children.Count; i++)
-            {
-                var panel = cnvs.Children[i] as PanelBase;
-                if (panel != null)
-                {
-                    panel.ClearInfo();
-                    break;
-                }
-            }
-*/
 
             PopupClear();
         }
@@ -100,8 +87,8 @@ namespace EpgTimer.UserCtrlView
                     return;
                 }
 
-                Point itemPos = Mouse.GetPosition(cnvs); //ProgramViewのマウスイベントを親要素(canvas)に集約する
-                object item = GetPopupItem(itemPos);
+                Point itemPos = Mouse.GetPosition(cnvs);
+                ViewPanelItemBase item = GetPopupItem(itemPos);
 
                 if (item != lastPopupInfo)
                 {
@@ -119,42 +106,47 @@ namespace EpgTimer.UserCtrlView
             }
         }
 
+        // PopUpの初期化
+        protected virtual void SetPopup(ViewPanelItemBase popInfo)
+        {
+            UpdatePopupPosition(popInfo);
+
+            PopUp.Width = popInfo.Width;
+            if (popInfo.TopPos < scroll.ContentVerticalOffset)
+            {
+                PopUp.MinHeight = Math.Max(0, popInfo.TopPos + popInfo.Height - scroll.ContentVerticalOffset);
+            }
+            else
+            {
+                PopUp.MinHeight = Math.Max(0, Math.Min(scroll.ContentVerticalOffset + scroll.ViewportHeight - popInfo.TopPos, popInfo.Height));
+            }
+        }
+
         // PopUp が画面内に収まるように調整する
-        protected void UpdatePopupPosition(double LeftPos, double TopPos)
+        protected void UpdatePopupPosition(ViewPanelItemBase popInfo)
         {
             // offsetHが正のとき右にはみ出している
-            double offsetH = LeftPos + PopUp.ActualWidth - (scroll.ContentHorizontalOffset + scroll.ActualWidth - 18);
+            double offsetH = popInfo.LeftPos + PopUp.ActualWidth - (scroll.ContentHorizontalOffset + scroll.ViewportWidth);
             // 右にはみ出した分だけ左にずらす
-            double left = LeftPos - Math.Max(0, offsetH);
+            double left = popInfo.LeftPos - Math.Max(0, offsetH);
             // 左にはみ出てる場合はscrollエリアの左端から表示する
             Canvas.SetLeft(PopUp, Math.Floor(Math.Max(left, scroll.ContentHorizontalOffset)));
 
             // offsetVが正のとき下にはみ出している
-            double offsetV = TopPos + PopUp.ActualHeight - (scroll.ContentVerticalOffset + scroll.ActualHeight - 18);
+            double offsetV = popInfo.TopPos + PopUp.ActualHeight - (scroll.ContentVerticalOffset + scroll.ViewportHeight);
             // 下にはみ出した分だけ上にずらす
-            double top = TopPos - Math.Max(0, offsetV);
+            double top = popInfo.TopPos - Math.Max(0, offsetV);
             // 上にはみ出てる場合はscrollエリアの上端から表示する
-            Canvas.SetTop(PopUp, Math.Floor(Math.Max(top, scroll.ContentVerticalOffset)));
+            Canvas.SetTop(PopUp, Math.Floor(Math.Max(top, scroll.ContentVerticalOffset - 1)));
         }
 
         // PopUp の ActualWidth と ActualHeight を取得するために SizeChanged イベントを捕捉する
         protected virtual void popupItem_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            double LeftPos = 0;
-            double TopPos = 0;
-            if (lastPopupInfo is ProgramViewItem)
+            if (lastPopupInfo != null)
             {
-                var popup = lastPopupInfo as ProgramViewItem;
-                LeftPos = popup.LeftPos;
-                TopPos = popup.TopPos;
+                UpdatePopupPosition(lastPopupInfo);
             }
-            else if (lastPopupInfo is ReserveViewItem)
-            {
-                var popup = lastPopupInfo as ReserveViewItem;
-                LeftPos = popup.LeftPos;
-                TopPos = popup.TopPos;
-            }
-            UpdatePopupPosition(LeftPos, TopPos);
         }
 
         /// <summary>マウスホイールイベント呼び出し</summary>

@@ -72,7 +72,7 @@ public:
 	// 録画ファイルを検索　マッチした録画ファイルのIDを返す
 	vector<DWORD> SearchRecFile(const EPGDB_SEARCH_KEY_INFO& item, bool fromNew = false);
 	// 録画ファイルの存在情報を更新
-	void UpdateFileExist();
+	void UpdateFileExist() const;
 	// マージされていない新規録画済みの個数
 	int GetNewCount() const { return (int)eventMapNew.size(); }
 	// MergeNew呼び出し後じゃないと新しいのはGetできない
@@ -93,7 +93,7 @@ private:
 	REC_EVENT_MAP eventMap;
 	SERVICE_EVENT_MAP serviceMap;
 
-	CDirectoryCache directoryCache;
+	mutable CDirectoryCache directoryCache;
 
 	CTsPacketParser packetParser;
 	CEitDetector eitDetector;
@@ -106,7 +106,7 @@ private:
 		CMediaData* buffer;
 	};
 
-	vector<REC_EVENT_INFO*> GetAll();
+	vector<REC_EVENT_INFO*> GetAll() const;
 
 	void RegistRecFiles(const REC_INFO_MAP& recFiles);
 

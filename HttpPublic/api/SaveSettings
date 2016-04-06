@@ -33,14 +33,18 @@ if reset then
 
   end
 
-  messege=messege..'を初期化しました<![CDATA[<br>]]>ページをリロードします'
+  if messege then
+    messege=messege..'を初期化しました'
+  end
 
 elseif post then
 --  =(mg.get_var(post, '') or '')
 
   tkntrec=0+(mg.get_var(post, 'tkntrec') or 0)~=0
   option=0+(mg.get_var(post, 'option') or 0)~=0
+  Roboto=0+(mg.get_var(post, 'Roboto') or 0)~=0
   subGenreoption=(mg.get_var(post, 'subGenreoption') or '')
+  PAGE_COUNT=(mg.get_var(post, 'PAGE_COUNT') or '')
 
   oneseg=0+(mg.get_var(post, 'oneseg') or 0)~=0
   hover=0+(mg.get_var(post, 'hover') or 0)~=0
@@ -85,7 +89,9 @@ elseif post then
 
   edcb.WritePrivateProfile('SET','tkntrec',tkntrec,path)
   edcb.WritePrivateProfile('SET','option',option,path)
+  edcb.WritePrivateProfile('SET','Roboto',Roboto,path)
   edcb.WritePrivateProfile('SET','subGenreoption',subGenreoption,path)
+  edcb.WritePrivateProfile('SET','PAGE_COUNT',PAGE_COUNT,path)
 
   edcb.WritePrivateProfile('GUIDE','oneseg',oneseg,path)
   edcb.WritePrivateProfile('GUIDE','hover',hover,path)
@@ -148,5 +154,5 @@ elseif post then
 end
 
 ct='<?xml version="1.0" encoding="UTF-8" ?'..'><entry>'
-  ..(messege and '<success>'..messege..'</success></entry>' or '<err>保存できませんでした</err></entry>')
+  ..(messege and '<success>'..messege..'</success></entry>' or '<err>'..(reset and '初期化' or '保存')..'できませんでした</err></entry>')
 mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/xml\r\nContent-Length: '..#ct..'\r\nConnection: close\r\n\r\n', ct)

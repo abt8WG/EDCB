@@ -49,31 +49,21 @@ namespace EpgTimer.TunerReserveViewCtrl
             }
         }
 
-        protected override object GetPopupItem(Point cursorPos)
+        protected override ViewPanelItemBase GetPopupItem(Point cursorPos)
         {
             if (reserveViewPanel.Items == null) return null;
 
             return reserveViewPanel.Items.Find(pg => pg.IsPicked(cursorPos));
         }
 
-        protected override void SetPopup(object item)
+        protected override void SetPopup(ViewPanelItemBase item)
         {
+            base.SetPopup(item);
+
             var viewInfo = (ReserveViewItem)item;
             var resItem = new ReserveItem(viewInfo.ReserveInfo);
-            
-            popupItem.Background = viewInfo.BackColorTuner;
 
-            UpdatePopupPosition(viewInfo.LeftPos, viewInfo.TopPos);
-            popupItem.Width = viewInfo.Width;
-            if (viewInfo.TopPos < scroll.ContentVerticalOffset)
-            {
-                popupItem.MinHeight = viewInfo.TopPos + viewInfo.Height - scroll.ContentVerticalOffset;
-            }
-            else
-            {
-                popupItem.MinHeight = Math.Max(0, Math.Min(scroll.ContentVerticalOffset + scroll.ActualHeight - viewInfo.TopPos - 18, viewInfo.Height));
-            }
-            //popupItemTextArea.Margin = new Thickness(2, -1, 0, 0);
+            popupItem.Background = viewInfo.BackColorTuner;
             popupItemTextArea.Margin = new Thickness(1, -1, 5, 1);
 
             double sizeTitle = Settings.Instance.TunerFontSizeService;

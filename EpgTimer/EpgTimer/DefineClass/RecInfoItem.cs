@@ -272,12 +272,8 @@ namespace EpgTimer
                             info += data.andKey + "(" + data.dataID + ")";
                         }
                     }
-                    else
-                    {
-                        info = "(データなし)";
-                    }
                 }
-                return info;
+                return info.Length > 0 ? info : "(データなし)";
             }
         }
     }

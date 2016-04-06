@@ -1,0 +1,39 @@
+﻿<Window x:Class="EpgTimer.Setting.RegisterWebUserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EpgTimer.Setting"
+        mc:Ignorable="d"
+        Title="ユーザー登録" Height="300" Width="500" Closing="Window_Closing">
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <ListView Grid.Column="0" Grid.RowSpan="2" Name="listView" SelectionChanged="listView_SelectionChanged">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="ユーザー名" DisplayMemberBinding="{Binding Path=User}" />
+                    <GridViewColumn Header="認証ドメイン" DisplayMemberBinding="{Binding Path=Domain}" />
+                    <GridViewColumn Header="md5 ハッシュ" DisplayMemberBinding="{Binding Path=Hash}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StackPanel Grid.Column="1" >
+            <Label Content="ユーザー名" Margin="0,4,0,0" />
+            <TextBox Name="textBox_User" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" VerticalContentAlignment="Center" TextChanged="textBox_TextChanged" />
+            <Label Content="認証ドメイン" Margin="0,4,0,0" />
+            <TextBox Name="textBox_Domain" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsEnabled="false"/>
+            <Label Content="パスワード" Margin="0,4,0,0" />
+            <PasswordBox Name="passwordBox_Password" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" VerticalContentAlignment="Center" PasswordChanged="textBox_TextChanged" />
+            <Button Name="button_Add" Content="追加" Margin="40,4" Click="button_Add_Click"/>
+            <Button Name="button_Edit" Content="変更" Margin="40,4" Click="button_Edit_Click"/>
+            <Button Name="button_Del" Content="削除" Margin="40,4" Click="button_Del_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

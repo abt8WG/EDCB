@@ -66,6 +66,8 @@ private:
 	void UpdateRecFileInfo();
 	bool RemoveNolinkedReserve(vector<DWORD> beforeReserveIds);
 
+	void OutputDebugCmd(DWORD cmd, DWORD result, LONGLONG ticks);
+
 	//外部制御コマンド関係
 	static int CALLBACK CtrlCmdPipeCallback(void* param, CMD_STREAM* cmdParam, CMD_STREAM* resParam);
 	static int CALLBACK CtrlCmdTcpCallback(void* param, CMD_STREAM* cmdParam, CMD_STREAM* resParam);
@@ -107,6 +109,9 @@ private:
 	static int LuaGetReserveData(lua_State* L);
 	static int LuaGetRecFilePath(lua_State* L);
 	static int LuaGetRecFileInfo(lua_State* L);
+	static int LuaGetRecFileInfoBasic(lua_State* L);
+	static int LuaGetRecFileInfoProc(lua_State* L, bool getExtraInfo);
+	static int LuaChgProtectRecFileInfo(lua_State* L);
 	static int LuaDelRecFileInfo(lua_State* L);
 	static int LuaGetTunerReserveAll(lua_State* L);
 	static int LuaEnumRecPresetInfo(lua_State* L);

@@ -1,235 +1,258 @@
-﻿function now(){								//現時刻の位置
-	time()
-	var t=0;if(HOUR<basehour){t=24;}
-	return ((HOUR-basehour+t)*60+MIN)*oneminpx;
+﻿function now(){
+	var date = new Date();
+	var hour = date.getHours();
+	var min  = MIN = date.getMinutes();
+	if (min < 10){min = '0' + min;}
+	if (hour < basehour){hour = hour + 24;}
+	//現時刻の位置
+	var line = ((hour - basehour) * 60 + MIN) * oneminpx;
+	return {line:line, min:min};
 }
 
-function line(){								//現時刻のライン表示
-	$("#line").offset({top:now()+$("#tvguide").offset().top});
-}
+function line(){
+	var time = now();
+	//現時刻のライン移動
+	$('#line').css('top', time.line);
 
-function minute(){
-	line();
-	if(min!=$("#line").text()){$("#line").text(min);}			//ラインに分を表示
+	//ラインに分を表示
+	if (time.min != $('#line').text()){$('#line').text(time.min);}
 }
 
 function end(){
-	minute();
-	var end=$('.end_'+date+'-'+hour+'-'+min+'-'+sec);
-	var hide='';
-	if(end.hasClass('nothing')){hide=' style="display:none;"'}
-	if(end.children().last().hasClass('content')){end.append('<div class="end"'+hide+'>');}
+	line();
+	//終了番組を薄く
+	$('.end_' + Math.floor( new Date().getTime()/10000 )).children().addClass('end').find('.addreserve').remove();
 }
 
 function jump(){
-	$("#wrap_tv_3").animate({scrollTop:now()-marginmin*oneminpx}, 550, "swing");
-}
-
-function move(){								//ヘッダの位置
-		$("#head").offset({left:$("#tvguide").offset().left});		//チャンネル名
-		$("#hour").offset({top:$("#tvguide").offset().top});		//時間帯
-}
-
-function scroll(time){							//指定時間の位置
-	var position=((time-1)*60-30)*oneminpx;
-	$("#wrap_tv_3").animate({scrollTop:position}, 550, "swing");
+	$('main').animate({scrollTop:now().line - marginmin * oneminpx}, 550, 'swing');
 }
 
 $(function(){
-	$(window).on("load resize", function(){					//ヘッダの微調整
-		headerheight=$("#tvheader").height()+$("#head").height();
-		$("#head").css("padding-top",$("#tvheader").height());
-		$("#wrap_tv_1").css("padding-top",headerheight);
-		$("#wrap_tv_2").css("padding-left",$("#hour").width())
-		$("#tvheader style").remove();
-		$("#tvheader").append('<style>#tvheader:after{width:'+($("#hour").width()-1)+'px;height:'+$("#head").height()+'px;bottom:-'+$("#head").height()+'px;}</style>');
-		move();
+	//チャンネル名連動
+	$('#tv-guide').scroll(function(){
+		$('#tv-guide-header').offset({left:-$('#tv-guide').scrollLeft()});
 	});
 
-	$("#wrap_tv_3").on("scroll", function(){				//スクロール連動
-		move();
-		line();
+	$('#tv-guide').on({
+	    'touchstart mousedown': function(e){
+	        if (!isTouch && e.which != 1){
+	            return;
+	        }
+	    	var data = new Object();
+        	data.touched = true;
+	        data.X = (isTouch ? event.changedTouches[0].clientX : e.clientX);
+	        data.Y = (isTouch ? event.changedTouches[0].clientY : e.clientY);
+	        data.left = this.scrollLeft;
+	        data.top = $('main').scrollTop();
+	        $(this).data(data);
+	        if (!isTouch){
+        		return false;
+        	}
+	    }
+	});
+	var target = $('#tv-guide');
+	$(document).on({
+	    'touchmove mousemove': function(e){
+	        if (!target.data('touched')){
+	            return;
+	        }
+	        e.preventDefault();
 
-		/*禁断の果実
-		$.each($(".cell"), function(){
-			base=$(this).offset().top-headerheight;
+	        $('body').addClass('drag');
+
+	        target.scrollLeft( target.data('left') + (target.data('X') - (isTouch ? event.changedTouches[0].clientX : e.clientX) ) * (isTouch ? 1 : 1.6) );
+	        $('#tv-guide-container').scrollTop( target.data('top') + (target.data('Y') - (isTouch ? event.changedTouches[0].clientY : e.clientY) ) * (isTouch ? 1 : 1.6) );
+ 	    },
+	    'touchend mouseup': function(){
+	        if (!target.data('touched')){
+	            return;
+	        }
+	         
+	        $('body').removeClass('drag');
+	        target.data('touched', false);
+	    }
+	});
+
+	/*禁断の果実
+	$('main').on('scroll', function(){
+		var header = $('header').height();
+		$.each($('.cell'), function(){
+			base=$(this).offset().top-header;
 			height=$(this).innerHeight();
-			content=$(this).children(".content");
-			if(content.hasClass("reserved") || content.hasClass("disable") || content.hasClass("partially") || content.hasClass("shortage") || content.hasClass("viewing")){
-				if(base<-3 && height+base>3){
-					content.addClass("keep-top").css("top",-base).height(height+base-3).css("min-height",0);
-					return
+			content=$(this).children('.content');
+
+			if (content.hasClass('reserve')){
+				if(base < -3 && height+base > 3){
+					content.css('top', -base).outerHeight(height+base-3).css('min-height', height+base).css('border-top', 'none');
+					return;
 				}
 			}else{
-				if(base<0 && height+base>0){
-					content.css("top",-base).height(height+base).css("min-height",0);
-					return
+				if (base < 0 && height+base > 0){
+					content.css('top', -base).height(height+base).css('min-height', height+base);
+					return;
 				}
 			}
-			content.css("top",0).css("min-height",height).removeClass("keep-top");
+			content.css('top', 0).css('min-height', height).css('border-top', '');
 		})
-		$.each($("#hour div"), function(){
-			base=$(this).offset().top-headerheight;
+		$.each($('#hour-container .hour'), function(){
+			base=$(this).offset().top-header;
 			height=$(this).innerHeight();
-			content=$(this).find("span");
-			if(base<0 && height+base>0){
-				content.css("top",-base);
+			content=$(this).find('tt');
+
+			if(base < 0 && height+base > 0){
+				content.css('padding-top', -base+5);
 			}else{
-				content.css("top",0);
+				content.css('padding-top', '');
 			}
-		})*/
+		})
+	});
+	*/
+
+	//現時間にスクロール
+	$('#now').click(function(){
+		jump();
 	});
 
-	$("[name=hide]").change(function(){
-		var val=$(this).val();
-		if($(this).prop('checked')){
-			$(".id-"+val).hide();
-		}else{
-			$(".id-"+val).show();
-		}
+	//指定時間にスクロール
+	$('.scroller').click(function(){
+		$('main').animate({scrollTop: $(this).data('scroll')}, 550, 'swing');
 	});
 
-
-	$("[id^=g-]").click(function(){
-		if($(this).hasClass("active")){
-			$("[id^=g-]").removeClass("active");
-			$(".content").show();
-			$(".end").show();
-			$(".cell").removeClass("nothing");
-		}else{
-			$("[id^=g-]").removeClass("active");
-			$(this).addClass("active");
-			$(".content").hide();
-			$(".end").hide();
-			$(".cell").addClass("nothing");
-			$(".content."+$(this).data("value")).show().parent(".cell").removeClass("nothing");
-		}
-	});
-	
-
-	$(".cell").mousedown(function(e){					//番組詳細表示
-		if(e.which==1){
-			$("#andKey").blur();
-			pageX=e.pageX
-			pageY=e.pageY
+	//番組詳細表示
+	$('.cell').mousedown(function(e){
+		if (e.which == 1){
+			pageX = e.pageX;
+			pageY = e.pageY;
 		}
 	}).mouseup(function(e){
-		if(pageX==e.pageX && pageY==e.pageY && e.which==1){				//ドラッグスクロール排除
-			if(!$(e.target).is("a,label,.nothing")){
-				if($(this).hasClass("clicked")){
-					$(this).removeClass("clicked");
+		//ドラッグスクロール排除
+		if (e.which == 1 && pageX == e.pageX && pageY == e.pageY){
+			if (!$(e.target).is('a, label, .nothing')){
+				if($(this).hasClass('clicked')){
+					$(this).removeClass('clicked');
 				}else{
-					$(".cell").removeClass("clicked");
-					$(this).addClass("clicked");
+					$('.cell').removeClass('clicked');
+					$(this).addClass('clicked');
 				}
 			}
-		}else if (hover==false && e.which==1){
-			$(".cell").removeClass("clicked");
+		}else if (hover == false && e.which == 1){
+			$('.cell').removeClass('clicked');
 		}
 	});
 
-	if (hover==true){
-		$(".cell").hover(						//マウスホバーで番組詳細表示
+	//マウスホバーで番組詳細表示
+	if (hover == true){
+		$('.cell').hover(
 			function(){
-				$(this).addClass("clicked");
+				$(this).addClass('clicked');
 			},function(){
-				$(this).removeClass("clicked");
+				$(this).removeClass('clicked');
 		});
 	}
 
-	$("#jumpnow").click(function(){jump();});				//現時刻に移動
-
-	$("a.jumper").click(function(){						//指定時間に移動
-		scroll($(this).attr("value"));
-	});
-	$("[name=time]").change(function(){					//指定時間に移動(スマホ用)
-		if ($(this).val().match(/^epg/i)){
-			location.href=$(this).val();
+	//チャンネルトグル
+	$('.stationToggle').change(function(){
+		var obj = $('.id-' + $(this).val());
+		if($(this).prop('checked')){
+			obj.show();
 		}else{
-			scroll($(this).val());
+			obj.hide();
+		}
+	});
+	
+	//ジャンルトグル
+	$('.genreToggle').change(function(){
+		$('.cell').removeClass('nothing');
+		if($(this).val() == 'all'){
+			$('.content').show().removeClass('choice');
+		}else{
+			$('.content').show().removeClass('choice').not( $(this).val() ).hide().parent().addClass('nothing');
+			$( $(this).val() ).addClass('choice');
 		}
 	});
 
-	$(".pull").hover(							//サブメニュー表示
-		function(){
-			$(this).addClass("hover");
-			var width=$(".hover ul").innerWidth();
-			var height=$(".hover ul").innerHeight();
-			$(".hover div").width(width).height(height);
-			$(".hover .jump").css("right",0);
-			$(".hover ul").css("clip","rect(0px "+width+"px "+height+"px 0px)");
-		}
-		,function(){
-			var width=$(".hover ul").innerWidth();
-			$(".hover ul").css("clip","rect(0px "+width+"px 0px "+width+"px)");
-			$(this).removeClass("hover");
-		}
-	);
-
-	$(".toggle").click(function(){
-		$(this).toggleClass("clicked").next().slideToggle()
+	var notification = document.querySelector('.mdl-js-snackbar');
+	//EPG取得
+	$('.epg').click(function(){
+		$.get('/api/Epg', {epg: $(this).data('epg')}, function(result, textStatus, xhr){
+			var xml = $(xhr.responseXML);
+			notification.MaterialSnackbar.showSnackbar({message: xml.find('info').text()});
+		});
 	});
 
-	$('.addepg').click(function(){						//EPG予約
-		$('#hidden [name="andKey"]').val($(this).data('andkey'));
-		var service=$('#hidden [name="serviceList"]');
-		if(service.val()==''){service.val($(this).parents('[class^="id-"]').data('service'))};
-		$('#hidden').submit();
+	//EPG予約
+	$('.autoepg').click(function(){
+		$('#autoepg [name=andKey]').val( $(this).data('andkey') );
+		var service = $(this).parents('.station').data('service');
+		if (service){
+			$('#autoepg [name=serviceList]').val(service);
+		}
+		$('#autoepg').submit();
 	});
 
-	$(".reserve").click(function(){
-		var a=this;
-		var url ,data;
-		if ($(this).data("reserve")>0){
-			url="api/reservetoggle";
-			data={"id":$(this).data("reserve")};
-		}else if ($(this).data("eid")>0){
-			url="api/oneclickadd";
-			data={	"onid":$(this).data("onid"),
-				"tsid":$(this).data("tsid"),
-				"sid":$(this).data("sid"),
-				"eid":$(this).data("eid")};
+	//予約追加・有効・無効
+	$('.addreserve').click(function(){
+		$('#spinner').addClass('is-visible').children().addClass('is-active');
+		var target = $(this);
+		var message, url , data;
+
+		if (target.data('reserve')){
+			message = '予約を有効にしました';
+			url = '/api/reservetoggle';
+			data = {'id': target.data('reserve')};
+		}else if (target.data('eid')){
+			message = '予約を追加しました';
+			url = '/api/oneclickadd';
+			data = {
+				'onid': target.data('onid'),
+				'tsid': target.data('tsid'),
+				'sid': target.data('sid'),
+				'eid': target.data('eid')
+			};
 		}
 		$.ajax({
 			url: url,
 			data: data,
+			
+			success: function(result, textStatus, xhr){
+				var xml = $(xhr.responseXML);
+				if (xml.find('success').length > 0){
+					var start = xml.find('start').text();
+					var recmode = xml.find('recmode').text();
+					var overlapmode = xml.find('overlapmode').text();
+					var id = xml.find('reserveid').text();
+					var button, recmode, mark;
 
-			success: function(result, textStatus, xhr) {
-				var xml=xhr.responseXML;
-				if($(xml).find('success').length>0){
-					var start=$(xml).find('start').text();
-					var recmode=$(xml).find('recmode').text();
-					var overlapmode=$(xml).find('overlapmode').text();
-					var id=$(xml).find('reserveid').text();
-
-					var parents=$(a).parents(".cell")
-					$(a).data("reserve", id);
-					$(parents).children().removeClass('disable partially shortage viewing reserved');
-					if($(parents).find('.recable').length==0){
-						$(parents).find('.start').append('<span class="mark recable"></span>');
-					}
-					if (recmode==5){
-						$(a).html('有効');
-						$(parents).children().not('.end').addClass('disable').find('.recable').addClass('no').html('無');
+					if (recmode == 5){
+						message = '予約を無効にしました'
+						button = '有効';
+						recmode = 'disabled';
+						mark = '無'
 					}else{
-						$(a).html('無効');
-						$(parents).find('.recable').removeClass('no view');
-						if(overlapmode==1){
-							$(parents).children().not('.end').addClass('partially').find('.recable').html('部');
-						}else if(overlapmode==2){
-							$(parents).children().not('.end').addClass('shortage').find('.recable').html('不');
-						}else if(recmode==4){
-							$(parents).children().not('.end').addClass('viewing').find('.recable').addClass('view').html('視');
+						button = '無効';
+						if (overlapmode == 1){
+							recmode = 'partially';
+							mark = '部';
+						}else if (overlapmode == 2){
+							recmode = 'shortage';
+							mark = '不';
+						}else if (recmode == 4){
+							recmode = 'view';
+							mark = '視';
 						}else{
-							$(parents).children().not('.end').addClass('reserved').find('.recable').html('録');
+							mark = '録';
 						}
 					}
+					target.data('reserve', id).text(button).parents('.content').not('.reserve').find('.startTime').append('<span class="mark reserve"></span>');
+					target.parents('.content').removeClass('disabled partially shortage view').addClass('reserve ' + recmode).find('.mark.reserve').text(mark);
 				}else{
-					dialog("Error: "+$(xml).find('err').text(),true);
+					message = xml.find('err').text();
 				}
-				$(".cell").removeClass("clicked");
+				notification.MaterialSnackbar.showSnackbar({message: message});
+				target.parents('.cell').removeClass('clicked');
 			}
 		})
+		$('#spinner').removeClass('is-visible').children().removeClass('is-active');
 	});
-
 });

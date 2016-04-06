@@ -9,77 +9,40 @@ PAGE_COUNT=30
 tab=0+(mg.get_var(mg.request_info.query_string,'tab') or 1)
 pageIndex=0+(mg.get_var(mg.request_info.query_string,'page') or 0)
 
-ct=[=[
-<!doctype html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.5">
-<title>EpgTimer</title>
-<link rel="shortcut icon" href="img/EpgTimer.ico">
-<link href="css/default.css" rel="stylesheet" type="text/css">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<style type="text/css">
-<!--
-]=]
-ct=ct..'.partially{background:'..partially..';}'..'.shortage{background:'..shortage..';}\n'
 
-ct=ct..[=[
---> 
-</style>
-<script src="js/jquery.min.js"></script>
-<script src="js/hammer.min.js"></script>
-<script src="js/jquery.hammer.js"></script>
-<script src="js/common.js"></script>
-<script type="text/javascript">setInterval("rec()",1000);</script>
-</head>
-<body>
-<div id="wrap">
-<div id="wrap2">
-<div id="header" class="shadow">
-]=]
+ct={title='チューナー別'}
 
-ct=ct..menu('チューナー別')
+ct.css='<style>\n.partially{background:'..partially..';}'..'.shortage{background:'..shortage..';}\n</style>\n'
 
-ct2='</div>'..sidemenu()..[=[
-<div id="main" class="swipe">
-<div id="loading"><div><div class="spinner">
-<div class="spinner__layer spinner__layer-1"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-2"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-3"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-4"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-</div></div></div>
-]=]
+ct.js='<script>\nsetInterval("rec()",1000);\n</script>\n'
 
 edcb.htmlEscape=15
 a=edcb.GetReserveData()
 table.sort(a, function(a,b) return os.time(a.startTime) < os.time(b.startTime) end)
 
-ct2=ct2..'<div id="list">\n<div id="reserve" class="tuner">\n'
+ct.main='<main class="mdl-layout__content">\n'
+  ..'<div class="list mdl-grid">\n'
+  ..'<table class="reserve mdl-data-table mdl-js-data-table mdl-shadow--4dp">\n'
 
-ct1=[=[
-<div id="tab-bar-container">
-<div id="tab-bar" class="drag">
-]=]
+  ..'<thead class="mdl-cell--hide-phone">\n<tr>\n'
+  ..' <th class="flag mdl-data-table__cell--non-numeric">録画\n'
+  ..' <th class="date mdl-data-table__cell--non-numeric">日付\n'
+  ..' <th class="title mdl-data-table__cell--non-numeric">番組名\n'
+  ..' <th class="service mdl-data-table__cell--non-numeric">サービス\n'
+  ..' <th class="comment mdl-data-table__cell--non-numeric">コメント\n'
+  ..' <th class="priority">優先度\n'
+
+ct.tab=''
+ct.Scrollable=true
 
 for i,v in ipairs(edcb.GetTunerReserveAll()) do
 
-  name=string.gsub (v.tunerName, "BonDriver_(.*).dll", "%1")
+  ct.tab=ct.tab..'<a href="#dll_'..i..'" class="mdl-layout__tab'..(i==tab and ' is-active' or '')..'">'..i..':'..v.tunerName:gsub( "BonDriver_(.*).dll", "%1")..' ('..#v.reserveList..')</a>\n'
 
-  ct1=ct1..'<label'..(i==tab and ' class="active"' or '')..' data-val="dll_'..i..'">'..i..':'..name..' ('..#v.reserveList..')</label>\n'
+  ct.main=ct.main
 
-  ct2=ct2..'<table class="tab-bar dll_'..i..'">\n'
+    ..'<tbody class="mdl-layout__tab-panel'..(i==tab and ' is-active' or '')..'" id="dll_'..i..'">\n'
 
-       ..'<tr class="header">'
-       ..'<td class="flag">録画</td>'
-       ..'<td class="date">日付</td>'
-       ..'<td class="title">番組名</td>'
-       ..'<td class="service">サービス</td>'
-       ..'<td class="comment">コメント</td>'
-       ..'<td class="namber">優先度</td>'
-       ..'</tr>\n'
-
-  ctt={}
   b={}
   for j,w in ipairs(v.reserveList) do
     for k,x in ipairs(edcb.GetReserveData()) do
@@ -92,36 +55,27 @@ for i,v in ipairs(edcb.GetTunerReserveAll()) do
 
   table.sort(b, function(a,b) return os.time(a.startTime) < os.time(b.startTime) end)
   for j,w in ipairs(b) do
-    bg=w.recSetting.recMode==5 and ' disablerec'
+    bg=w.recSetting.recMode==5 and ' disabled'
        or w.overlapMode==1 and ' partially'
-       or w.overlapMode==2 and ' shortage' or ''
-    rec=os.time(w.startTime)-os.time()>0 and 'switch'..(w.recSetting.recMode==5 and '' or ' on') or 'rec'..(w.recSetting.recMode==5 and ' not' or '')
-    table.insert(ctt, '<tr class="'..(w.durationSecond and os.date('recend_%d-%H-%M-%S', os.time(w.startTime)+w.durationSecond) or '')..bg..'" data-href="reserveinfo.html?id='..w.reserveID..'&tuner=">'
-      ..'<td class="flag"><span class="'..rec..(os.time(w.startTime)-os.time()<0 and w.recSetting.recMode~=5 and '' or os.date(' recstart_%d-%H-%M-%S', os.time(w.startTime))..'" data-reserve="'..w.reserveID)..'"></span>'
-      ..'</td><td class="date">'..os.date('%Y/%m/%d('..({'日','月','火','水','木','金','土'})[os.date('%w', os.time(w.startTime))+1]..') %H:%M-', os.time(w.startTime))..(w.durationSecond and os.date('%H:%M', os.time(w.startTime)+w.durationSecond) or '終了時間未定')
-      ..'</td><td class="title">'..ConvertTitle(w.title)
-      ..'</td><td class="service float">'..w.stationName
-      ..'</td><td class="comment">'..w.comment
-      ..'</td><td class="priority namber"><span class="sp">優先度:</span>'..w.recSetting.priority
-      ..'</td></tr>\n')
+       or w.overlapMode==2 and ' shortage' or nil
+  ct.main=ct.main..'<tr class="mdl-grid--no-spacing'..(bg or '')..'" data-start="'..(w.durationSecond and (os.time(w.startTime)+(w.recSetting.startMargin or 0))*1000 or '')..'" data-end="'..(w.durationSecond and (os.time(w.startTime)+w.durationSecond+(w.recSetting.endMargin or 0))*1000 or 0)..'" data-href="reserveinfo.html?id='..w.reserveID..'&page='..pageIndex..'">\n'
+    ..' <td class="flag mdl-data-table__cell--non-numeric" data-id="'..w.reserveID..'"><span'
+    ..(os.time(w.startTime)>os.time() and '><label for="reserve'..w.reserveID..'" class="mdl-switch mdl-js-switch"><input type="checkbox" id="reserve'..w.reserveID..'" class="mdl-switch__input"'..(w.recSetting.recMode~=5 and ' checked' or '')..'></label>'
+                                       or ' class="recmark">')
+    ..'</span>\n <td class="date mdl-data-table__cell--non-numeric">'..os.date('%Y/%m/%d('..({'日','月','火','水','木','金','土'})[os.date('%w', os.time(w.startTime))+1]..') %H:%M-', os.time(w.startTime))..(w.durationSecond and os.date('%H:%M', os.time(w.startTime)+w.durationSecond) or '終了時間未定')
+    ..'\n <td class="title mdl-data-table__cell--non-numeric mdl-cell--4-col-phone">'..ConvertTitle(w.title)
+    ..'\n <td class="service mdl-data-table__cell--non-numeric">'..w.stationName
+    ..'\n <td class="comment mdl-data-table__cell--non-numeric">'..w.comment
+    ..'\n <td class="priority"><span class="inline-icons mdl-cell--hide-desktop mdl-cell--hide-tablet"><i class="material-icons">priority_high</i></span>'..w.recSetting.priority
+    ..'\n'
   end
-
-  ct2=ct2..table.concat(ctt)..'</table>\n'
+  
+  ct.main=ct.main..'</tbody>\n'
 
 end
 
-ct=ct..ct1..[=[
-</div>
-</div>
-]=]
+ct.main=ct.main..'</table>\n</div>\n'
 
-ct=ct..ct2..[=[
-</div>
-</div>
-</div>
-</div>
-</div>
-</body>
-</html>
-]=]
+ct=template(ct)
+
 mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: '..#ct..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n', ct)

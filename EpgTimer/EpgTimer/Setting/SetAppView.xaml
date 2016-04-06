@@ -80,7 +80,7 @@
                                 <CheckBox Name="checkBox_appDrop" Content="ドロップログを出力する" Margin="10,4" Width="180"/>
                                 <CheckBox Name="checkBox_addPgInfo" Content="番組情報を出力する" Margin="10,4" Width="180"/>
                                 <CheckBox Name="checkBox_appNW" Content="UDP、TCP送信を行う" Margin="10,4" Width="180"/>
-                                <CheckBox Name="checkBox_appKeepDisk" Content="録画ファイルの容量確保を行う" Margin="10,4" Width="180" />
+                                <CheckBox Name="checkBox_appKeepDisk" Content="録画ファイルの容量確保を行う" Margin="10,4" Width="190" />
                                 <CheckBox Name="checkBox_appOverWrite" Content="同一ファイル名が存在した場合に上書きする" Margin="10,4" />
                             </WrapPanel>
                             <Label Grid.Column="0" Grid.Row="3" Name="label16" Content="プロセス優先度" Margin="8" />

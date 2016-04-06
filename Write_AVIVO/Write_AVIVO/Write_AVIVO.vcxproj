@@ -101,7 +101,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -119,7 +119,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\x64\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,7 +141,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,7 +163,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\baseclasses\x64\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

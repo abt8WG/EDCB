@@ -527,7 +527,7 @@ namespace EpgTimer
             {
                 var dlg = new Setting.SetDefRecSettingWindow();
                 dlg.Owner = (Window)PresentationSource.FromVisual(owner).RootVisual;
-                dlg.SetSettingMode("まとめて変更");
+                dlg.SetSettingMode("まとめて録画設定を変更");
                 dlg.recSettingView.SetDefSetting(infoList[0], pgAll == true);
                 dlg.recSettingView.SetViewMode(pgAll != true);
 
@@ -1038,6 +1038,7 @@ namespace EpgTimer
             {
                 var dlg = new RecInfoDescWindow();
                 dlg.Owner = (Window)PresentationSource.FromVisual(Owner).RootVisual;
+                cmd.SendGetRecInfo(info.ID, ref info);
                 dlg.SetRecInfo(info);
                 return dlg.ShowDialog();
             }

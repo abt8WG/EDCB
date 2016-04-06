@@ -112,15 +112,14 @@ namespace EpgTimer
 
             try
             {
+                infoWindowViewModel = new InfoWindowViewModel();
+
                 // 多重起動時は最小化しない
                 if (firstInstance && Settings.Instance.WakeMin == true)
                 {
                     // Icon化起動すると Windows_Loaded イベントが来ないので
                     // InitializeComponent 後に ConnectCmd しておく。
-                    if (Settings.Instance.NWMode == false || Settings.Instance.WakeReconnectNW == true)
-                    {
-                        ConnectCmd(false);
-                    }
+                    ConnectCmd(Settings.Instance.NWMode && Settings.Instance.WakeReconnectNW == false);
 
                     if (Settings.Instance.ShowTray && Settings.Instance.MinHide)
                     {
@@ -196,8 +195,6 @@ namespace EpgTimer
 
                 CheckCmdLine();
 
-                // 設定から情報を読み取るので設定をロードした後作る
-                infoWindowViewModel = new InfoWindowViewModel();
                 if(Settings.Instance.InfoWindowEnabled)
                 {
                     ShowInfoWindow();
@@ -569,6 +566,7 @@ namespace EpgTimer
                 CommonManager.Instance.DB.ReloadReserveInfo();
                 CommonManager.Instance.DB.ReloadEpgData();
                 reserveView.UpdateInfo();
+                infoWindowViewModel.UpdateInfo();
                 tunerReserveView.UpdateInfo();
                 autoAddView.UpdateAutoAddInfo();
                 recInfoView.UpdateInfo();
@@ -909,6 +907,7 @@ namespace EpgTimer
                     SearchWindow.UpdatesInfo(true);
                     ResetButtonView();
                     ResetTaskMenu();
+                    taskTray.Text = GetTaskTrayReserveInfoText();
                     RefreshMenu(false);
                 }
             }
@@ -1448,6 +1447,7 @@ namespace EpgTimer
                         if (Settings.Instance.DisplayReserveAutoAddMissing == true)
                         {
                             reserveView.UpdateInfo();
+                            infoWindowViewModel.UpdateInfo();
                             tunerReserveView.UpdateInfo();
                             epgView.UpdateReserveData();
                             SearchWindow.UpdatesInfo(true);
@@ -1466,6 +1466,7 @@ namespace EpgTimer
                         if (Settings.Instance.DisplayReserveAutoAddMissing == true)
                         {
                             reserveView.UpdateInfo();
+                            infoWindowViewModel.UpdateInfo();
                             tunerReserveView.UpdateInfo();
                             epgView.UpdateReserveData();
                             SearchWindow.UpdatesInfo(true);

@@ -110,6 +110,12 @@ EpgTimer.exeはniisaka氏(https://github.com/niisaka)デザインのEPG番組表をベースに
 ◇設定
   ●基本設定タブ
     ●保存フォルダ
+      ・コマンドライン引数【追加】
+        録画用アプリの引数をカスタマイズします。EpgDataCap_Bon.exeの場合は弄る必
+        要ありません。
+        ・最小化: EPG取得や「最小化で起動する」設定の録画時に付加される
+        ・非視聴時: 視聴時以外や「視聴時はViewを起動する」にチェックしていないと
+                    きに付加される
       ・録画情報保存フォルダ【追加】
         .program.txt/.errの保存先を指定します(Common.iniのRecInfoFolderに相当)。
     ●チューナー
@@ -348,6 +354,9 @@ EpgTimer.exeはniisaka氏(https://github.com/niisaka)デザインのEPG番組表をベースに
 
 ◇予約割り振りのアルゴリズムの変更
   廃止しました。
+
+◇正常に録画を行えた番組情報として判断するためのドロップ数を変更する
+  ドロップカウントの仕様変更により、RecInfo2DropChkのデフォルトは2になりました。
 
 ◇ブラウザから表示できるようにする
   「Civetwebの組み込みについて」を参照。
@@ -597,6 +606,17 @@ S|nil GetRecFilePath( 予約ID:I )
   録画済み情報を取得する(idソート)
   無引数のときは全情報を取得する。
   1引数のときは指定情報を取得する。なければnilが返る。
+
+<録画済み情報>のリスト GetRecFileInfoBasic()
+<録画済み情報>|nil GetRecFileInfoBasic( 情報ID:I )
+  基本的な録画済み情報を取得する(idソート)
+  programInfoとerrInfoが常に空文字列になる以外はGetRecFileInfo()と同じ。
+  programInfoとerrInfoを取得するためのファイルアクセスのコストが無い。
+  例：このメソッドが存在するならこれを使ってリストを取得する
+      a=edcb.GetRecFileInfoBasic and edcb.GetRecFileInfoBasic() or edcb.GetRecFileInfo()
+
+ChgProtectRecFileInfo( 情報ID:I, プロテクト:B )
+  録画済み情報のプロテクトを変更する
 
 DelRecFileInfo( 情報ID:I )
   録画済み情報を削除する

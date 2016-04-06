@@ -26,8 +26,12 @@ CSendCtrlCmd::CSendCtrlCmd(void)
 
 CSendCtrlCmd::~CSendCtrlCmd(void)
 {
+#ifndef SEND_CTRL_CMD_NO_TCP
 	SetSendMode(FALSE);
+#endif
 }
+
+#ifndef SEND_CTRL_CMD_NO_TCP
 
 //コマンド送信方法の設定
 //引数：
@@ -45,6 +49,8 @@ void CSendCtrlCmd::SetSendMode(
 		this->tcpFlag = FALSE;
 	}
 }
+
+#endif
 
 //名前付きパイプモード時の接続先を設定
 //EpgTimerSrv.exeに対するコマンドは設定しなくても可（デフォルト値になっている）
@@ -86,12 +92,14 @@ void CSendCtrlCmd::SetNWSetting(
 	wstring password
 	)
 {
+#ifndef SEND_CTRL_CMD_NO_TCP
 	this->ip = ip;
 	this->port = port;
 	this->hmac.Close();
 	this->hmac.SelectHash((ALG_ID)CALG_MD5);
 	this->hmac.Create(password);
 	this->pfnSend = SendTCP;
+#endif
 }
 
 //接続処理時のタイムアウト設定
@@ -177,6 +185,8 @@ DWORD CSendCtrlCmd::SendPipe(LPCWSTR pipeName, LPCWSTR eventName, DWORD timeOut,
 
 	return res->param;
 }
+
+#ifndef SEND_CTRL_CMD_NO_TCP
 
 static int RecvAll(SOCKET sock, char* buf, int len, int flags)
 {
@@ -327,6 +337,8 @@ DWORD CSendCtrlCmd::SendTCP(wstring ip, DWORD port, DWORD timeOut, CMD_STREAM* s
 
 	return resCmd->param;
 }
+
+#endif
 
 DWORD CSendCtrlCmd::SendFileCopy(
 	wstring val,

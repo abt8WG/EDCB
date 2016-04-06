@@ -100,6 +100,9 @@
       <DependentUpon>InfoWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="RestorableWindow.cs" />
+    <Compile Include="Setting\RegisterWebUserWindow.xaml.cs">
+      <DependentUpon>RegisterWebUserWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserCtrlView\BGBarListBoxItem.xaml.cs">
       <DependentUpon>BGBarListBoxItem.xaml</DependentUpon>
     </Compile>
@@ -313,6 +316,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="NotifyLogWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Setting\RegisterWebUserWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -595,7 +602,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</PreBuildEvent>
+    <PreBuildEvent>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

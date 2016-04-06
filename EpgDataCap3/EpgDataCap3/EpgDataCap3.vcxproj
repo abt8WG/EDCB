@@ -101,7 +101,7 @@
       <ModuleDefinitionFile>EpgDataCap3.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -118,7 +118,7 @@
       <ModuleDefinitionFile>EpgDataCap3.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,7 +141,7 @@
       <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -164,7 +164,7 @@
       <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\bin\pre-build.cmd $(ConfigurationName) $(ProjectDir)</Command>
+      <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

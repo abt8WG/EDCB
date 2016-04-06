@@ -1,67 +1,27 @@
 dofile(mg.document_root..'\\util.lua')
 
-ct=[=[
-<!doctype html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.5">
-<title>EpgTimer</title>
-<link rel="shortcut icon" href="img/EpgTimer.ico">
-<link href="css/default.css" rel="stylesheet" type="text/css">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<script src="js/jquery.min.js"></script>
-<script src="js/hammer.min.js"></script>
-<script src="js/jquery.hammer.js"></script>
-<script src="js/common.js"></script>
-</head>
-<body>
-<div id="wrap">
-<div id="wrap2">
-<div id="header" class="shadow">
-]=]..menu('予約情報')
-
 page=0+(mg.get_var(mg.request_info.query_string,'page') or 0)
 
 edcb.htmlEscape=15
 r=edcb.GetReserveData(0+(mg.get_var(mg.request_info.query_string,'id') or 0))
-if r then
 
-recording=edcb.GetRecFilePath(r.reserveID)
-ct=ct..[=[
-<div id="tab-bar-container">
-<div id="tab-bar">
-]=]..(edcb.SearchEpg(r.onid, r.tsid, r.sid, r.eid) and '<label class="active" data-val="detail">番組詳細</label>\n<label' or '<label class="active"')
-..' data-val="recset">録画設定</label>'
-..(recording and '<label data-val="movie-tab">再生</label>\n' or '')..[=[
-</div>
-</div>
-]=]
-
-end
-
-ct=ct..'</div>\n'..sidemenu()
+ct={title='予約情報'}
 
 if r then
+  recording=edcb.GetRecFilePath(r.reserveID)
+  redirect=mg.get_var(mg.request_info.query_string,'tuner') and 'tunerreserve.html' or 'reserve.html'..(page and '?page='..page or '')
 
-ct=ct..[=[
-<div id="main" class="swipe">
-<div id="loading"><div><div class="spinner">
-<div class="spinner__layer spinner__layer-1"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-2"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-3"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-<div class="spinner__layer spinner__layer-4"><div class="spinner__circle-clipper spinner__left"><div class="spinner__circle"></div></div><div class="spinner__gap-patch"><div class="spinner__circle"></div></div><div class="spinner__circle-clipper spinner__right"><div class="spinner__circle"></div></div></div>
-</div></div></div>
-<div class="center">
-]=]
+  ct.js='<script>\n$(function(){getpreset(\'/api/EnumReserveInfo\');});\n</script>\n'
 
-redirect=mg.get_var(mg.request_info.query_string,'tuner') and 'tunerreserve.html' or 'reserve.html'..(page and '?page='..page or '')
+  ct.main='<main class="mdl-layout__content">\n'
+    ..'<div class="mdl-grid">\n'
+    .._ConvertEpgInfoText2(r.onid, r.tsid, r.sid, r.eid)
+    ..'<section class="mdl-layout__tab-panel" id="recset">\n'
+    ..'<form id="set" class="api" method="POST" action="api/reservechg?id='..r.reserveID..'" data-redirect="'..redirect..'">\n'
+    ..'<div class="form mdl-grid mdl-grid--no-spacing">\n'
 
-  ct=ct.._ConvertEpgInfoText2(r.onid, r.tsid, r.sid, r.eid)
-   ..'<div id="rec" class="tab-bar recset">\n<div class="form">\n'
-   ..'<form id="set" class="api" method="POST" action="api/reservechg?id='..r.reserveID
-   ..'" data-redirect="'..redirect..'"><div>\n'
-   ..'<ul><li>プリセット</li>\n<li class="select"><select name="presetID">\n'
+    ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">プリセット</div>\n'
+    ..'<div class="pulldown mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-grid mdl-grid--no-spacing"><select name="presetID" data-reseveid="'..r.reserveID..'">\n'
   presetID=0+(mg.get_var(mg.request_info.query_string,'presetID') or 65535)
   preset=false
   rs=r.recSetting
@@ -69,27 +29,37 @@ redirect=mg.get_var(mg.request_info.query_string,'tuner') and 'tunerreserve.html
     if v.id==presetID then
       preset=true
       rs=v.recSetting
-      ct=ct..'<option value="'..v.id..'" selected>'..v.name..'\n'
+      ct.main=ct.main..'<option value="'..v.id..'" selected>'..v.name..'\n'
     else
-      ct=ct..'<option value="'..v.id..'">'..v.name..'\n'
+      ct.main=ct.main..'<option value="'..v.id..'">'..v.name..'\n'
     end
   end
-  ct=ct..'<option value="65535"'..(preset and '' or ' selected')..'>予約時\n'
-    ..'</select></li></ul>\n<input type="hidden" name="id" value="'..r.reserveID..'">\n'
+  ct.main=ct.main..'<option value="65535"'..(preset and '' or ' selected')..'>予約時\n'
+    ..'</select></div></div>\n'
+    ..'<input type="hidden" name="id" value="'..r.reserveID..'">\n'
 
-  ct=ct..RecSettingTemplate(rs)..'</div></form>\n'
-    ..'<form id="del" class="api" method="POST" action="api/reservedel?id='..r.reserveID..'" data-redirect="'..redirect..'"></form>\n'
+    ..RecSettingTemplate(rs)..'</div></form>\n'
+    ..'</section>\n'
+
+    ..(recording and '<section class="mdl-layout__tab-panel" id="movie">\n<div class="mdl-grid mdl-grid--no-spacing"><div>\n'
+    ..'<video src="api/Movie?reid='..r.reserveID..'" preload="none" controls></video>\n'
+    ..'</div></div>\n</section>\n' or '')
+    ..'</div>\n'
+
+    ..'<div class="mdl-dialog__actions mdl-card__actions mdl-card--border">\n'
+    ..'<button class="submit mdl-button mdl-js-button mdl-button--primary" data-form="#set">予約変更</button>\n'
+    ..'<form id="del" class="api" method="POST" action="/api/reservedel?id='..r.reserveID..'" data-redirect="'..redirect..'"></form>\n'
+    ..'<button class="submit mdl-button mdl-js-button mdl-button--primary" data-form="#del">削除</button>\n'
+    ..'</div>\n'
+
     ..'</div>\n</div>\n'
-    ..(recording and '<div id="movie" class="tab-bar movie-tab"><div><div>\n<video src="api/Movie?reid='..r.reserveID..'" type="video/webm" preload="none" controls></video>\n<script type="text/javascript">load=false;</script>\n</div></div></div>\n' or '')
-    ..'<div class="button-wrap footer"><input class="button del" form="del" type="submit" value="削除" ><input class="button tab-bar recset" form="set" type="submit" value="変更"></div>\n'
-    ..'</div>\n</div>\n</div>\n'
+
+  ct.tab=(edcb.SearchEpg(r.onid, r.tsid, r.sid, r.eid) and '<a href="#detail" class="mdl-layout__tab is-active">番組詳細</a>\n' or '')
+       ..'<a href="#recset" class="mdl-layout__tab">録画設定</a>\n'
+       ..(recording and '<a href="#movie" class="play mdl-layout__tab">再生</a>\n' or '')
 
 end
 
-ct=ct..[=[
-</div>
-</div>
-</body>
-</html>
-]=]
+ct=template(ct)
+
 mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: '..#ct..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n', ct)

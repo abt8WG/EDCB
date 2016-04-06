@@ -27,6 +27,20 @@ namespace EpgTimer
             public int dwWaitHint = 0;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        private class QUERY_SERVICE_CONFIG
+        {
+            public int dwServiceType = 0;
+            public int dwStartType = 0;
+            public int dwErrorControl = 0;
+            public IntPtr lpBinaryPathName = IntPtr.Zero;
+            public IntPtr lpLoadOrderGroup = IntPtr.Zero;
+            public int dwTagId = 0;
+            public IntPtr lpDependencies = IntPtr.Zero;
+            public IntPtr lpServiceStartName = IntPtr.Zero;
+            public IntPtr lpDisplayName = IntPtr.Zero;
+        }
+
         #region OpenSCManager
         [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerW", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         static extern IntPtr OpenSCManager(string machineName, string databaseName, ScmAccessRights dwDesiredAccess);
@@ -53,6 +67,11 @@ namespace EpgTimer
         private static extern int QueryServiceStatus(IntPtr hService, SERVICE_STATUS lpServiceStatus);
         #endregion
 
+        #region QueryServiceConfig
+        [DllImport("advapi32.dll", SetLastError = true, CharSet=CharSet.Unicode)]
+        private static extern int QueryServiceConfig(IntPtr hService, IntPtr lpServiceConfig, int cbBufSize, ref int pcbBytesNeeded);
+        #endregion
+
         #region DeleteService
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -68,6 +87,36 @@ namespace EpgTimer
         [DllImport("advapi32.dll", SetLastError = true)]
         private static extern int StartService(IntPtr hService, int dwNumServiceArgs, int lpServiceArgVectors);
         #endregion
+
+        public static string QueryServiceExePath(string serviceName)
+        {
+            string exePath = null;
+
+            IntPtr scm = OpenSCManager(ScmAccessRights.Connect);
+            if (scm != IntPtr.Zero)
+            {
+                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus | ServiceAccessRights.QueryConfig);
+                if (service != IntPtr.Zero)
+                {
+                    int bytesNeeded = 1000;
+                    IntPtr qscPtr = Marshal.AllocCoTaskMem(bytesNeeded);
+                    int ret = QueryServiceConfig(service, qscPtr, bytesNeeded, ref bytesNeeded);
+                    if (ret == 0)
+                    {
+                        qscPtr = Marshal.AllocCoTaskMem(bytesNeeded);
+                        ret = QueryServiceConfig(service, qscPtr, bytesNeeded, ref bytesNeeded);
+                    }
+                    if (ret > 0)
+                    {
+                        QUERY_SERVICE_CONFIG qsc = Marshal.PtrToStructure(qscPtr, typeof(QUERY_SERVICE_CONFIG)) as QUERY_SERVICE_CONFIG;
+                        exePath = Marshal.PtrToStringUni(qsc.lpBinaryPathName);
+                    }
+                }
+                CloseServiceHandle(service);
+            }
+            CloseServiceHandle(scm);
+            return exePath;
+        }
 
         public static bool Install(string serviceName, string displayName, string fileName)
         {
@@ -92,46 +141,15 @@ namespace EpgTimer
             return ret;
         }
 
-        public static bool Uninstall(string serviceName, string fileName)
+        public static bool Uninstall(string serviceName)
         {
-            bool ret = false;
-            IntPtr scm = OpenSCManager(ScmAccessRights.Connect);
-            if (scm == IntPtr.Zero)
+            string fileName = QueryServiceExePath(serviceName);
+            if (fileName == null)
             {
                 return false;
             }
 
-            IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus);
-            if (service == IntPtr.Zero)
-            {
-                CloseServiceHandle(scm);
-                return false;
-            }
-
-            //TODO: get fileName from QueryServiceConfig();
-            //typedef struct _QUERY_SERVICE_CONFIG
-            //{
-            //    DWORD dwServiceType;
-            //    DWORD dwStartType;
-            //    DWORD dwErrorControl;
-            //    LPTSTR lpBinaryPathName;
-            //    LPTSTR lpLoadOrderGroup;
-            //    DWORD dwTagId;
-            //    LPTSTR lpDependencies;
-            //    LPTSTR lpServiceStartName;
-            //    LPTSTR lpDisplayName;
-            //}
-            //BOOL WINAPI QueryServiceConfig(
-            //  _In_      SC_HANDLE              hService,
-            //  _Out_opt_ LPQUERY_SERVICE_CONFIG lpServiceConfig,
-            //  _In_      DWORD                  cbBufSize,
-            //  _Out_     LPDWORD                pcbBytesNeeded
-            //);
-            ret = File.Exists(fileName) == true && RunAs(fileName, "-remove") == 0;
-
-            CloseServiceHandle(service);
-            CloseServiceHandle(scm);
-            return ret;
+            return File.Exists(fileName) == true && RunAs(fileName, "-remove") == 0;
         }
 
         public static bool ServiceIsInstalled(string serviceName)

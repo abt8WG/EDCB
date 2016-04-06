@@ -1,27 +1,15 @@
-﻿::-webkit-scrollbar{
+﻿::-webkit-scrollbar {
   width: 7px;
   height: 7px;
-  background: #E1E1E1;
-}
-::-webkit-scrollbar-thumb{background: #B3B3B3;}
-::-webkit-scrollbar-corner{background: #EDEDED;}
-#list::-webkit-scrollbar,#reserve::-moz-scrollbar,#dateList_SP::-moz-scrollbar{height: 3px;}
-.pull div::-webkit-scrollbar{width: 3px;}
-#wrap_tv_3::-webkit-scrollbar{display:none;}
+  background: #E1E1E1; }
+  ::-webkit-scrollbar-thumb {
+    background: #B3B3B3; }
+  ::-webkit-scrollbar-corner { 
+    background: #EDEDED; }
+  #tv-guide::-webkit-scrollbar,
+  #tv-guide-header::-webkit-scrollbar,
+  #tv-guide-container::-webkit-scrollbar {
+    display: none; }
 
-#submenu ul li.servicelist li a{margin-right: 3px;}
-#head li{line-height:24px;}
-
-#rec .multiple select,#rec #dateList_select{border:1px solid rgba(0,0,0 ,0.12);padding:0;}
-#dateList_main{width:256px;vertical-align: top;}
-#dateList_main .multiple{width:160px;}
-#dialoglist,#dateList_SP,#edit_time,#dateList_edit:not(.visible) .button-wrap,#dateList_edit:not(.visible)+.obfuscator{display:none;}
-#editor.visible .button-wrap{display:block;}
-
-@media screen and (max-width:720px){
-[for=chkRecEnd]:before{top:5px!important;}
-[for=chkRecEnd]:after{top:7px!important;}
-#dateList_main{width:auto;}
-#edit_time,#editor .button-wrap,#dateList_edit+.obfuscator{display:block;}
-.add_time,.del_time{display:none;}
-}
+.touch {
+  display: none; }

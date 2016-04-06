@@ -19,7 +19,7 @@ public:
 	//チャンネル情報を削除する
 	void DelChService(int space, int ch, WORD serviceID);
 protected:
-	bool ParseLine(const wstring& parseLine, pair<DWORD, CH_DATA4>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<DWORD, CH_DATA4>& item);
 	bool SaveLine(const pair<DWORD, CH_DATA4>& item, wstring& saveLine) const;
 	bool SelectIDToSave(vector<DWORD>& sortList) const;
 };
@@ -34,7 +34,7 @@ public:
 	//EPGデータの取得対象かを設定する
 	bool SetEpgCapMode(WORD originalNetworkID, WORD transportStreamID, WORD serviceID, BOOL epgCapFlag);
 protected:
-	bool ParseLine(const wstring& parseLine, pair<LONGLONG, CH_DATA5>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<LONGLONG, CH_DATA5>& item);
 	bool SaveLine(const pair<LONGLONG, CH_DATA5>& item, wstring& saveLine) const;
 	bool SelectIDToSave(vector<LONGLONG>& sortList) const;
 };
@@ -45,7 +45,7 @@ class CParseContentTypeText : public CParseText<wstring, wstring>
 public:
 	void GetMimeType(wstring ext, wstring& mimeType) const;
 protected:
-	bool ParseLine(const wstring& parseLine, pair<wstring, wstring>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<wstring, wstring>& item);
 };
 
 //サービス名としょぼいカレンダー放送局名の対応ファイル「SyoboiCh.txt」の読み込みを行う
@@ -54,7 +54,7 @@ class CParseServiceChgText : public CParseText<wstring, wstring>
 public:
 	void ChgText(wstring& chgText) const;
 protected:
-	bool ParseLine(const wstring& parseLine, pair<wstring, wstring>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<wstring, wstring>& item);
 };
 
 //録画済み情報ファイル「RecInfo.txt」の読み込みと保存処理を行う
@@ -62,32 +62,34 @@ protected:
 class CParseRecInfoText : public CParseText<DWORD, REC_FILE_INFO>
 {
 public:
-	CParseRecInfoText() : keepCount(UINT_MAX), recInfoDelFile(false) {}
+	CParseRecInfoText() : nextID(1), keepCount(UINT_MAX), recInfoDelFile(false) {}
 	using CParseText<DWORD, REC_FILE_INFO>::SaveText;
 
 	//録画済み情報を追加する
 	DWORD AddRecInfo(const REC_FILE_INFO& item);
 	//録画済み情報を削除する
 	bool DelRecInfo(DWORD id);
-	//補足の録画情報ファイルを読み込む
-	void ReadSupplementFileAll();
 	//プロテクト情報を変更する
 	bool ChgProtectRecInfo(DWORD id, BYTE flag);
 	//EPG自動予約登録と、登録された予約、および録画済みファイルとの関連付けを実装
 	void RemoveReserveAutoAddId(DWORD id, const vector<REC_FILE_BASIC_INFO>& list);
 	void AddReserveAutoAddId(const EPG_AUTO_ADD_DATA& data, const vector<REC_FILE_BASIC_INFO>& list);
+	//録画済み情報に割り当てる次のIDを設定する
+	DWORD SetNextID(DWORD id) { return this->nextID = max(id, this->nextID); }
 	//AddRecInfo直後に残しておく非プロテクトの録画済み情報の個数を設定する
 	void SetKeepCount(DWORD keepCount = UINT_MAX) { this->keepCount = keepCount; }
 	void SetRecInfoDelFile(bool recInfoDelFile) { this->recInfoDelFile = recInfoDelFile; }
 	void SetRecInfoFolder(LPCWSTR recInfoFolder);
+	//補足の録画情報を取得する
+	wstring GetExtraInfo(LPCWSTR recFilePath, LPCWSTR extension) const;
 protected:
-	bool ParseLine(const wstring& parseLine, pair<DWORD, REC_FILE_INFO>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<DWORD, REC_FILE_INFO>& item);
 	bool SaveLine(const pair<DWORD, REC_FILE_INFO>& item, wstring& saveLine) const;
 	bool SelectIDToSave(vector<DWORD>& sortList) const;
-	//補足の録画情報ファイルを読み込む
-	void ReadSupplementFile(REC_FILE_INFO& item, const std::function<HANDLE(const wstring&)>& FileOpenFunc);
 	//情報が削除される直前の補足作業
 	void OnDelRecInfo(const REC_FILE_INFO& item);
+	//このクラスのnextIDは永続的ではない
+	DWORD nextID;
 	DWORD keepCount;
 	bool recInfoDelFile;
 	wstring recInfoFolder;
@@ -112,7 +114,7 @@ public:
 	DWORD Add(const PARSE_REC_INFO2_ITEM& item);
 	void SetKeepCount(DWORD keepCount = UINT_MAX) { this->keepCount = keepCount; }
 protected:
-	bool ParseLine(const wstring& parseLine, pair<DWORD, PARSE_REC_INFO2_ITEM>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<DWORD, PARSE_REC_INFO2_ITEM>& item);
 	bool SaveLine(const pair<DWORD, PARSE_REC_INFO2_ITEM>& item, wstring& saveLine) const;
 	bool SelectIDToSave(vector<DWORD>& sortList) const;
 	DWORD keepCount;
@@ -143,7 +145,7 @@ public:
 	void RemoveReserveAutoAddId(DWORD id, const vector<RESERVE_BASIC_DATA>& list);
 	void AddReserveAutoAddId(const EPG_AUTO_ADD_DATA& data, const vector<RESERVE_DATA>& list);
 protected:
-	bool ParseLine(const wstring& parseLine, pair<DWORD, RESERVE_DATA>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<DWORD, RESERVE_DATA>& item);
 	bool SaveLine(const pair<DWORD, RESERVE_DATA>& item, wstring& saveLine) const;
 	bool SaveFooterLine(wstring& saveLine) const;
 	bool SelectIDToSave(vector<DWORD>& sortList) const;
@@ -168,7 +170,7 @@ public:
 	bool AddRecList(DWORD id, const vector<REC_FILE_BASIC_INFO>& recList);
 	bool DelData(DWORD id);
 protected:
-	bool ParseLine(const wstring& parseLine, pair<DWORD, EPG_AUTO_ADD_DATA>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<DWORD, EPG_AUTO_ADD_DATA>& item);
 	bool SaveLine(const pair<DWORD, EPG_AUTO_ADD_DATA>& item, wstring& saveLine) const;
 	bool SaveFooterLine(wstring& saveLine) const;
 	bool SelectIDToSave(vector<DWORD>& sortList) const;
@@ -187,7 +189,7 @@ public:
 	bool ChgData(const MANUAL_AUTO_ADD_DATA& item);
 	bool DelData(DWORD id);
 protected:
-	bool ParseLine(const wstring& parseLine, pair<DWORD, MANUAL_AUTO_ADD_DATA>& item);
+	bool ParseLine(LPCWSTR parseLine, pair<DWORD, MANUAL_AUTO_ADD_DATA>& item);
 	bool SaveLine(const pair<DWORD, MANUAL_AUTO_ADD_DATA>& item, wstring& saveLine) const;
 	bool SaveFooterLine(wstring& saveLine) const;
 	bool SelectIDToSave(vector<DWORD>& sortList) const;

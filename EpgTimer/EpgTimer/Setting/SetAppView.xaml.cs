@@ -193,6 +193,12 @@ namespace EpgTimer.Setting
             comboBox_recname.IsEnabled = IniFileHandler.CanUpdateInifile;
             button_recname.IsEnabled = !Settings.Instance.NWMode; // 設定
 
+            checkBox_cautionOnRecChange.IsChecked = Settings.Instance.CautionOnRecChange;
+            textBox_cautionOnRecMarginMin.Text = Settings.Instance.CautionOnRecMarginMin.ToString();
+            checkBox_SyncResAutoAddChange.IsChecked = Settings.Instance.SyncResAutoAddChange;
+            checkBox_SyncResAutoAddChgNewRes.IsChecked = Settings.Instance.SyncResAutoAddChgNewRes;
+            checkBox_SyncResAutoAddDelete.IsChecked = Settings.Instance.SyncResAutoAddDelete;
+
             // 読める設定のみ項目に反映させる
             if (IniFileHandler.CanReadInifile)
             {
@@ -213,17 +219,8 @@ namespace EpgTimer.Setting
                 {
                     checkBox_noChkYen.IsChecked = true;
                 }
-            }
 
-            checkBox_cautionOnRecChange.IsChecked = Settings.Instance.CautionOnRecChange;
-            textBox_cautionOnRecMarginMin.Text = Settings.Instance.CautionOnRecMarginMin.ToString();
-            checkBox_SyncResAutoAddChange.IsChecked = Settings.Instance.SyncResAutoAddChange;
-            checkBox_SyncResAutoAddChgNewRes.IsChecked = Settings.Instance.SyncResAutoAddChgNewRes;
-            checkBox_SyncResAutoAddDelete.IsChecked = Settings.Instance.SyncResAutoAddDelete;
-
-            // button_autoDel
-            if (IniFileHandler.CanReadInifile)
-            {
+                // button_autoDel
                 int count;
                 count = IniFileHandler.GetPrivateProfileInt("DEL_EXT", "Count", 0, SettingPath.TimerSrvIniPath);
                 if (count == 0)
@@ -286,13 +283,10 @@ namespace EpgTimer.Setting
                 label_tcpResTo.IsEnabled = false; // 無通信タイムアウト(秒)
                 textBox_tcpResTo.IsEnabled = false;
 
-                checkBox_autoDelRecInfo.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画結果を自動的に削除する
-                checkBox_autoDelRecFile.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画ファイルも削除する
-                label42.IsEnabled = IniFileHandler.CanUpdateInifile; // 保持件数
-                textBox_autoDelRecInfo.IsEnabled = IniFileHandler.CanUpdateInifile;
-
                 checkBox_timeSync.IsEnabled = false; // EPG取得時に放送波時間でPC時計を同期する
                 checkBox_srvResident.IsEnabled = false; // EpgTimerSrvを常駐させる
+                checkBox_srvShowTray.IsEnabled = false; // タスクトレイアイコンを表示する
+                checkBox_srvNoBalloonTip.IsEnabled = false; // バルーンチップでの動作通知を抑制する
 
                 checkBox_wakeReconnect.IsEnabled = true; // 起動時に前回接続サーバーに接続する
                 checkBox_suspendClose.IsEnabled = true; // 休止／スタンバイ移行時にEpgTimerNWを終了する
@@ -300,10 +294,18 @@ namespace EpgTimer.Setting
                 checkBox_keepTCPConnect.IsEnabled = true; // EpgTimerSrvとの接続維持を試みる
                 textBox_keepTCPConnect.IsEnabled = true;
                 label_keepTCPConnect.IsEnabled = true; // 分間隔
-
-                checkBox_srvSaveNotifyLog.IsEnabled = false; // 情報通知ログをファイルに保存する
-                checkBox_srvSaveDebugLog.IsEnabled = false; // デバッグ出力をファイルに保存する
             }
+            if (ServiceCtrlClass.IsStarted("EpgTimer Service") == true)
+            {
+                checkBox_srvResident.IsEnabled = false;
+            }
+
+            checkBox_autoDelRecInfo.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画結果を自動的に削除する
+            checkBox_autoDelRecFile.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画ファイルも削除する
+            label42.IsEnabled = IniFileHandler.CanUpdateInifile; // 保持件数
+            textBox_autoDelRecInfo.IsEnabled = IniFileHandler.CanUpdateInifile;
+            checkBox_srvSaveNotifyLog.IsEnabled = IniFileHandler.CanUpdateInifile; // 情報通知ログをファイルに保存する
+            checkBox_srvSaveDebugLog.IsEnabled = IniFileHandler.CanUpdateInifile; // デバッグ出力をファイルに保存する
             if (IniFileHandler.CanUpdateInifile == false)
             {
                 button_recDef.Content = "録画プリセットを確認";
@@ -326,38 +328,11 @@ namespace EpgTimer.Setting
                 {
                     checkBox_timeSync.IsChecked = true;
                 }
-            }
 
-            checkBox_closeMin.IsChecked = Settings.Instance.CloseMin;
-            checkBox_minWake.IsChecked = Settings.Instance.WakeMin;
-            checkBox_applyMulti.IsChecked = Settings.Instance.ApplyMultiInstance;
-            checkBox_noToolTips.IsChecked = Settings.Instance.NoToolTip;
-            checkBox_noBallonTips.IsChecked = Settings.Instance.NoBallonTips;
-            checkBox_showTray.IsChecked = Settings.Instance.ShowTray;
-            checkBox_minHide.IsChecked = Settings.Instance.MinHide;
-            checkBox_cautionManyChange.IsChecked = Settings.Instance.CautionManyChange;
-            textBox_cautionManyChange.Text = Settings.Instance.CautionManyNum.ToString();
-            checkBox_keepTCPConnect.IsChecked = Settings.Instance.ChkSrvRegistTCP;
-            textBox_keepTCPConnect.Text = Settings.Instance.ChkSrvRegistInterval.ToString();
-
-            checkBox_wakeReconnect.IsChecked = Settings.Instance.WakeReconnectNW;
-            checkBox_suspendClose.IsChecked = Settings.Instance.SuspendCloseNW;
-            checkBox_ngAutoEpgLoad.IsChecked = Settings.Instance.NgAutoEpgLoadNW;
-
-            // 読める設定のみ項目に反映させる
-            if (IniFileHandler.CanReadInifile)
-            {
-                if (ServiceCtrlClass.IsStarted("EpgTimer Service") == true)
-                {
-                    checkBox_srvResident.IsEnabled = false;
-                }
-                else if (checkBox_srvResident.IsEnabled)
-                {
-                    int residentMode = IniFileHandler.GetPrivateProfileInt("SET", "ResidentMode", 0, SettingPath.TimerSrvIniPath);
-                    checkBox_srvResident.IsChecked = residentMode >= 1;
-                    checkBox_srvShowTray.IsChecked = residentMode >= 2;
-                    checkBox_srvNoBalloonTip.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "NoBalloonTip", 0, SettingPath.TimerSrvIniPath) != 0;
-                }
+                int residentMode = IniFileHandler.GetPrivateProfileInt("SET", "ResidentMode", 0, SettingPath.TimerSrvIniPath);
+                checkBox_srvResident.IsChecked = residentMode >= 1;
+                checkBox_srvShowTray.IsChecked = residentMode >= 2;
+                checkBox_srvNoBalloonTip.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "NoBalloonTip", 0, SettingPath.TimerSrvIniPath) == 1;
 
                 if (IniFileHandler.GetPrivateProfileInt("SET", "EnableTCPSrv", 0, SettingPath.TimerSrvIniPath) == 1)
                 {
@@ -379,7 +354,26 @@ namespace EpgTimer.Setting
                 }
 
                 textBox_tcpResTo.Text = IniFileHandler.GetPrivateProfileInt("SET", "TCPResponseTimeoutSec", 120, SettingPath.TimerSrvIniPath).ToString();
+
+                checkBox_srvSaveNotifyLog.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "SaveNotifyLog", 0, SettingPath.TimerSrvIniPath) == 1;
+                checkBox_srvSaveDebugLog.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "SaveDebugLog", 0, SettingPath.TimerSrvIniPath) == 1;
             }
+
+            checkBox_closeMin.IsChecked = Settings.Instance.CloseMin;
+            checkBox_minWake.IsChecked = Settings.Instance.WakeMin;
+            checkBox_applyMulti.IsChecked = Settings.Instance.ApplyMultiInstance;
+            checkBox_noToolTips.IsChecked = Settings.Instance.NoToolTip;
+            checkBox_noBallonTips.IsChecked = Settings.Instance.NoBallonTips;
+            checkBox_showTray.IsChecked = Settings.Instance.ShowTray;
+            checkBox_minHide.IsChecked = Settings.Instance.MinHide;
+            checkBox_cautionManyChange.IsChecked = Settings.Instance.CautionManyChange;
+            textBox_cautionManyChange.Text = Settings.Instance.CautionManyNum.ToString();
+            checkBox_keepTCPConnect.IsChecked = Settings.Instance.ChkSrvRegistTCP;
+            textBox_keepTCPConnect.Text = Settings.Instance.ChkSrvRegistInterval.ToString();
+
+            checkBox_wakeReconnect.IsChecked = Settings.Instance.WakeReconnectNW;
+            checkBox_suspendClose.IsChecked = Settings.Instance.SuspendCloseNW;
+            checkBox_ngAutoEpgLoad.IsChecked = Settings.Instance.NgAutoEpgLoadNW;
 
             defSearchKey = Settings.Instance.DefSearchKey.Clone();
         }
@@ -1012,9 +1006,8 @@ namespace EpgTimer.Setting
 
         private void button_uninst_Click(object sender, RoutedEventArgs e)
         {
-            String exePath = SettingPath.ModulePath + "\\EpgTimerSrv.exe";
             bool started = ServiceCtrlClass.IsStarted("EpgTimer Service");
-            if (ServiceCtrlClass.Uninstall("EpgTimer Service", exePath) == false)
+            if (ServiceCtrlClass.Uninstall("EpgTimer Service") == false)
             {
                 MessageBox.Show("アンインストールに失敗しました。");
             }

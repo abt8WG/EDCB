@@ -62,12 +62,12 @@ void CParseChText4::DelChService(int space, int ch, WORD serviceID)
 	}
 }
 
-bool CParseChText4::ParseLine(const wstring& parseLine, pair<DWORD, CH_DATA4>& item)
+bool CParseChText4::ParseLine(LPCWSTR parseLine, pair<DWORD, CH_DATA4>& item)
 {
-	if( parseLine.find(L'\t') == wstring::npos ){
+	if( wcschr(parseLine, L'\t') == NULL ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	NextToken(token);
 	item.second.chName.assign(token[0], token[1]);
@@ -137,12 +137,12 @@ bool CParseChText5::SetEpgCapMode(WORD originalNetworkID, WORD transportStreamID
 	return false;
 }
 
-bool CParseChText5::ParseLine(const wstring& parseLine, pair<LONGLONG, CH_DATA5>& item)
+bool CParseChText5::ParseLine(LPCWSTR parseLine, pair<LONGLONG, CH_DATA5>& item)
 {
-	if( parseLine.find(L'\t') == wstring::npos ){
+	if( wcschr(parseLine, L'\t') == NULL ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	NextToken(token);
 	item.second.serviceName.assign(token[0], token[1]);
@@ -208,13 +208,13 @@ void CParseContentTypeText::GetMimeType(wstring ext, wstring& mimeType) const
 	}
 }
 
-bool CParseContentTypeText::ParseLine(const wstring& parseLine, pair<wstring, wstring>& item)
+bool CParseContentTypeText::ParseLine(LPCWSTR parseLine, pair<wstring, wstring>& item)
 {
-	if( parseLine.find(L'\t') == wstring::npos || parseLine[0] == L';' ){
+	if( wcschr(parseLine, L'\t') == NULL || parseLine[0] == L';' ){
 		//空行orコメント
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	NextToken(token);
 	item.first.assign(token[0], token[1]);
@@ -231,12 +231,12 @@ void CParseServiceChgText::ChgText(wstring& chgText) const
 	}
 }
 
-bool CParseServiceChgText::ParseLine(const wstring& parseLine, pair<wstring, wstring>& item)
+bool CParseServiceChgText::ParseLine(LPCWSTR parseLine, pair<wstring, wstring>& item)
 {
-	if( parseLine.find(L'\t') == wstring::npos || parseLine[0] == L';' ){
+	if( wcschr(parseLine, L'\t') == NULL || parseLine[0] == L';' ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	NextToken(token);
 	item.first.assign(token[0], token[1]);
@@ -248,8 +248,7 @@ bool CParseServiceChgText::ParseLine(const wstring& parseLine, pair<wstring, wst
 DWORD CParseRecInfoText::AddRecInfo(const REC_FILE_INFO& item)
 {
 	REC_FILE_INFO info = item;
-	info.id = this->itemMap.empty() ? 1 : this->itemMap.rbegin()->first + 1;
-	ReadSupplementFile(info, [](const wstring& filepath) { return FileOpenRead(filepath); });
+	info.id = this->nextID++;
 	this->itemMap[info.id] = info;
 
 	//非プロテクトの要素数がkeepCount以下になるまで削除
@@ -280,54 +279,6 @@ bool CParseRecInfoText::DelRecInfo(DWORD id)
 		return true;
 	}
 	return false;
-}
-
-void CParseRecInfoText::ReadSupplementFileAll() {
-#if 1
-	// ディレクトリキャッシュを使って高速化
-	CDirectoryCache dirCache;
-#if _MSC_VER < 1700
-	for (auto itr = itemMap.begin(); itr != itemMap.end(); itr++) {
-		// パスを登録するため必ず失敗する関数を渡して処理させる
-		// ちょっときれいじゃないけどこれが一番楽
-		ReadSupplementFile(itr->second, [&](const wstring& filepath) -> HANDLE {
-			dirCache.CachePath(filepath);
-			return INVALID_HANDLE_VALUE;
-		});		
-	}
-	dirCache.UpdateDirectoryInfo();
-	for (auto itr = itemMap.begin(); itr != itemMap.end(); itr++) {
-		ReadSupplementFile(itr->second, [&](const wstring& filepath) -> HANDLE {
-			return dirCache.Open(filepath);
-		});
-	}
-#else
-	for (auto& entry : itemMap) {
-		// パスを登録するため必ず失敗する関数を渡して処理させる
-		// ちょっときれいじゃないけどこれが一番楽
-		ReadSupplementFile(entry.second, [&](const wstring& filepath) {
-			dirCache.CachePath(filepath);
-			return INVALID_HANDLE_VALUE;
-		});
-	}
-	dirCache.UpdateDirectoryInfo();
-	for (auto& entry : itemMap) {
-		ReadSupplementFile(entry.second, [&](const wstring& filepath) {
-			return dirCache.Open(filepath);
-		});
-	}
-#endif
-#else
-#if _MSC_VER < 1700
-	for (auto itr = itemMap.begin(); itr != itemMap.end(); itr++) {
-		ReadSupplementFile(itr->second, [](const wstring& filepath) -> HANDLE { return FileOpenRead(filepath); });
-	}
-#else
-	for (auto& entry : itemMap) {
-		ReadSupplementFile(entry.second, [](const wstring& filepath) { return FileOpenRead(filepath); });
-	}
-#endif
-#endif
 }
 
 bool CParseRecInfoText::ChgProtectRecInfo(DWORD id, BYTE flag)
@@ -381,12 +332,12 @@ void CParseRecInfoText::AddReserveAutoAddId(const EPG_AUTO_ADD_DATA& data, const
 	}
 }
 
-bool CParseRecInfoText::ParseLine(const wstring& parseLine, pair<DWORD, REC_FILE_INFO>& item)
+bool CParseRecInfoText::ParseLine(LPCWSTR parseLine, pair<DWORD, REC_FILE_INFO>& item)
 {
-	if( parseLine.find(L'\t') == wstring::npos || parseLine[0] == L';' ){
+	if( wcschr(parseLine, L'\t') == NULL || parseLine[0] == L';' ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	NextToken(token);
 	item.second.recFilePath.assign(token[0], token[1]);
@@ -427,7 +378,7 @@ bool CParseRecInfoText::ParseLine(const wstring& parseLine, pair<DWORD, REC_FILE
 	NextToken(token);
 	item.second.comment.assign(token[0], token[1]);
 	item.second.protectFlag = _wtoi(NextToken(token)) != 0;
-	item.second.id = this->itemMap.empty() ? 1 : this->itemMap.rbegin()->first + 1;
+	item.second.id = this->nextID++;
 	item.first = item.second.id;
 	return true;
 }
@@ -473,22 +424,16 @@ bool CParseRecInfoText::SelectIDToSave(vector<DWORD>& sortList) const
 	return true;
 }
 
-void CParseRecInfoText::ReadSupplementFile(REC_FILE_INFO& item, const std::function<HANDLE(const wstring&)>& FileOpenFunc)
+wstring CParseRecInfoText::GetExtraInfo(LPCWSTR recFilePath, LPCWSTR extension) const
 {
-	if( item.recFilePath.empty() ){
-		return;
-	}
-	//補足の録画情報ファイルを読み込む
-	struct { LPCWSTR ext; wstring* info; } infoList[2] = {
-		{ L".err", &item.errInfo },
-		{ L".program.txt", &item.programInfo },
-	};
-	for( int i = 0; i < 2; i++ ){
-		HANDLE hFile = FileOpenFunc(item.recFilePath + infoList[i].ext);
+	wstring info;
+	if( recFilePath[0] != L'\0' ){
+		//補足の録画情報ファイルを読み込む
+		HANDLE hFile = CreateFile((wstring(recFilePath) + extension).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if( hFile == INVALID_HANDLE_VALUE && this->recInfoFolder.empty() == false ){
 			wstring recFileName;
-			GetFileName(item.recFilePath, recFileName);
-			hFile = FileOpenFunc(this->recInfoFolder + L"\\" + recFileName + infoList[i].ext);
+			GetFileName(recFilePath, recFileName);
+			hFile = CreateFile((this->recInfoFolder + L"\\" + recFileName + extension).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		}
 		if( hFile != INVALID_HANDLE_VALUE ){
 			DWORD dwSize = GetFileSize(hFile, NULL);
@@ -497,12 +442,13 @@ void CParseRecInfoText::ReadSupplementFile(REC_FILE_INFO& item, const std::funct
 				DWORD dwRead;
 				if( ReadFile(hFile, &buf.front(), dwSize, &dwRead, NULL) != FALSE && dwRead != 0 ){
 					string errInfoA(&buf.front(), &buf.front() + dwRead);
-					AtoW(errInfoA, *infoList[i].info);
+					AtoW(errInfoA, info);
 				}
 			}
 			CloseHandle(hFile);
 		}
 	}
+	return info;
 }
 
 void CParseRecInfoText::OnDelRecInfo(const REC_FILE_INFO& item)
@@ -531,12 +477,12 @@ DWORD CParseRecInfo2Text::Add(const PARSE_REC_INFO2_ITEM& item)
 	return itr->first;
 }
 
-bool CParseRecInfo2Text::ParseLine(const wstring& parseLine, pair<DWORD, PARSE_REC_INFO2_ITEM>& item)
+bool CParseRecInfo2Text::ParseLine(LPCWSTR parseLine, pair<DWORD, PARSE_REC_INFO2_ITEM>& item)
 {
-	if( parseLine.find(L'\t') == wstring::npos || parseLine[0] == L';' ){
+	if( wcschr(parseLine, L'\t') == NULL || parseLine[0] == L';' ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	item.second.originalNetworkID = (WORD)_wtoi(NextToken(token));
 	item.second.transportStreamID = (WORD)_wtoi(NextToken(token));
@@ -631,24 +577,24 @@ bool CParseReserveText::DelReserve(DWORD id)
 	return false;
 }
 
-bool CParseReserveText::ParseLine(const wstring& parseLine, pair<DWORD, RESERVE_DATA>& item)
+bool CParseReserveText::ParseLine(LPCWSTR parseLine, pair<DWORD, RESERVE_DATA>& item)
 {
 	if( this->saveNextID == 1 ){
 		this->saveNextID = 0;
 	}
-	if( parseLine.c_str()[0] == L';' ){
-		if( parseLine.compare(0, 9, L";;NextID=") == 0 ){
-			DWORD nextID_ = (DWORD)_wtoi(&parseLine.c_str()[9]);
+	if( parseLine[0] == L';' ){
+		if( wcsncmp(parseLine, L";;NextID=", 9) == 0 ){
+			DWORD nextID_ = (DWORD)_wtoi(&parseLine[9]);
 			if( nextID_ != 0 && nextID_ <= 100000000 ){
 				this->nextID = this->nextID > nextID_ + 50000000 ? nextID_ : max(nextID_, this->nextID);
 			}
 			this->saveNextID = 2;
 		}
 		return false;
-	}else if( parseLine.find(L'\t') == wstring::npos ){
+	}else if( wcschr(parseLine, L'\t') == NULL ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	FILETIME ft;
 	item.second.startTime.wMilliseconds = 0;
@@ -974,24 +920,24 @@ bool CParseEpgAutoAddText::DelData(DWORD id)
 	return this->itemMap.erase(id) != 0;
 }
 
-bool CParseEpgAutoAddText::ParseLine(const wstring& parseLine, pair<DWORD, EPG_AUTO_ADD_DATA>& item)
+bool CParseEpgAutoAddText::ParseLine(LPCWSTR parseLine, pair<DWORD, EPG_AUTO_ADD_DATA>& item)
 {
 	if( this->saveNextID == 1 ){
 		this->saveNextID = 0;
 	}
-	if( parseLine.c_str()[0] == L';' ){
-		if( parseLine.compare(0, 9, L";;NextID=") == 0 ){
-			DWORD nextID_ = (DWORD)_wtoi(&parseLine.c_str()[9]);
+	if( parseLine[0] == L';' ){
+		if( wcsncmp(parseLine, L";;NextID=", 9) == 0 ){
+			DWORD nextID_ = (DWORD)_wtoi(&parseLine[9]);
 			if( nextID_ != 0 && nextID_ <= 100000000 ){
 				this->nextID = this->nextID > nextID_ + 50000000 ? nextID_ : max(nextID_, this->nextID);
 			}
 			this->saveNextID = 2;
 		}
 		return false;
-	}else if( parseLine.find(L'\t') == wstring::npos ){
+	}else if( wcschr(parseLine, L'\t') == NULL ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	item.second.dataID = item.first = _wtoi(NextToken(token));
 	if( item.first == 0 || item.first > 100000000 ){
@@ -1238,24 +1184,24 @@ bool CParseManualAutoAddText::DelData(DWORD id)
 	return this->itemMap.erase(id) != 0;
 }
 
-bool CParseManualAutoAddText::ParseLine(const wstring& parseLine, pair<DWORD, MANUAL_AUTO_ADD_DATA>& item)
+bool CParseManualAutoAddText::ParseLine(LPCWSTR parseLine, pair<DWORD, MANUAL_AUTO_ADD_DATA>& item)
 {
 	if( this->saveNextID == 1 ){
 		this->saveNextID = 0;
 	}
-	if( parseLine.c_str()[0] == L';' ){
-		if( parseLine.compare(0, 9, L";;NextID=") == 0 ){
-			DWORD nextID_ = (DWORD)_wtoi(&parseLine.c_str()[9]);
+	if( parseLine[0] == L';' ){
+		if( wcsncmp(parseLine, L";;NextID=", 9) == 0 ){
+			DWORD nextID_ = (DWORD)_wtoi(&parseLine[9]);
 			if( nextID_ != 0 && nextID_ <= 100000000 ){
 				this->nextID = this->nextID > nextID_ + 50000000 ? nextID_ : max(nextID_, this->nextID);
 			}
 			this->saveNextID = 2;
 		}
 		return false;
-	}else if( parseLine.find(L'\t') == wstring::npos ){
+	}else if( wcschr(parseLine, L'\t') == NULL ){
 		return false;
 	}
-	LPCWSTR token[3] = {NULL, NULL, parseLine.c_str()};
+	LPCWSTR token[3] = {NULL, NULL, parseLine};
 
 	item.second.dataID = item.first = _wtoi(NextToken(token));
 	if( item.first == 0 || item.first > 100000000 ){

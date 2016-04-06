@@ -494,28 +494,29 @@
                         <GroupBox Header="各種設定" Margin="12,4">
                             <StackPanel>
                                 <Button Name="button_set_cm" Content="右クリックメニューの設定" Margin="8" Width="170" Height="25"  Click="button_set_cm_Click" HorizontalAlignment="Left" />
-                                <CheckBox Name="checkBox_displayAutoAddMissing" Margin="8,2" ToolTip="自動予約登録を削除・変更した場合や、EPGのタイトルが変わった場合などに発生する場合があります">
+                                <CheckBox Name="checkBox_displayAutoAddMissing" Margin="8,4" ToolTip="自動予約登録を削除・変更した場合や、EPGのタイトルが変わった場合などに発生する場合があります">
                                     <TextBlock TextWrapping="Wrap">自動予約登録(キーワード予約、プログラム予約)を見失った予約を強調表示する<LineBreak/>※EpgTimerNWでは若干もたつく感じがあるかもしれません</TextBlock>
                                 </CheckBox>
-                                <WrapPanel Margin="10,0">
+                                <WrapPanel Margin="10,4">
                                     <Label Content="番組表などへジャンプしたときの強調表示の継続時間" />
                                     <StackPanel Margin="30,0" Orientation="Horizontal">
                                         <TextBox Name="textBox_DisplayJumpTime" Width="55" Height="25" VerticalContentAlignment="Center" />
                                         <Label Content="秒" />
                                     </StackPanel>
                                 </WrapPanel>
-                                <StackPanel Orientation="Horizontal" Margin="10,0">
+                                <StackPanel Orientation="Horizontal" Margin="10,4">
                                     <Label Content="リスト表示で省略する" />
-                                    <CheckBox Name="checkBox_resNoYear" Content="'年'" Margin="4,0" VerticalAlignment="Center" />
-                                    <CheckBox Name="checkBox_resNoSecond" Content="'秒'" Margin="4,0" VerticalAlignment="Center" ToolTip="たまに'秒'単位の番組も存在します。" />
-                                    <CheckBox Name="checkBox_resNoDurSecond" Content="長さの'秒'" Margin="4,0" VerticalAlignment="Center" ToolTip="たまに'秒'単位の番組も存在します。" />
+                                    <CheckBox Name="checkBox_resNoYear" Content="'年'" Margin="4,0" VerticalContentAlignment="Center" />
+                                    <CheckBox Name="checkBox_resNoSecond" Content="'秒'" Margin="4,0" VerticalContentAlignment="Center" ToolTip="たまに'秒'単位の番組も存在します。" />
+                                    <CheckBox Name="checkBox_resNoDurSecond" Content="長さの'秒'" Margin="4,0" VerticalContentAlignment="Center" ToolTip="たまに'秒'単位の番組も存在します。" />
                                 </StackPanel>
-                                <StackPanel Margin="0,0,0,6" Orientation="Horizontal" >
-                                    <CheckBox Content="深夜時間表示をする" Name="checkBox_LaterTimeUse" VerticalAlignment="Center" />
-                                    <TextBox Width="55" Height="24" Margin="12,0,0,0" Name="textBox_LaterTimeHour" VerticalAlignment="Center" />
-                                    <Label Content="時まで" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <StackPanel Margin="8,0" Orientation="Horizontal" >
+                                    <CheckBox Name="checkBox_LaterTimeUse" Content="深夜時間表示をする" VerticalContentAlignment="Center" />
+                                    <TextBox Name="textBox_LaterTimeHour" Width="55" Height="24" Margin="12,0" VerticalContentAlignment="Center" />
+                                    <Label Content="時まで" />
                                 </StackPanel>
-                                <CheckBox Margin="0,0,0,6" Content="検索/キーワード予約ダイアログの録画設定タブにプリセットを表示する" Name="checkBox_displayPresetOnSearch" />
+                                <CheckBox Name="checkBox_displayPresetOnSearch" Content="検索/キーワード予約ダイアログの録画設定タブにプリセットを表示する" Margin="8,4" />
+                                <CheckBox Name="checkBox_nekopandaToolTip" Content="自動予約登録画面で録画予約項目をツールチップ表示する" Margin="8,4" />
                             </StackPanel>
                         </GroupBox>
                     </StackPanel>

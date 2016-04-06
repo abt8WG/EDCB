@@ -28,6 +28,7 @@ public:
 	void StopServer();
 
 protected:
+	CRITICAL_SECTION m_lock;
 	CMD_CALLBACK_PROC m_pCmdProc;
 	void* m_pParam;
 	DWORD m_dwPort;

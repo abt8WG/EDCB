@@ -178,8 +178,8 @@ namespace EpgTimer
         }
 #endif
 
-        public static bool CanReadInifile { get { return CommonManager.Instance.NW.IsConnected == false || IniSetting.Instance.CanReadInifile == true; } }
-        public static bool CanUpdateInifile { get { return CommonManager.Instance.NW.IsConnected == false || IniSetting.Instance.CanUpdateInifile == true; } }
+        public static bool CanReadInifile { get { return IniSetting.Instance.CanReadInifile == true || CommonManager.Instance.NWMode == false; } }
+        public static bool CanUpdateInifile { get { return IniSetting.Instance.CanUpdateInifile == true || CommonManager.Instance.NWMode == false; } }
     }
 
     // サーバーから取得したINIファイルをパースして構造体で保持する
@@ -473,7 +473,26 @@ namespace EpgTimer
             // サーバー側のINIファイルの直接参照をしなくなったので、IniPath が必要になるのは
             // INIファイル更新の非対応サーバーに対してローカル接続(PIPE接続)した場合のみ。
             // ローカル接続する EpgTimer.exe と EpgTimerSrv.exe のバージョンは揃えるべきだとは思う。
-            get { return ModulePath; }
+            get
+            {
+                if (CommonManager.Instance.NWMode == false)
+                {
+                    try
+                    {
+                        var TimerSrv = System.Diagnostics.Process.GetProcessesByName("EpgTimerSrv");
+                        if (TimerSrv.Count() > 0)
+                        {
+                            string exePath = ServiceCtrlClass.QueryServiceExePath("EpgTimer Service");
+                            return Path.GetDirectoryName(exePath ?? TimerSrv[0].MainModule.FileName);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    }
+                }
+                return ModulePath;
+            }
         }
         public static string CommonIniPath
         {
@@ -504,10 +523,7 @@ namespace EpgTimer
         }
         public static string DefSettingFolderPath
         {
-            get
-            {
-                return ModulePath.TrimEnd('\\') + "\\Setting"; // + (CommonManager.Instance.NWMode == false ? "" : "NW");
-            }
+            get { return ModulePath.TrimEnd('\\') + "\\Setting"; }
         }
         public static string SettingFolderPath
         {
@@ -526,10 +542,7 @@ namespace EpgTimer
         }
         public static string ModulePath
         {
-            get
-            {
-                return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            }
+            get { return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location); }
         }
         public static string ModuleName
         {
@@ -800,6 +813,7 @@ namespace EpgTimer
         public SerializableDictionary<string, WINDOWPLACEMENT> Placement { get; set; }
         public bool InfoWindowTopMost { get; set; }
         public bool InfoWindowEnabled { get; set; }
+        public bool RecItemToolTip { get; set; }
 
         public Settings()
         {
@@ -976,6 +990,7 @@ namespace EpgTimer
             Placement = new SerializableDictionary<string, WINDOWPLACEMENT>();
             InfoWindowTopMost = true;
             InfoWindowEnabled = false;
+            RecItemToolTip = false;
         }
 
         [NonSerialized()]

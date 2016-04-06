@@ -20,7 +20,7 @@
                         <RowDefinition MinHeight="150" />
                         <RowDefinition Height="auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Name="label1" Text="※利用にはTVtestのPlugInに EpgTimerPlugIn.tvtp を追加しておく必要があります。" Margin="4,8" Foreground="Red" TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="0" Name="label1" Text="※利用にはTVtestに EpgTimerPlugIn.tvtp か EdcbPlugIn.tvtp を追加しておく必要があります。" Margin="4,8" Foreground="Red" TextWrapping="Wrap" />
                     <Grid Grid.Row="1" Margin="0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" />
@@ -57,13 +57,13 @@
                     </Grid>
                     <StackPanel Grid.Row="3" Margin="4,8">
                         <CheckBox Name="checkBox_nwTvMode" Margin="0,4">
-                            <TextBlock Text="NetworkTVモード(EpgDataCap__BonからのUDP、TCP送信で行う)" TextWrapping="Wrap" />
+                            <TextBlock Text="NetworkTVモード(録画用アプリやEpgTimerSrvからのUDP、TCP送信)で視聴する" TextWrapping="Wrap" />
                         </CheckBox>
+                        <TextBlock Name="label9" Text="NetworkTVモードの送信方式 (追っかけ再生はNetworkTVモードで動作します。使用する場合はチェックしてください)" TextWrapping="Wrap" Margin="0,4"/>
                         <WrapPanel Margin="40,0">
-                            <CheckBox Content="UDP有効" Name="checkBox_nwUDP" Width="100" />
-                            <CheckBox Content="TCP有効" Name="checkBox_nwTCP" Width="100" />
+                            <CheckBox Name="checkBox_nwUDP" Content="UDP有効" Width="100" />
+                            <CheckBox Name="checkBox_nwTCP" Content="TCP有効" Width="100" />
                         </WrapPanel>
-                        <TextBlock Name="label9" Text="(追っかけ再生はNetworkモードでの動作になります。使用する場合はUDPかTCPにチェックを入れておいてください。)" Margin="40,4" TextWrapping="Wrap" />
                     </StackPanel>
                 </Grid>
             </TabItem>

@@ -302,6 +302,11 @@ namespace EpgTimer
         {
             get
             {
+                //nekopanda版ツールチップ表示
+                if (Settings.Instance.RecItemToolTip == true)
+                {
+                    return mutil.GetTooltipBlockStandard("録画予約\r\n" + ReserveProgramText + "\r\n録画済み\r\n" + RecFileText);
+                }
                 if (Settings.Instance.NoToolTip == true) return null;
                 //
                 return mutil.GetTooltipBlockStandard(SearchInfoText);

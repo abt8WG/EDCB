@@ -1,3 +1,6 @@
+path='Setting\\HttpPublic.ini'
+option=0+edcb.GetPrivateProfile('SET','option',false,path)~=0
+
 edcb.htmlEscape=15
 a=edcb.GetReserveData()
 ct={'<?xml version="1.0" encoding="UTF-8" ?'..'><entry><total>'..#a..'</total><index>0</index><count>'..#a..'</count><items>\r\n'}
