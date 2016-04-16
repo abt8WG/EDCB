@@ -13,7 +13,7 @@ namespace EpgTimer.Common
     /// </summary>
     public interface IDB_EpgEventInfo
     {
-        bool exists(long id0, string columnName0);
+        List<long> exist(IEnumerable<long> ids0, string columnName0);
         string tableName { get; }
         string columnName_epgEventInfoID { get; }
     }
@@ -39,10 +39,11 @@ namespace EpgTimer.Common
             COLUMN_ExtInfo_text_char = "ExtInfo_text_char",
             COLUMN_ContentInfo = "ContentInfo";
         const string INDEX_NAME = "UX_Epg";
-        static long _id = 0;
 
         #region - Constructor -
         #endregion
+
+        public DB_EpgEventInfo() { }
 
         public DB_EpgEventInfo(IDB_EpgEventInfo linkedTable0)
         {
@@ -55,30 +56,77 @@ namespace EpgTimer.Common
         #region - Method -
         #endregion
 
+        public override long insert(EpgEventInfoR item0, SqlCommand cmd1)
+        {
+            StringBuilder query1 = new StringBuilder();
+            query1.AppendLine("DECLARE @id BIGINT");
+            query1.AppendLine("SELECT @id = " +
+                "(" +
+                "SELECT " + COLUMN_ID + " FROM " + TABLE_NAME +
+                " WHERE " + COLUMN_original_network_id + "=" + item0.original_network_id +
+                 " AND " + COLUMN_transport_stream_id + "=" + item0.transport_stream_id +
+                 " AND " + COLUMN_service_id + "=" + item0.service_id +
+                 " AND " + COLUMN_event_id + "=" + item0.event_id +
+                 " AND " + COLUMN_start_time + "= " + q(item0.start_time.ToString(startTimeStrFormat)) +
+                 ")");
+            query1.AppendLine("IF @id IS NULL");
+            query1.AppendLine(getQuery_Insert(item0));
+            query1.AppendLine("ELSE");
+            query1.AppendLine("SELECT @id");
+            cmd1.CommandText = query1.ToString();
+            long id1 = (long)cmd1.ExecuteScalar();
+
+            return id1;
+        }
+
         /// <summary>
         /// epgが登録済みであれば、既存データのIDを返す
         /// </summary>
-        /// <param name="id0"></param>
         /// <param name="item0"></param>
         /// <returns></returns>
-        public override int insert(out long id0, EpgEventInfoR item0)
+        public override long insert(EpgEventInfoR item0)
         {
-            long id1 = exists(item0);
-            if (id1 < 0)
+            long id1 = -1;
+
+            StringBuilder query1 = new StringBuilder();
+            query1.AppendLine("DECLARE @id BIGINT");
+            query1.AppendLine("SELECT @id = " +
+                "(" +
+                "SELECT " + COLUMN_ID + " FROM " + TABLE_NAME +
+                " WHERE " + COLUMN_original_network_id + "=" + item0.original_network_id +
+                 " AND " + COLUMN_transport_stream_id + "=" + item0.transport_stream_id +
+                 " AND " + COLUMN_service_id + "=" + item0.service_id +
+                 " AND " + COLUMN_event_id + "=" + item0.event_id +
+                 " AND " + COLUMN_start_time + "= " + q(item0.start_time.ToString(startTimeStrFormat)) +
+                 ")");
+            query1.AppendLine("IF @id IS NULL");
+            query1.AppendLine(getQuery_Insert(item0));
+            query1.AppendLine("ELSE");
+            query1.AppendLine("SELECT @id");
+
+            try
             {
-                return base.insert(out id0, item0);
-            }
-            else
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+        {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = new SqlCommand(query1.ToString(), sqlConn1))
             {
-                id0 = id1;
-                return 0;
+                        id1 = (long)cmd1.ExecuteScalar();
             }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            return id1;
         }
 
-        public static List<EpgContentData> getEpgContentData(SqlDataReader reader0, string column0)
+        public static List<EpgContentData> getEpgContentData(SqlDataReader reader0, ref int i0)
         {
             List<EpgContentData> nibbleList1 = new List<EpgContentData>();
-            byte[] bytes1 = (byte[])reader0[column0];
+            byte[] bytes1 = (byte[])reader0[i0++];
             if (4 <= bytes1.Length)
             {
                 int i1 = 0;
@@ -105,40 +153,39 @@ namespace EpgTimer.Common
             return nibbleList1;
         }
 
-        public override EpgEventInfoR getItem(SqlDataReader reader0)
-        {
-            EpgContentInfo epgContentInfo1 = new EpgContentInfo()
+        public override EpgEventInfoR getItem(SqlDataReader reader0, ref int i0)
             {
-                nibbleList = getEpgContentData(reader0, COLUMN_ContentInfo)
-            };
             EpgEventInfoR epgEventInfoR1 = new EpgEventInfoR()
             {
-                ID = (long)reader0[COLUMN_ID],
-                lastUpdate = (DateTime)reader0[COLUMN_lastUpdate],
-                original_network_id = (ushort)(int)reader0[COLUMN_original_network_id],
-                transport_stream_id = (ushort)(int)reader0[COLUMN_transport_stream_id],
-                service_id = (ushort)(int)reader0[COLUMN_service_id],
-                event_id = (ushort)(int)reader0[COLUMN_event_id],
-                StartTimeFlag = Convert.ToByte(reader0[COLUMN_StartTimeFlag]),
-                start_time = (DateTime)reader0[COLUMN_start_time],
-                DurationFlag = Convert.ToByte(reader0[COLUMN_DurationFlag]),
-                durationSec = (uint)(long)reader0[COLUMN_durationSec],
+                ID = (long)reader0[i0++],
+                lastUpdate = (DateTime)reader0[i0++],
+                original_network_id = (ushort)(int)reader0[i0++],
+                transport_stream_id = (ushort)(int)reader0[i0++],
+                service_id = (ushort)(int)reader0[i0++],
+                event_id = (ushort)(int)reader0[i0++],
+                StartTimeFlag = Convert.ToByte(reader0[i0++]),
+                start_time = (DateTime)reader0[i0++],
+                DurationFlag = Convert.ToByte(reader0[i0++]),
+                durationSec = (uint)(long)reader0[i0++],
                 ShortInfo = new EpgShortEventInfo()
                 {
-                    event_name = (string)reader0[COLUMN_ShortInfo_event_name],
-                    text_char = (string)reader0[COLUMN_ShortInfo_text_char]
+                    event_name = (string)reader0[i0++],
+                    text_char = (string)reader0[i0++]
                 },
                 ExtInfo = new EpgExtendedEventInfo()
                 {
-                    text_char = (string)reader0[COLUMN_ExtInfo_text_char]
+                    text_char = (string)reader0[i0++]
                 },
-                ContentInfo = epgContentInfo1
+                ContentInfo = new EpgContentInfo()
+                {
+                    nibbleList = getEpgContentData(reader0, ref i0)
+                }
             };
 
             return epgEventInfoR1;
         }
 
-        protected override Dictionary<string, string> getFieldNameValues(EpgEventInfoR item0, bool withID0)
+        protected override Dictionary<string, string> getFieldNameValues(EpgEventInfoR item0)
         {
             string shortInfo_event_name1 = string.Empty;
             string shortInfo_text_char1 = string.Empty;
@@ -153,10 +200,6 @@ namespace EpgTimer.Common
                 extInfo_text_char1 = item0.ExtInfo.text_char;
             }
             Dictionary<string, string> dict1 = new Dictionary<string, string>();
-            if (withID0)
-            {
-                dict1.Add(COLUMN_ID, item0.ID.ToString());
-            }
             dict1.Add(COLUMN_lastUpdate, q(item0.lastUpdate.ToString(timeStampStrFormat)));
             dict1.Add(COLUMN_original_network_id, item0.original_network_id.ToString());
             dict1.Add(COLUMN_transport_stream_id, item0.transport_stream_id.ToString());
@@ -209,11 +252,6 @@ namespace EpgTimer.Common
             dict0.Add(column0, sb1.ToString());
         }
 
-        protected override long getId()
-        {
-            return base._getId(ref _id);
-        }
-
         public void alterTable_COLUMN_ExtInfo_text_char()
         {
             string query1 = "DROP FULLTEXT INDEX ON [dbo].[" + TABLE_NAME + "]";
@@ -256,7 +294,8 @@ namespace EpgTimer.Common
             //Max_ContentInfo_nibbleList_Count1: 4
 
             string query1 = "CREATE TABLE [dbo].[" + TABLE_NAME + "](" +
-                    "[" + COLUMN_ID + "] [bigint] NOT NULL," +
+                    //"[" + COLUMN_ID + "] [bigint] NOT NULL," +
+                    "[" + COLUMN_ID + "] [bigint] IDENTITY(1,1) NOT NULL," +
                     "[" + COLUMN_lastUpdate + "] [datetime] NOT NULL," +
                     "[" + COLUMN_original_network_id + "] [int] NOT NULL," +
                     "[" + COLUMN_transport_stream_id + "] [int] NOT NULL," +
@@ -334,60 +373,141 @@ namespace EpgTimer.Common
         /// <returns></returns>
         public override int delete(IEnumerable<long> ids0)
         {
-            List<long> ids1 = new List<long>();
-            foreach (long id1 in ids0)
-            {
-                bool isExist1 = false;
+            List<long> idList1 = new List<long>();
                 foreach (IDB_EpgEventInfo db1 in linkedTables.Values)
                 {
-                    if (db1.exists(id1, db1.columnName_epgEventInfoID))
-                    {
-                        isExist1 = true;
-                        break;
+                idList1.AddRange(
+                    db1.exist(ids0, db1.columnName_epgEventInfoID));
                     }
-                }
-                if (!isExist1)
+            List<long> ids2del1 = new List<long>();
+            foreach (var id1 in ids0)
+            {
+                if (!idList1.Contains(id1))
                 {
-                    ids1.Add(id1);
+                    ids2del1.Add(id1);
                 }
             }
 
-            return base.delete(ids1.ToArray());
+            return base.delete(ids2del1.ToArray());
         }
 
-        public long exists(EpgEventInfo epgInfo0)
+        public bool alterTalbe_SetIdentity()
         {
-            long? id1 = null;
-            string query1 = "SELECT " + COLUMN_ID + " FROM " + tableName
-                + " WHERE " + COLUMN_original_network_id + "=" + epgInfo0.original_network_id
-                + " AND " + COLUMN_transport_stream_id + "=" + epgInfo0.transport_stream_id
-                + " AND " + COLUMN_service_id + "=" + epgInfo0.service_id
-                + " AND " + COLUMN_event_id + "=" + epgInfo0.event_id
-                + " AND " + COLUMN_start_time + "= " + q(epgInfo0.start_time.ToString(startTimeStrFormat));
             try
             {
-                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
-                {
-                    sqlConn1.Open();
-                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
+                using (SqlConnection connection1 = new SqlConnection(sqlConnStr))
                     {
-                        id1 = cmd1.ExecuteScalar() as long?;
+                    connection1.Open();
+
+                    bool isSetIdentity1 = false;
+                    string query1 = "SELECT COLUMNPROPERTY(OBJECT_ID('" + TABLE_NAME + "'),'" + COLUMN_ID + "','IsIdentity')";
+                    using (SqlCommand cmd1 = new SqlCommand(query1, connection1))
+                    {
+                        isSetIdentity1 = ((int)cmd1.ExecuteScalar() == 0);
+                    }
+                    if (!isSetIdentity1)
+                    {
+                        return false;   // 設定済み
+                    }
+                    //
+                    //
+                    //
+                    using (SqlCommand cmd2 = connection1.CreateCommand())
+                    {
+                        cmd2.CommandText = @"
+BEGIN TRANSACTION
+SET QUOTED_IDENTIFIER ON
+SET ARITHABORT ON
+SET NUMERIC_ROUNDABORT OFF
+SET CONCAT_NULL_YIELDS_NULL ON
+SET ANSI_NULLS ON
+SET ANSI_PADDING ON
+SET ANSI_WARNINGS ON
+COMMIT
+BEGIN TRANSACTION";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+CREATE TABLE dbo.Tmp_EpgEventInfo
+    (
+    ID bigint NOT NULL IDENTITY (1, 1),
+    lastUpdate datetime NOT NULL,
+    original_network_id int NOT NULL,
+    transport_stream_id int NOT NULL,
+    service_id int NOT NULL,
+    event_id int NOT NULL,
+    StartTimeFlag bit NOT NULL,
+    start_time smalldatetime NOT NULL,
+    DurationFlag bit NOT NULL,
+    durationSec bigint NOT NULL,
+    ShortInfo_event_name nvarchar(100) NOT NULL,
+    ShortInfo_text_char nvarchar(200) NOT NULL,
+    ExtInfo_text_char nvarchar(3000) NOT NULL,
+    ContentInfo varbinary(20) NOT NULL
+    )  ON [PRIMARY]";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+ALTER TABLE dbo.Tmp_EpgEventInfo SET (LOCK_ESCALATION = TABLE)";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+SET IDENTITY_INSERT dbo.Tmp_EpgEventInfo ON";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+IF EXISTS(SELECT * FROM dbo.EpgEventInfo)
+     EXEC('INSERT INTO dbo.Tmp_EpgEventInfo (ID, lastUpdate, original_network_id, transport_stream_id, service_id, event_id, StartTimeFlag, start_time, DurationFlag, durationSec, ShortInfo_event_name, ShortInfo_text_char, ExtInfo_text_char, ContentInfo)
+        SELECT ID, lastUpdate, original_network_id, transport_stream_id, service_id, event_id, StartTimeFlag, start_time, DurationFlag, durationSec, ShortInfo_event_name, ShortInfo_text_char, ExtInfo_text_char, ContentInfo FROM dbo.EpgEventInfo WITH (HOLDLOCK TABLOCKX)')
+";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+SET IDENTITY_INSERT dbo.Tmp_EpgEventInfo OFF";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+DROP TABLE dbo.EpgEventInfo";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+EXECUTE sp_rename N'dbo.Tmp_EpgEventInfo', N'EpgEventInfo', 'OBJECT' ";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+ALTER TABLE dbo.EpgEventInfo ADD CONSTRAINT
+    PK_EpgEventInfo PRIMARY KEY CLUSTERED 
+    (
+    ID
+    ) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+COMMIT
+CREATE FULLTEXT INDEX ON dbo.EpgEventInfo
+( 
+    ShortInfo_event_name LANGUAGE 1041, 
+    ShortInfo_text_char LANGUAGE 1041, 
+    ExtInfo_text_char LANGUAGE 1041
+ )
+KEY INDEX PK_EpgEventInfo
+ON epg_catalog
+ WITH  CHANGE_TRACKING  AUTO ";
+                        cmd2.ExecuteNonQuery();
+
+                        cmd2.CommandText = @"
+ALTER FULLTEXT INDEX ON dbo.EpgEventInfo
+ENABLE";
+                        cmd2.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex0)
+            catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine(ex0);
+                System.Diagnostics.Trace.WriteLine(ex);
             }
 
-            if (id1.HasValue)
-            {
-                return (long)id1;
-            }
-            else
-            {
-                return -1;
-            }
+            return true;
         }
 
         #region - Property -
@@ -396,11 +516,6 @@ namespace EpgTimer.Common
         public override string tableName
         {
             get { return TABLE_NAME; }
-        }
-
-        protected override bool isSetIdByManual
-        {
-            get { return true; }
         }
 
         #region - Event Handler -

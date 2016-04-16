@@ -81,8 +81,6 @@ namespace EpgTimer.Common
         protected static readonly string startTimeStrFormat = "yyyy-MM-dd HH:mm";
         protected static readonly string timeStampStrFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
-        long _id = -1;
-
         #region - Constructor -
         #endregion
 
@@ -136,50 +134,31 @@ namespace EpgTimer.Common
             return connectTestResults.unKnownError;
         }
 
-        protected string getQuery_Select(string where0 = "", string orderBy0 = "", bool ascending0 = true, int amount0 = 0)
+        public string getQuery_Updat(List<T> items0)
         {
-            StringBuilder query1 = new StringBuilder("SELECT");
-            if (0 < amount0)
+            StringBuilder query1 = new StringBuilder();
+            foreach (var item1 in items0)
+        {
+                StringBuilder keyValue1 = new StringBuilder();
+                foreach (var kvp1 in getFieldNameValues(item1))
             {
-                query1.Append(" TOP " + amount0);
-            }
-            query1.Append(" * FROM [" + tableName + "]");
-            if (!string.IsNullOrEmpty(where0))
-            {
-                query1.Append(" WHERE " + where0);
-            }
-            if (!string.IsNullOrEmpty(orderBy0))
-            {
-                query1.Append(" ORDER BY [" + orderBy0 + "]");
-                if (!ascending0)
+                    if (0 < keyValue1.Length)
                 {
-                    query1.Append(" DESC");
+                        keyValue1.Append(", ");
                 }
+                    keyValue1.Append("[" + kvp1.Key + "]=" + kvp1.Value);
+            }
+                query1.AppendLine("UPDATE " + tableName + " SET " + keyValue1.ToString() + " WHERE " + COLUMN_ID + "=" + item1.ID);
             }
 
             return query1.ToString();
         }
 
-        public virtual int insert(T item0)
+        public string getQuery_Insert(T item0)
         {
-            long id1;
-            return insert(out id1, item0);
-        }
-
-        public virtual int insert(out long id0, T item0)
-        {
-            if (isSetIdByManual)
-            {
-                if (item0.ID < 0)
-                {
-                    item0.ID = getId();
-                }
-            }
-            id0 = item0.ID;
-            //
             StringBuilder keys1 = new StringBuilder();
             StringBuilder values1 = new StringBuilder();
-            foreach (var kvp1 in getFieldNameValues(item0, true))
+            foreach (var kvp1 in getFieldNameValues(item0))
             {
                 if (0 < keys1.Length)
                 {
@@ -198,8 +177,21 @@ namespace EpgTimer.Common
                 }
                 values1.Append(val1);
             }
-            string query1 = "INSERT INTO " + tableName + "(" + keys1.ToString() + ")" + " VALUES(" + values1.ToString() + ")";
-            int res1 = -1;
+
+            return "INSERT INTO " + tableName + "(" + keys1.ToString() + ")" + " OUTPUT INSERTED." + COLUMN_ID + " VALUES(" + values1.ToString() + ")";
+        }
+
+        public virtual long insert(T item0, SqlCommand cmd0)
+        {
+            cmd0.CommandText = getQuery_Insert(item0);
+            item0.ID = (long)cmd0.ExecuteScalar();
+
+            return item0.ID;
+        }
+
+        public virtual long insert(T item0)
+        {
+            string query1 = getQuery_Insert(item0);
             try
             {
                 using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
@@ -207,7 +199,7 @@ namespace EpgTimer.Common
                     sqlConn1.Open();
                     using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
                     {
-                        res1 = cmd1.ExecuteNonQuery();
+                        item0.ID = (long)cmd1.ExecuteScalar();
                     }
                 }
             }
@@ -216,7 +208,7 @@ namespace EpgTimer.Common
                 System.Diagnostics.Trace.WriteLine(ex0);
             }
 
-            return res1;
+            return item0.ID;
         }
 
         public int update(T item0)
@@ -228,21 +220,9 @@ namespace EpgTimer.Common
         public int update(List<T> items0)
         {
             int res1 = -1;
-
-            StringBuilder query1 = new StringBuilder();
-            foreach (var item1 in items0)
-            {
-            StringBuilder keyValue1 = new StringBuilder();
-                foreach (var kvp1 in getFieldNameValues(item1, false))
-            {
-                if (0 < keyValue1.Length)
-                {
-                    keyValue1.Append(", ");
-                }
-                    keyValue1.Append("[" + kvp1.Key + "]=" + kvp1.Value);
-                }
-                query1.Append("UPDATE " + tableName + " SET " + keyValue1.ToString() + " WHERE " + COLUMN_ID + "=" + item1.ID + "\n");
-            }
+            if (items0.Count == 0) { return res1; }
+            //
+            string query1 = getQuery_Updat(items0);
             try
             {
                 using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
@@ -262,9 +242,59 @@ namespace EpgTimer.Common
             return res1;
         }
 
+        public int update(List<T> items0, SqlCommand cmd0)
+        {
+            if (items0.Count == 0) { return -1; }
+            //
+            cmd0.CommandText = getQuery_Updat(items0);
+
+            return cmd0.ExecuteNonQuery();
+        }
+
         public virtual int delete(T item0)
         {
             return delete(new long[] { item0.ID });
+        }
+
+        public virtual int delete(T item0, SqlCommand cmd0)
+        {
+            return delete(new long[] { item0.ID }, cmd0);
+        }
+
+        public virtual int delete(List<T> items0, SqlCommand cmd0)
+        {
+            if (items0.Count() == 0) { return 0; }
+            //
+            StringBuilder sb1 = new StringBuilder();
+            foreach (var item1 in items0)
+            {
+                if (0 < sb1.Length)
+                {
+                    sb1.Append(" OR ");
+                }
+                sb1.Append(COLUMN_ID + "=" + item1.ID);
+            }
+            cmd0.CommandText = "DELETE FROM " + tableName + " WHERE " + sb1.ToString();
+
+            return cmd0.ExecuteNonQuery();
+        }
+
+        public virtual int delete(IEnumerable<long> ids0, SqlCommand cmd0)
+        {
+            if (ids0.Count() == 0) { return 0; }
+            //
+            StringBuilder sb1 = new StringBuilder();
+            foreach (long id1 in ids0)
+            {
+                if (0 < sb1.Length)
+                {
+                    sb1.Append(" OR ");
+                }
+                sb1.Append(COLUMN_ID + "=" + id1);
+            }
+            cmd0.CommandText = "DELETE FROM " + tableName + " WHERE " + sb1.ToString();
+
+            return cmd0.ExecuteNonQuery();
         }
 
         public virtual int delete(long id0)
@@ -307,14 +337,9 @@ namespace EpgTimer.Common
             return res1;
         }
 
-        protected abstract Dictionary<string, string> getFieldNameValues(T item0, bool withID0);
+        protected abstract Dictionary<string, string> getFieldNameValues(T item0);
 
-        public abstract T getItem(SqlDataReader reader0);
-
-        //public T exists<T>(long id0)
-        //{
-        //    return exists(id0, COLUMN_ID);
-        //}
+        public abstract T getItem(SqlDataReader reader0, ref int i0);
 
         public override bool exists(long id0)
         {
@@ -346,12 +371,51 @@ namespace EpgTimer.Common
             return (res1 != null);
         }
 
+        public List<long> exist(IEnumerable<long> ids0, string columnName0)
+        {
+            List<long> ids1 = new List<long>();
+            if (ids0.Count() == 0) { return ids1; }
+            //
+            StringBuilder sb1 = new StringBuilder();
+            foreach (var item in ids0)
+            {
+                if (0 < sb1.Length)
+                {
+                    sb1.Append(" OR ");
+                }
+                sb1.Append(columnName0 + "=" + item);
+            }
+            string query1 = "SELECT " + columnName0 + " FROM " + tableName + " WHERE " + sb1.ToString();
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
+                    using (SqlDataReader reader1 = cmd1.ExecuteReader())
+                    {
+                        while (reader1.Read())
+                        {
+                            ids1.Add(
+                                (long)reader1[columnName0]);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            return ids1;
+        }
+
         /// <summary>
         /// シングル・クォートで囲む
         /// </summary>
         /// <param name="str1"></param>
         /// <returns></returns>
-        protected string q(string str1)
+        protected static string q(string str1)
         {
             return "'" + str1 + "'";
         }
@@ -362,7 +426,7 @@ namespace EpgTimer.Common
         /// </summary>
         /// <param name="text0"></param>
         /// <returns></returns>
-        protected string createTextValue(string text0)
+        protected static string createTextValue(string text0)
         {
             return q(text0.Replace("'", "''"));
         }
@@ -430,77 +494,16 @@ namespace EpgTimer.Common
             }
         }
 
-        public T select(long id0)
-        {
-            string where1 = COLUMN_ID + "=" + id0;
-            List<T> itemList1 = select(where0: where1);
-            if (0 == itemList1.Count)
-            {
-                return null;
-            }
-            else
-            {
-                return itemList1[0];
-            }
-        }
-
-        public List<T> select(string where0 = "", string orderBy0 = "", bool ascending0 = true, int amount0 = 0)
-        {
-            string query1 = getQuery_Select(where0, orderBy0, ascending0, amount0);
-            List<T> itemList1 = new List<T>();
-            try
-            {
-                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
-                {
-                    sqlConn1.Open();
-                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
-                    using (SqlDataReader reader1 = cmd1.ExecuteReader())
-                    {
-                        while (reader1.Read())
-                        {
-                            itemList1.Add(
-                                getItem(reader1));
-                        }
-                    }
-                }
-            }
-            catch (Exception ex0)
-            {
-                System.Diagnostics.Trace.WriteLine(ex0);
-            }
-
-            return itemList1;
-        }
-
-        protected abstract long getId();
-
-        protected long _getId(ref long id0)
-        {
-            if (id0 == 0)
-            {
-                List<T> list1 = select(orderBy0: COLUMN_ID, ascending0: false, amount0: 1);
-                if (0 < list1.Count)
-                {
-                    id0 = list1[0].ID;
-                }
-            }
-
-            return System.Threading.Interlocked.Increment(ref id0);
-        }
-
         #region - Property -
         #endregion
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         protected string sqlConnStr
         {
             get { return "Data Source=" + dataSource + ";Initial Catalog=EDCB;Integrated Security=True"; }
         }
-
-        /// <summary>
-        /// IDBRecord.ID(Primary Key)を手動でセット
-        /// </summary>
-        protected abstract bool isSetIdByManual { get; }
 
         #region - Event Handler -
         #endregion

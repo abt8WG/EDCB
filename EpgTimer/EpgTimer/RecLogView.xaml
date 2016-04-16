@@ -9,11 +9,8 @@
     <DockPanel>
         <!-- 検索 Panel -->
         <DockPanel  DockPanel.Dock="Left" Width="130">
-            <Border  DockPanel.Dock="Bottom"  x:Name="border_ToggleButton_Setting" BorderBrush="Yellow" BorderThickness="2" Height="35">
+            <Border  DockPanel.Dock="Bottom"  x:Name="border_ToggleButton_Setting" BorderBrush="Yellow" BorderThickness="2" Height="30">
                 <ToggleButton x:Name="toggleButton_Setting" IsChecked="True"  Click="toggleButton_Setting_Click">設定</ToggleButton>
-            </Border>
-            <Border  DockPanel.Dock="Bottom"  x:Name="border_Button_SaveSearchOption" BorderBrush="Yellow" BorderThickness="2" >
-                <Button x:Name="button_SaveSearchOption" Click="button_SaveSearchOption_Click" Height="35">変更の保存</Button>
             </Border>
             <DockPanel  Name="stackPanel_Search" Background="White">
                 <TextBox DockPanel.Dock="Top" Name="textBox_Search" Height="25"  VerticalContentAlignment="Center"  KeyDown="textBox_Search_KeyDown" ToolTip="Enter 実行" />
@@ -43,58 +40,55 @@
                     <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Reserved_Null" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Reserved_Null_Checked" Unchecked="checkBox_RecStatus_Reserved_Null_Unchecked">無効登録</CheckBox>
                     <CheckBox   DockPanel.Dock="Top" Name="checkBox_RecStatus_Unkown" Margin="3" IsChecked="True" Checked="checkBox_RecStatus_Unkown_Checked" Unchecked="checkBox_RecStatus_Unkown_Unchecked">不明</CheckBox>
                 </StackPanel>
-                <Grid DockPanel.Dock="Top" >
-                    <Label Width="50" HorizontalAlignment="Left" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">表示数</Label>
-                    <TextBox Name="textBox_ResultLimit" Margin="50,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" KeyDown="textBox_ResultLimit_KeyDown">50</TextBox>
-                </Grid>
-                <ListBox x:Name="listBox_DBLog" />
+                <DockPanel DockPanel.Dock="Top" Height="27" Margin="0,5,0,0">
+                    <Label DockPanel.Dock="Left" Width="60" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">表示数</Label>
+                    <TextBox Name="textBox_ResultLimit" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" KeyDown="textBox_ResultLimit_KeyDown">50</TextBox>
+                </DockPanel>
+                <DockPanel />
             </DockPanel>
         </DockPanel>
         <!-- 設定Grid  -->
-        <Grid x:Name="grid_Setting"  Visibility="Visible">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="140"></ColumnDefinition>
-                <!--<ColumnDefinition Width="50"></ColumnDefinition>-->
-                <ColumnDefinition Width="*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <DockPanel  Grid.Column="0">
-                <Button DockPanel.Dock="Bottom" x:Name="button_ChangeDatabase" Height="27" Click="button_ChangeDatabase_Click" ToolTip="データベースにインデックスを追加します。これから導入する方は必要ありません。">データベースを変更</Button>
-                <!--<Button DockPanel.Dock="Bottom" x:Name="button_CreateIndex" Height="27" Click="button_CreateIndex_Click" ToolTip="データベースにインデックスを追加します。これから導入する方は必要ありません。">インデックス作成</Button>-->
-                <StackPanel  DockPanel.Dock="Top" x:Name="stackPanel_Setting" Background="#FFCDDCDE">
-                    <Border x:Name="border_CheckBox_RecLogEnabled" BorderBrush="Yellow" BorderThickness="2">
+        <Border x:Name="panel_Setting"  Visibility="Visible" BorderBrush="Gray" BorderThickness="1" Padding="1,0,0,0">
+            <DockPanel >
+                <DockPanel  DockPanel.Dock="Left" Background="White">
+                    <Border  DockPanel.Dock="Bottom"  x:Name="border_Button_SaveSearchOption" BorderBrush="Yellow" BorderThickness="2" Height="30">
+                        <Button DockPanel.Dock="Left"  x:Name="button_SaveSearchOption" Click="button_SaveSearchOption_Click" ToolTip="「検索対象」「録画ステータス」「表示数」を保存します">検索オプションの保存</Button>
+                    </Border>
+                    <Border DockPanel.Dock="Top" x:Name="border_CheckBox_RecLogEnabled" BorderBrush="Yellow" BorderThickness="2">
                         <CheckBox x:Name="checkBox_RecLogEnabled" Margin="3,7,0,7" VerticalContentAlignment="Center" Click="checkBox_RecLogEnabled_Click">
                             <TextBlock TextWrapping="Wrap">
                             録画ログを有効にする
                             </TextBlock>
                         </CheckBox>
                     </Border>
-                    <Label Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">SQLServerコンピュータ名</Label>
-                    <TextBox x:Name="textBox_MachineName" Height="25" KeyDown="textBox_MachineName_KeyDown"/>
-                    <Label Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">SQLServerインスタンス名</Label>
-                    <TextBox x:Name="textBox_InstanceName"  Height="25" KeyDown="textBox_InstanceName_KeyDown"/>
-                    <Border x:Name="border_Button_DB_ConnectTest" BorderBrush="Yellow" BorderThickness="2">
+                    <Label DockPanel.Dock="Top" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">SQLServerコンピュータ名</Label>
+                    <TextBox DockPanel.Dock="Top" x:Name="textBox_MachineName" Height="25" KeyDown="textBox_MachineName_KeyDown"/>
+                    <Label DockPanel.Dock="Top" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">SQLServerインスタンス名</Label>
+                    <TextBox DockPanel.Dock="Top" x:Name="textBox_InstanceName"  Height="25" KeyDown="textBox_InstanceName_KeyDown"/>
+                    <Border DockPanel.Dock="Top" x:Name="border_Button_DB_ConnectTest" BorderBrush="Yellow" BorderThickness="2">
                         <Button x:Name="button_DB_ConnectTest"  Height="27" Click="button_DB_ConnectTest_Click">DB接続テスト</Button>
                     </Border>
-                    <Label Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">検索方法</Label>
-                    <StackPanel >
+                    <Label DockPanel.Dock="Top" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">検索方法</Label>
+                    <StackPanel DockPanel.Dock="Top" >
                         <RadioButton x:Name="radioButton_SearchMethod_Like" Margin="5" ToolTip="精度が高い。少し遅い">LIKE</RadioButton>
                         <RadioButton x:Name="radioButton_SearchMethod_Contains" Margin="5"  ToolTip="まれに検索漏れがある。早い">Contains</RadioButton>
                         <RadioButton x:Name="radioButton_SearchMethod_Freetext" Margin="5"  ToolTip="あいまい検索。早い">Freetext</RadioButton>
                     </StackPanel>
-                    <Label Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">録画ログWindow</Label>
-                    <Grid>
+                    <Label DockPanel.Dock="Top" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">録画ログWindow</Label>
+                    <Grid DockPanel.Dock="Top" >
                         <Label Width="50" HorizontalAlignment="Left" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">表示数</Label>
                         <TextBox Name="textBox_ResultLimit_RecLogWindow" Margin="50,0,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">50</TextBox>
                     </Grid>
-                </StackPanel>
+                    <ListBox x:Name="listBox_DBLog" />
             </DockPanel>
-            <RichTextBox Grid.Column="1" x:Name="richTextBox_HowTo" Block.LineHeight="1" IsReadOnly="True" />
-        </Grid>
+                <RichTextBox x:Name="richTextBox_HowTo" Block.LineHeight="1" IsReadOnly="True" />
+            </DockPanel>
+        </Border>
         <!--編集Grid -->
         <DockPanel  DockPanel.Dock="Right"  x:Name="grid_Edit" Background="White" Width="200">
             <DockPanel DockPanel.Dock="Bottom"  Height="30">
-                <Button DockPanel.Dock="Left"  Name="button_Edit_Update" Width="140" Click="button_Edit_Update_Click" >更　新</Button>
-                <Button Grid.Column="1"  Name="button_Edit_Cancel" Click="button_Edit_Cancel_Click" >キャンセル</Button>
+                <Button DockPanel.Dock="Left" x:Name="button_Edit_Update" Width="140" Click="button_Edit_Update_Click" >更　新</Button>
+                <Button x:Name="button_Edit_Cancel" Click="button_Edit_Cancel_Click" >キャンセル</Button>
             </DockPanel>
             <Label DockPanel.Dock="Top" HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" VerticalContentAlignment="Center" VerticalAlignment="Center"  Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" FontFamily="Meiryo">編　集</Label>
             <TextBox DockPanel.Dock="Top" Margin="1" Name="textBox_Edit_ProgramTitle" Height="25" VerticalContentAlignment="Center" BorderBrush="Yellow" >タイトル</TextBox>

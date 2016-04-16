@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -63,11 +64,6 @@ namespace EpgTimer.Common
         #region - Method -
         #endregion
 
-        protected override long getId()
-        {
-            return -1;
-        }
-
         public void setSqlServerMachineName(string machineName0)
         {
             machineName = machineName0;
@@ -78,7 +74,7 @@ namespace EpgTimer.Common
             instanceName = instanceName0;
         }
 
-        List<string> getSearchWordList(string searchWord0)
+        public static List<string> getSearchWordList(string searchWord0)
         {
             char[] ng1 = new char[] { '「', '」', '（', '）', '(', ')' };
             foreach (var item in ng1)
@@ -100,11 +96,18 @@ namespace EpgTimer.Common
 
         public List<RecLogItem> search_Like(string searchWord0, RecLogItem.RecodeStatuses recodeStatuse0, searchColumns searchColumn0 = searchColumns.title, int count0 = 50)
         {
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = sqlConn1.CreateCommand())
+                    {
             List<string> searchWordList1 = getSearchWordList(searchWord0);
             StringBuilder sb1 = new StringBuilder();
             foreach (var item1 in searchWordList1)
             {
-                string likeWord1 = " LIKE " + base.createTextValue("%" + item1 + "%");
+                string likeWord1 = " LIKE " + createTextValue("%" + item1 + "%");
                 List<string> searchWords1 = new List<string>();
                 if (searchColumn0.HasFlag(searchColumns.title))
                 {
@@ -138,8 +141,16 @@ namespace EpgTimer.Common
                 }
                 sb1.Append(sb2.ToString());
             }
+                        return seach(sb1.ToString(), recodeStatuse0, count0, cmd1);
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
 
-            return seach(sb1.ToString(), recodeStatuse0, count0);
+            return new List<RecLogItem>();
         }
 
         /// <summary>
@@ -158,7 +169,22 @@ namespace EpgTimer.Common
             List<string> searchWordList1 = new List<string>() { searchWord0 };
             string searchWordQuery_Fulltext1 = getSearchWordQuery_Fulltext(searchColumn0, searchWordList1, true);
 
-            List<RecLogItem> recLogItemList2 = seach(searchWordQuery_Fulltext1, recodeStatuse0, count0);
+            List<RecLogItem> recLogItemList2 = new List<RecLogItem>();
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = sqlConn1.CreateCommand())
+                    {
+                        recLogItemList2 = seach(searchWordQuery_Fulltext1, recodeStatuse0, count0, cmd1);
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
 
             List<string> searchWordList2 = getSearchWordList(searchWord0);
             List<Regex> searchRegexList2 = new List<Regex>();
@@ -206,15 +232,8 @@ namespace EpgTimer.Common
             return recLogItemList1;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="searchWord0"></param>
-        /// <param name="searchColumn0">複数選択可</param>
-        /// <param name="count0"></param>
-        /// <returns>新しいもの順</returns>
-        public List<RecLogItem> search_Fulltext(string searchWord0, RecLogItem.RecodeStatuses recodeStatuse0,
-            searchColumns searchColumn0 = searchColumns.title, int count0 = 50, bool isFreetext0 = false)
+        public List<RecLogItem> search_Fulltext(SqlCommand cmd0, string searchWord0, RecLogItem.RecodeStatuses recodeStatuse0,
+         searchColumns searchColumn0 = searchColumns.title, int count0 = 50, bool isFreetext0 = false)
         {
             List<string> searchWordList1;
             if (isFreetext0)
@@ -226,11 +245,39 @@ namespace EpgTimer.Common
                 searchWordList1 = getSearchWordList(searchWord0);
             }
             string searchWordQuery_Fulltext1 = getSearchWordQuery_Fulltext(searchColumn0, searchWordList1, isFreetext0);
-
-            return seach(searchWordQuery_Fulltext1, recodeStatuse0, count0);
+            return seach(searchWordQuery_Fulltext1, recodeStatuse0, count0, cmd0);
         }
 
-        string getSearchWordQuery_Fulltext(searchColumns searchColumn0, List<string> searchWordList0, bool isFreetext0)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="searchWord0"></param>
+        /// <param name="searchColumn0">複数選択可</param>
+        /// <param name="count0"></param>
+        /// <returns>新しいもの順</returns>
+        public List<RecLogItem> search_Fulltext(string searchWord0, RecLogItem.RecodeStatuses recodeStatuse0,
+            searchColumns searchColumn0 = searchColumns.title, int count0 = 50, bool isFreetext0 = false)
+        {
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = sqlConn1.CreateCommand())
+                    {
+                        return search_Fulltext(cmd1, searchWord0, recodeStatuse0, searchColumn0, count0, isFreetext0);
+            }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            return new List<RecLogItem>();
+        }
+
+        public static string getSearchWordQuery_Fulltext(searchColumns searchColumn0, List<string> searchWordList0, bool isFreetext0)
         {
             if (searchWordList0.Count == 0) { return null; }
             //
@@ -255,7 +302,7 @@ namespace EpgTimer.Common
                 }
                 sb1.Append('"' + word1 + '"');
             }
-            string searchWord2 = base.createTextValue(sb1.ToString());
+            string searchWord2 = createTextValue(sb1.ToString());
             StringBuilder query1 = new StringBuilder();
             {
                 List<string> columList1 = new List<string>();
@@ -313,7 +360,7 @@ namespace EpgTimer.Common
             return query1.ToString();
         }
 
-        List<RecLogItem> seach(string searchWordQuery0, RecLogItem.RecodeStatuses recodeStatuse0, int count0)
+        List<RecLogItem> seach(string searchWordQuery0, RecLogItem.RecodeStatuses recodeStatuse0, int count0, SqlCommand cmd0)
         {
             List<RecLogItem> itemList1 = new List<RecLogItem>();
             if (recodeStatuse0 == RecLogItem.RecodeStatuses.NONE) { return itemList1; }
@@ -326,33 +373,32 @@ namespace EpgTimer.Common
             }
             query1.Append(" * FROM " + tableName + " " + TABLE_NAME_ABBR + " INNER JOIN " + DB_EpgEventInfo.TABLE_NAME + " " + DB_EpgEventInfo.TABLE_NAME_ABBR +
                 " ON (" + TABLE_NAME_ABBR + "." + COLUMN_epgEventInfoID + "=" + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_ID + ")");
-            query1.Append(" WHERE " + getRecodeStatusQuery(recodeStatuse0));
+            StringBuilder where1 = new StringBuilder();
+            where1.Append(getRecodeStatusQuery(recodeStatuse0));
             if (!string.IsNullOrEmpty(searchWordQuery0))
             {
-                query1.Append(" AND (" + searchWordQuery0 + ")");
+                if (0 < where1.Length)
+            {
+                    where1.Append(" AND ");
+                }
+                where1.Append("(" + searchWordQuery0 + ")");
+            }
+            if (0 < where1.Length)
+                {
+                query1.Append(" WHERE " + where1.ToString());
             }
             query1.Append(" ORDER BY " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_start_time + " DESC");
-            try
-            {
-                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
-                {
-                    sqlConn1.Open();
-                    using (SqlCommand cmd1 = new SqlCommand(query1.ToString(), sqlConn1))
-                    using (SqlDataReader reader1 = cmd1.ExecuteReader())
+            cmd0.CommandText = query1.ToString();
+            using (SqlDataReader reader1 = cmd0.ExecuteReader())
                     {
                         while (reader1.Read())
                         {
-                            RecLogItem recLogItem1 = getItem(reader1);
-                            recLogItem1.epgEventInfoR = db_EpgEventInfo.getItem(reader1);
+                            int i1 = 0;
+                            RecLogItem recLogItem1 = getItem(reader1, ref i1);
+                            recLogItem1.epgEventInfoR = db_EpgEventInfo.getItem(reader1, ref i1);
                             itemList1.Add(recLogItem1);
                         }
                     }
-                }
-            }
-            catch (Exception ex0)
-            {
-                System.Diagnostics.Trace.WriteLine(ex0);
-            }
 
             //if (itemList1.Count == 0) {
             //    Console.WriteLine(query1);
@@ -363,6 +409,8 @@ namespace EpgTimer.Common
 
         string getRecodeStatusQuery(RecLogItem.RecodeStatuses recodeStatuse0, string tableNameAbbr0 = TABLE_NAME_ABBR)
             {
+            if (recodeStatuse0 == RecLogItem.RecodeStatuses.ALL) { return null; }
+
             StringBuilder sb1 = new StringBuilder();
             string tableNameAbbr1 = null;
             if (!string.IsNullOrEmpty(tableNameAbbr0))
@@ -391,26 +439,50 @@ namespace EpgTimer.Common
             return "(" + sb1.ToString() + ")";
         }
 
-        public override RecLogItem getItem(SqlDataReader reader0)
+        public override RecLogItem getItem(SqlDataReader reader0, ref int i0)
         {
-            RecLogItem recLogItem1 = new RecLogItem()
-            {
-                ID = (long)reader0[COLUMN_ID],
-                recodeStatus = (RecLogItem.RecodeStatuses)reader0[COLUMN_recodeStatus],
-                comment = (string)reader0[COLUMN_comment],
-                recFilePath = (string)reader0[COLUMN_RecFilePath],
-                epgEventInfoID = (long)reader0[COLUMN_epgEventInfoID],
-                epgAlllowOverWrite = (bool)reader0[COLUMN_epgAllowOverWrite],
-                lastUpdate = (DateTime)reader0[COLUMN_lastUpdate],
-            };
-            recLogItem1.epgEventInfoR = db_EpgEventInfo.select(recLogItem1.epgEventInfoID);
+            RecLogItem recLogItem1 = new RecLogItem();
+            recLogItem1.ID = (long)reader0[i0++];
+            recLogItem1.recodeStatus = (RecLogItem.RecodeStatuses)reader0[i0++];
+            recLogItem1.recFilePath = (string)reader0[i0++];
+            recLogItem1.comment = (string)reader0[i0++];
+            recLogItem1.epgEventInfoID = (long)reader0[i0++];
+            recLogItem1.epgAlllowOverWrite = (bool)reader0[i0++];
+            recLogItem1.lastUpdate = (DateTime)reader0[i0++];
 
             return recLogItem1;
         }
 
-        public RecLogItem exists(EpgEventInfo epg0)
+        public List<RecLogItem> exists(List<EpgEventInfo> epgList0, SqlCommand cmd0)
         {
-            return exists(RecLogItem.RecodeStatuses.ALL, epg0.original_network_id, epg0.transport_stream_id, epg0.service_id, epg0.event_id, epg0.start_time);
+            List<RecLogItem> recLogItems1 = new List<RecLogItem>();
+            if (epgList0.Count == 0) { return recLogItems1; }
+
+            StringBuilder sb1 = new StringBuilder();
+            foreach (var epg1 in epgList0)
+            {
+                if (0 < sb1.Length)
+                {
+                    sb1.Append(" OR ");
+                }
+                sb1.Append(getQuery_EpgKey(epg1));
+            }
+            cmd0.CommandText = "SELECT  * FROM " + tableName + " " + TABLE_NAME_ABBR +
+                " INNER JOIN " + DB_EpgEventInfo.TABLE_NAME + " " + DB_EpgEventInfo.TABLE_NAME_ABBR +
+                " ON (" + TABLE_NAME_ABBR + "." + COLUMN_epgEventInfoID + "=" + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_ID + ")" +
+                " WHERE " + sb1.ToString();
+            using (SqlDataReader reader1 = cmd0.ExecuteReader())
+        {
+                while (reader1.Read())
+                {
+                    int i1 = 0;
+                    RecLogItem recLogItem1 = getItem(reader1, ref i1);
+                    recLogItem1.epgEventInfoR = db_EpgEventInfo.getItem(reader1, ref i1);
+                    recLogItems1.Add(recLogItem1);
+                }
+            }
+
+            return recLogItems1;
         }
 
         /// <summary>
@@ -420,39 +492,107 @@ namespace EpgTimer.Common
      /// <returns></returns>
         public RecLogItem exists(ReserveData reserveData0)
         {
-            return exists(RecLogItem.RecodeStatuses.ALL, reserveData0.OriginalNetworkID, reserveData0.TransportStreamID, reserveData0.ServiceID, reserveData0.EventID, reserveData0.StartTime);
+            return exists(null, reserveData0.OriginalNetworkID, reserveData0.TransportStreamID, reserveData0.ServiceID, reserveData0.EventID, reserveData0.StartTime);
         }
 
         public RecLogItem exists(RecFileInfo recFileInfo0)
         {
-            return exists(RecLogItem.RecodeStatuses.ALL, recFileInfo0.OriginalNetworkID, recFileInfo0.TransportStreamID, recFileInfo0.ServiceID, recFileInfo0.EventID, recFileInfo0.StartTime);
+            return exists(null, recFileInfo0.OriginalNetworkID, recFileInfo0.TransportStreamID, recFileInfo0.ServiceID, recFileInfo0.EventID, recFileInfo0.StartTime);
+        }
+
+        RecLogItem exists(RecFileInfo recFileInfo0, SqlCommand cmd0)
+        {
+            return exists(null, recFileInfo0.OriginalNetworkID, recFileInfo0.TransportStreamID, recFileInfo0.ServiceID, recFileInfo0.EventID, recFileInfo0.StartTime, cmd0);
+        }
+
+        static string getQuery_EpgKey(EpgEventInfo epg0)
+        {
+            return "(" + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_original_network_id + "=" + epg0.original_network_id +
+                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_transport_stream_id + "=" + epg0.transport_stream_id +
+                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_service_id + "=" + epg0.service_id +
+                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_event_id + "=" + epg0.event_id +
+                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_start_time + "=" + q(epg0.start_time.ToString(DB_EpgEventInfo.startTimeStrFormat))
+                + ")";
         }
 
         public RecLogItem exists(RecLogItem.RecodeStatuses recodeStatuse0, ushort original_network_id0, ushort transport_stream_id0, ushort service_id0, ushort event_id0, DateTime startTime0)
         {
-            RecLogItem recLogItem1 = null;
-            string query1 = "SELECT TOP 1 * FROM " + tableName + " " + TABLE_NAME_ABBR +
-                " INNER JOIN " + DB_EpgEventInfo.TABLE_NAME + " " + DB_EpgEventInfo.TABLE_NAME_ABBR +
-                " ON (" + TABLE_NAME_ABBR + "." + COLUMN_epgEventInfoID + "=" + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_ID + ")" +
-                " WHERE " + getRecodeStatusQuery(recodeStatuse0) +
-                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_original_network_id + "=" + original_network_id0 +
-                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_transport_stream_id + "=" + transport_stream_id0 +
-                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_service_id + "=" + service_id0 +
-                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_event_id + "=" + event_id0 +
-                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_start_time + "=" + q(startTime0.ToString(DB_EpgEventInfo.startTimeStrFormat));
+            return exists(getRecodeStatusQuery(recodeStatuse0), original_network_id0, transport_stream_id0, service_id0, event_id0, startTime0);
+        }
+
+        RecLogItem exists(string recodeStatusQuery0, ushort original_network_id0, ushort transport_stream_id0, ushort service_id0, ushort event_id0, DateTime startTime0)
+        {
             try
             {
                 using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
                 {
                     sqlConn1.Open();
-                    using (SqlCommand cmd1 = new SqlCommand(query1, sqlConn1))
+                    using (SqlCommand cmd1 = sqlConn1.CreateCommand())
+                    {
+                        return exists(recodeStatusQuery0, original_network_id0, transport_stream_id0, service_id0, event_id0, startTime0, cmd1);
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            return null;
+        }
+
+        RecLogItem exists(string recodeStatusQuery0, ushort original_network_id0, ushort transport_stream_id0, ushort service_id0, ushort event_id0, DateTime startTime0, SqlCommand cmd0)
+        {
+            RecLogItem recLogItem1 = null;
+            StringBuilder query1 = new StringBuilder();
+            query1.Append("SELECT TOP 1 * FROM " + tableName + " " + TABLE_NAME_ABBR +
+                " INNER JOIN " + DB_EpgEventInfo.TABLE_NAME + " " + DB_EpgEventInfo.TABLE_NAME_ABBR +
+                " ON (" + TABLE_NAME_ABBR + "." + COLUMN_epgEventInfoID + "=" + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_ID + ")" +
+                " WHERE ");
+            if (!string.IsNullOrEmpty(recodeStatusQuery0))
+            {
+                query1.Append(recodeStatusQuery0 + " AND ");
+            }
+            query1.Append(DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_original_network_id + "=" + original_network_id0 + " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_transport_stream_id + "=" + transport_stream_id0 +
+                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_service_id + "=" + service_id0 +
+                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_event_id + "=" + event_id0 +
+                " AND " + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_start_time + "=" + q(startTime0.ToString(DB_EpgEventInfo.startTimeStrFormat)));
+            cmd0.CommandText = query1.ToString();
+            using (SqlDataReader reader1 = cmd0.ExecuteReader())
+            {
+                while (reader1.Read())
+                {
+                    int i1 = 0;
+                    recLogItem1 = getItem(reader1, ref i1);
+                    recLogItem1.epgEventInfoR = db_EpgEventInfo.getItem(reader1, ref i1);
+                }
+            }
+
+            return recLogItem1;
+        }
+
+        List<RecLogItem> select(string where0)
+        {
+            List<RecLogItem> recLogItems1 = new List<RecLogItem>();
+            StringBuilder query1 = new StringBuilder();
+            query1.Append("SELECT  * FROM " + TABLE_NAME + " " + TABLE_NAME_ABBR +
+                " INNER JOIN " + DB_EpgEventInfo.TABLE_NAME + " " + DB_EpgEventInfo.TABLE_NAME_ABBR +
+                " ON (" + TABLE_NAME_ABBR + "." + COLUMN_epgEventInfoID + "=" + DB_EpgEventInfo.TABLE_NAME_ABBR + "." + DB_EpgEventInfo.COLUMN_ID + ")" +
+                " WHERE " + where0);
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = new SqlCommand(query1.ToString(), sqlConn1))
                     using (SqlDataReader reader1 = cmd1.ExecuteReader())
                     {
                         while (reader1.Read())
                         {
-                            recLogItem1 = getItem(reader1);
-                            recLogItem1.epgEventInfoR = db_EpgEventInfo.getItem(reader1);
-                            break;
+                            int i1 = 0;
+                            RecLogItem recLogItem1 = getItem(reader1, ref i1);
+                            recLogItem1.epgEventInfoR = db_EpgEventInfo.getItem(reader1, ref i1);
+                            recLogItems1.Add(recLogItem1);
                         }
                     }
                 }
@@ -462,13 +602,13 @@ namespace EpgTimer.Common
                 System.Diagnostics.Trace.WriteLine(ex0);
             }
 
-            return recLogItem1;
+            return recLogItems1;
         }
 
         public List<RecLogItem> select_Reserved()
         {
-            string where1 = COLUMN_recodeStatus + "=" + (int)RecLogItem.RecodeStatuses.予約済み;
-            List<RecLogItem> recLogItemList1 = select(where0: where1);
+            string where1 = TABLE_NAME_ABBR + "." + COLUMN_recodeStatus + "=" + (int)RecLogItem.RecodeStatuses.予約済み;
+            List<RecLogItem> recLogItemList1 = select(where1);
 
             return recLogItemList1;
         }
@@ -481,14 +621,64 @@ namespace EpgTimer.Common
         public List<RecLogItem> select_Reserved_NotUpdated(DateTime lastUpdate0)
         {
             RecLogItem.RecodeStatuses recodeStatuse1 = RecLogItem.RecodeStatuses.予約済み | RecLogItem.RecodeStatuses.無効登録;
-            string where1 = getRecodeStatusQuery(recodeStatuse1, string.Empty) +
-                " AND " + COLUMN_lastUpdate + "<" + q(lastUpdate0.ToString(DB_EpgEventInfo.timeStampStrFormat));
-            List<RecLogItem> recLogItemList1 = select(where0: where1);
+            string where1 = getRecodeStatusQuery(recodeStatuse1) +
+                " AND " + TABLE_NAME_ABBR + "." + COLUMN_lastUpdate + "<" + q(lastUpdate0.ToString(DB_EpgEventInfo.timeStampStrFormat));
+            List<RecLogItem> recLogItemList1 = select(where1);
 
             return recLogItemList1;
         }
 
+        public int insert(IEnumerable<RecFileInfo> recFileInfoes0, DateTime lastUpdate0)
+        {
+            int count1 = 0;
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = sqlConn1.CreateCommand())
+                    {
+                        foreach (RecFileInfo rfi1 in recFileInfoes0)
+                        {
+                            if (exists(rfi1, cmd1) == null)
+                            {
+                                insert(rfi1, lastUpdate0, cmd1);
+                                count1++;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            return count1;
+        }
+
         public RecLogItem insert(RecFileInfo recFileInfo0, DateTime lastUpdate0)
+        {
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = sqlConn1.CreateCommand())
+                    {
+                        return insert(recFileInfo0, lastUpdate0, cmd1);
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
+
+            return null;
+        }
+
+        RecLogItem insert(RecFileInfo recFileInfo0, DateTime lastUpdate0, SqlCommand cmd0)
         {
             EpgEventInfoR epgEventInfoR1 = new EpgEventInfoR(recFileInfo0, lastUpdate0);
             RecLogItem recLogItem1 = new RecLogItem()
@@ -505,16 +695,21 @@ namespace EpgTimer.Common
             {
                 recLogItem1.recodeStatus = RecLogItem.RecodeStatuses.録画異常;
             }
-            insert(recLogItem1);
+            insert(recLogItem1, cmd0);
 
             return recLogItem1;
         }
 
-        public override int insert(RecLogItem item0)
+        public override long insert(RecLogItem item0, SqlCommand cmd0)
         {
-            long epgEventInfoID1;
-            db_EpgEventInfo.insert(out epgEventInfoID1, item0.epgEventInfoR);
-            item0.epgEventInfoID = epgEventInfoID1;
+            item0.epgEventInfoID = db_EpgEventInfo.insert(item0.epgEventInfoR, cmd0);
+
+            return base.insert(item0, cmd0);
+        }
+
+        public override long insert(RecLogItem item0)
+        {
+            item0.epgEventInfoID = db_EpgEventInfo.insert(item0.epgEventInfoR);
 
             return base.insert(item0);
         }
@@ -553,16 +748,30 @@ namespace EpgTimer.Common
                 {
             int res1 = 0;
             if (items0.Count() == 0) { return 0; }
-
+            //
+            try
+            {
+                using (SqlConnection sqlConn1 = new SqlConnection(sqlConnStr))
+                {
+                    sqlConn1.Open();
+                    using (SqlCommand cmd1 = sqlConn1.CreateCommand())
+                    {
             res1 = base.delete(
-                items0.Select(x => x.ID));
+                            items0.Select(x => x.ID), cmd1);
             db_EpgEventInfo.delete(
-                items0.Select(x => x.epgEventInfoID));
+                            items0.Select(x => x.epgEventInfoID), cmd1);
+                    }
+                }
+            }
+            catch (Exception ex0)
+            {
+                System.Diagnostics.Trace.WriteLine(ex0);
+            }
 
             return res1;
         }
 
-        protected override Dictionary<string, string> getFieldNameValues(RecLogItem item0, bool withID0)
+        protected override Dictionary<string, string> getFieldNameValues(RecLogItem item0)
         {
             Dictionary<string, string> dict1 = new Dictionary<string, string>();
             dict1.Add(COLUMN_lastUpdate, q(item0.lastUpdate.ToString(DB_EpgEventInfo.timeStampStrFormat)));
@@ -583,11 +792,6 @@ namespace EpgTimer.Common
             createTable();
             db_EpgEventInfo.createTable();
             createIndex();
-        }
-
-        public void alterTable_EpgEventInfo()
-        {
-            db_EpgEventInfo.alterTable_COLUMN_ExtInfo_text_char();
         }
 
         void createTable()
@@ -660,11 +864,6 @@ namespace EpgTimer.Common
             get { return TABLE_NAME; }
         }
 
-        protected override bool isSetIdByManual
-        {
-            get { return false; }
-        }
-
         public DB_EpgEventInfo db_EpgEventInfo { get; private set; }
 
         public string columnName_epgEventInfoID
@@ -676,4 +875,5 @@ namespace EpgTimer.Common
         #endregion
 
     }
+
 }

@@ -131,7 +131,7 @@ namespace EpgTimer
             //
             if (string.IsNullOrEmpty(selectedItem1))
             {
-                richTextBox_SelectedItem.Visibility =  Visibility.Collapsed;
+                richTextBox_SelectedItem.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -147,7 +147,7 @@ namespace EpgTimer
         /// </summary>
         /// <param name="txtKey"></param>
         /// <returns></returns>
-        string trimKeyword(string txtKey)
+        public static string trimKeyword(string txtKey)
         {
             string markExp1 =
                 "(" +
@@ -158,6 +158,16 @@ namespace EpgTimer
                     "(［[^］]+］)+" +
                     "|" +
                      "^(\\(５\\．１\\)|\\(5\\.1\\))" +
+                     "|" +
+                     "(◆|▼).+$" +
+                     "|" +
+                     "＜[^＞]+＞" +
+                      "|" +
+                     "（[^）]+）" +
+                      "|" +
+                     "\\([^\\)]+\\)" +
+                      "|" +
+                     "出演：.+$" +
                 ")";
             return Regex.Replace(txtKey, markExp1, string.Empty).Trim();
         }

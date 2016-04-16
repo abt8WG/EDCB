@@ -569,6 +569,7 @@ namespace EpgTimer
                 recInfoView.UpdateInfo();
                 epgView.UpdateEpgData();
                 SearchWindow.UpdatesInfo();
+                recLogView.onConnected();
             }
 
             if (CommonManager.Instance.IsConnected)
