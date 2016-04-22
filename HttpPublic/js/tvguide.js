@@ -68,14 +68,14 @@ $(function(){
 	        if (!target.data('touched')){
 	            return;
 	        }
-	         
+
 	        $('body').removeClass('drag');
 	        target.data('touched', false);
 	    }
 	});
 
 	/*禁断の果実
-	$('main').on('scroll', function(){
+	$('#tv-guide-container').on('scroll', function(){
 		var header = $('header').height();
 		$.each($('.cell'), function(){
 			base=$(this).offset().top-header;
@@ -175,7 +175,7 @@ $(function(){
 	var notification = document.querySelector('.mdl-js-snackbar');
 	//EPG取得
 	$('.epg').click(function(){
-		$.get('/api/Epg', {epg: $(this).data('epg')}, function(result, textStatus, xhr){
+		$.get(root + 'api/Epg', {epg: $(this).data('epg')}, function(result, textStatus, xhr){
 			var xml = $(xhr.responseXML);
 			notification.MaterialSnackbar.showSnackbar({message: xml.find('info').text()});
 		});
@@ -199,11 +199,11 @@ $(function(){
 
 		if (target.data('reserve')){
 			message = '予約を有効にしました';
-			url = '/api/reservetoggle';
+			url = root + 'api/reservetoggle';
 			data = {'id': target.data('reserve')};
 		}else if (target.data('eid')){
 			message = '予約を追加しました';
-			url = '/api/oneclickadd';
+			url = root + 'api/oneclickadd';
 			data = {
 				'onid': target.data('onid'),
 				'tsid': target.data('tsid'),
@@ -211,6 +211,7 @@ $(function(){
 				'eid': target.data('eid')
 			};
 		}
+
 		$.ajax({
 			url: url,
 			data: data,
@@ -244,7 +245,7 @@ $(function(){
 							mark = '録';
 						}
 					}
-					target.data('reserve', id).text(button).parents('.content').not('.reserve').find('.startTime').append('<span class="mark reserve"></span>');
+					target.data('reserve', id).text(button).parents('.content').not('.reserve').find('.startTime').after('<span class="mark reserve"></span>');
 					target.parents('.content').removeClass('disabled partially shortage view').addClass('reserve ' + recmode).find('.mark.reserve').text(mark);
 				}else{
 					message = xml.find('err').text();

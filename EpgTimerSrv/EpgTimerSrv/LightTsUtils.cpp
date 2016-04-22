@@ -914,6 +914,7 @@ void CEitConverter::OnShortEvent(CDescShortEvent& desc)
 {
 	if (dest->shortInfo) return;
 	dest->shortInfo.reset(new EPGDB_SHORT_EVENT_INFO);
+	dest->search_event_name.clear();
 	dest->shortInfo->event_name = arib.DecodeString(desc.GetName());
 	//‚²‚­‹H‚ÉAPR(‰üs)‚ðŠÜ‚Þ‚½‚ß
 	Replace(dest->shortInfo->event_name, L"\r\n", L"");
@@ -952,6 +953,7 @@ void CEitConverter::OnExtEvent(CDescExtEvent& desc)
 
 	if (dest->extInfo) return;
 	dest->extInfo.reset(new EPGDB_EXTENDED_EVENT_INFO);
+	dest->search_event_name.clear();
 	ExtEventHandler Handler(dest->extInfo->text_char, arib);
 	desc.ParseText(Handler);
 }

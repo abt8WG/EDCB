@@ -203,6 +203,7 @@ namespace EpgTimer
             ctmd.Items.Add(new CtxmItemData("変更(_C)", cm_ChangeMenu));
             ctmd.Items.Add(new CtxmItemData("削除", EpgCmds.Delete));
             ctmd.Items.Add(new CtxmItemData("予約ごと削除", EpgCmds.Delete2));
+            ctmd.Items.Add(new CtxmItemData("予約のみ削除", EpgCmds.Delete3));
             ctmd.Items.Add(new CtxmItemData("予約を自動登録に合わせる", EpgCmds.AdjustReserve));
             ctmd.Items.Add(new CtxmItemData("次の予約(予約一覧)へジャンプ", EpgCmds.JumpReserve));
             ctmd.Items.Add(new CtxmItemData("次の予約(チューナ画面)へジャンプ", EpgCmds.JumpTuner));
@@ -221,6 +222,7 @@ namespace EpgTimer
             ctmd.Items.Add(new CtxmItemData("変更(_C)", cm_ChangeMenu));
             ctmd.Items.Add(new CtxmItemData("削除", EpgCmds.Delete));
             ctmd.Items.Add(new CtxmItemData("予約ごと削除", EpgCmds.Delete2));
+            ctmd.Items.Add(new CtxmItemData("予約のみ削除", EpgCmds.Delete3));
             ctmd.Items.Add(new CtxmItemData("予約を自動登録に合わせる", EpgCmds.AdjustReserve));
             ctmd.Items.Add(new CtxmItemData("次の予約(予約一覧)へジャンプ", EpgCmds.JumpReserve));
             ctmd.Items.Add(new CtxmItemData("次の予約(チューナ画面)へジャンプ", EpgCmds.JumpTuner));

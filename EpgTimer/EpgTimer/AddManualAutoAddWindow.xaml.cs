@@ -93,7 +93,7 @@ namespace EpgTimer
             }
             else
             {
-                if (CmdExeUtil.CheckAllProcCancel(e, CommonUtil.ToList(defKey), true) == true)
+                if (CmdExeUtil.CheckAllProcCancel(e, CommonUtil.ToList(defKey), cmdCheckType.Delete2) == true)
                 { return false; }
             }
 

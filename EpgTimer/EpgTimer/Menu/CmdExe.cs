@@ -8,6 +8,13 @@ using System.Windows.Input;
 
 namespace EpgTimer
 {
+    public enum cmdCheckType
+    {
+        Delete2, //予約ごと削除
+        Delete3, //予約のみ削除
+        AdjustReserve //予約を自動登録に合わせる
+    }
+
     public class CmdExe<T> where T : class, IRecWorkMainData, new()
     {
         public struct cmdOption
@@ -93,6 +100,7 @@ namespace EpgTimer
             cmdList.Add(EpgCmds.ChgOnOffKeyEnabled, new cmdOption(mc_ChangeOnOffKeyEnabled, null, cmdExeType.MultiItem, true, changeDB: true));
             cmdList.Add(EpgCmds.Delete, new cmdOption(mc_Delete, null, cmdExeType.MultiItem, changeDB: true));
             cmdList.Add(EpgCmds.Delete2, new cmdOption(mc_Delete2, null, cmdExeType.MultiItem, changeDB: true));
+            cmdList.Add(EpgCmds.Delete3, new cmdOption(mc_Delete3, null, cmdExeType.MultiItem, changeDB: true));
             cmdList.Add(EpgCmds.DeleteAll, new cmdOption(mc_Delete, null, cmdExeType.AllItem, changeDB: true));
             cmdList.Add(EpgCmds.AdjustReserve, new cmdOption(mc_AdjustReserve, null, cmdExeType.MultiItem, changeDB: true));
             cmdList.Add(EpgCmds.ShowDialog, new cmdOption(mc_ShowDialog, null, cmdExeType.SingleItem, changeDB: true));
@@ -258,6 +266,7 @@ namespace EpgTimer
         protected virtual void mc_ChangeOnOffKeyEnabled(object sender, ExecutedRoutedEventArgs e) { }
         protected virtual void mc_Delete(object sender, ExecutedRoutedEventArgs e) { }
         protected virtual void mc_Delete2(object sender, ExecutedRoutedEventArgs e) { }
+        protected virtual void mc_Delete3(object sender, ExecutedRoutedEventArgs e) { }
         protected virtual void mc_AdjustReserve(object sender, ExecutedRoutedEventArgs e) { }
         protected virtual void mc_ShowDialog(object sender, ExecutedRoutedEventArgs e) { }
 #if true
@@ -290,7 +299,7 @@ namespace EpgTimer
         {
             ReserveData resinfo = mcs_GetNextReserve();
             if (reserveOnly && resinfo == null) return;
-            if (onReserveOnly && resinfo.IsEnabled == false) return;
+            if (onReserveOnly && resinfo != null && resinfo.IsEnabled == false) return;
 
             mcs_SetBlackoutWindow(new ReserveItem(resinfo));
             var mainWindow = Application.Current.MainWindow as MainWindow;
@@ -639,16 +648,26 @@ namespace EpgTimer
                 , "削除の確認", MessageBoxButton.OKCancel,
                 MessageBoxImage.Exclamation, MessageBoxResult.OK) != MessageBoxResult.OK);
         }
-        public static bool CheckAllProcCancel(ExecutedRoutedEventArgs e, IEnumerable<AutoAddData> dataList, bool IsDelete)
+        public static bool CheckAllProcCancel(ExecutedRoutedEventArgs e, IEnumerable<AutoAddData> dataList, cmdCheckType type)
         {
             if (CmdExeUtil.IsMessageBeforeCommand(e) == false) return false;
 
             List<string> titleList = dataList.Select(info => info.DataTitle).ToList();
             if (titleList.Count == 0) return false;
 
-            var s = IsDelete == true
-                ? new string[] { "予約ごと削除して", "削除", "削除される予約数", "予約ごと削除" }
-                : new string[] { "予約の録画設定を自動登録の録画設定に合わせても", "処理", "対象予約数", "予約の録画設定変更" };
+            string[] s = null;
+            switch (type)
+            {
+            case cmdCheckType.Delete2:
+                s = new string[] { "予約ごと削除して", "削除", "削除される予約数", "予約ごと削除" };
+                break;
+            case cmdCheckType.Delete3:
+                s = new string[] { "予約のみ削除して", "処理", "削除される予約数", "予約のみ削除" };
+                break;
+            case cmdCheckType.AdjustReserve:
+                s = new string[] { "予約の録画設定を自動登録の録画設定に合わせても", "処理", "対象予約数", "予約の録画設定変更" };
+                break;
+            }
 
             var text = string.Format("{0}よろしいですか?\r\n"
                                         + "(個別予約も処理の対象となります。)\r\n\r\n"
@@ -673,7 +692,7 @@ namespace EpgTimer
             //コマンド側のオプションに変更可能なようにまとめておく
             bool NoMessage = false;
             if (e.Command == EpgCmds.DeleteAll) NoMessage = Settings.Instance.MenuSet.NoMessageDeleteAll;
-            else if (e.Command == EpgCmds.Delete2) NoMessage = Settings.Instance.MenuSet.NoMessageDelete2;
+            else if (e.Command == EpgCmds.Delete2 || e.Command == EpgCmds.Delete3) NoMessage = Settings.Instance.MenuSet.NoMessageDelete2;
             else if (e.Command == EpgCmds.SetNotKey) NoMessage = Settings.Instance.MenuSet.NoMessageNotKEY;
             else if (e.Command == EpgCmds.AdjustReserve) NoMessage = Settings.Instance.MenuSet.NoMessageAdjustRes;
 

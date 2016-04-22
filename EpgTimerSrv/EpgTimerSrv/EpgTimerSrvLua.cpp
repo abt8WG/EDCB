@@ -617,7 +617,7 @@ int CEpgTimerSrvMain::LuaGetRecFileInfoProc(lua_State* L, bool getExtraInfo)
 			lua_rawseti(L, -2, (int)i + 1);
 		}
 	}
-	return getAll ? 1 : 0;
+	return 1;
 }
 
 int CEpgTimerSrvMain::LuaChgProtectRecFileInfo(lua_State* L)

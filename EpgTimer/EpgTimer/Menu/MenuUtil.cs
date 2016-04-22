@@ -780,14 +780,17 @@ namespace EpgTimer
         {
             return AutoAddDelete(itemlist, Settings.Instance.SyncResAutoAddDelete, false, false);
         }
-        public bool AutoAddDelete(IEnumerable<AutoAddData> itemlist, bool SyncDelete, bool SyncAll, bool cautionManyRes)
+        public bool AutoAddDelete(IEnumerable<AutoAddData> itemlist, bool SyncDelete, bool SyncAll, bool cautionManyRes, bool deleteItems = true)
         {
             try
             {
-                bool ret = ReserveCmdSend(itemlist.OfType<EpgAutoAddData>().Select(item => item.DataID).ToList(), cmd.SendDelEpgAutoAdd, "キーワード予約の削除")
+                if (deleteItems == true)
+                {
+                    bool ret = ReserveCmdSend(itemlist.OfType<EpgAutoAddData>().Select(item => item.DataID).ToList(), cmd.SendDelEpgAutoAdd, "キーワード予約の削除")
                     && ReserveCmdSend(itemlist.OfType<ManualAutoAddData>().Select(item => item.DataID).ToList(), cmd.SendDelManualAdd, "プログラム自動予約の削除");
 
-                if (ret == false || SyncDelete == false) return ret;
+                    if (ret == false || SyncDelete == false) return ret;
+                }
 
                 return AutoAddDeleteSyncReserve(itemlist, SyncAll, cautionManyRes);
             }

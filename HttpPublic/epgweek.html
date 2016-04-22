@@ -1,5 +1,5 @@
-dofile(mg.document_root..'\\string.lua')
-dofile(mg.document_root..'\\util.lua')
+dofile(mg.script_name:gsub('[^\\/]*$','')..'string.lua')
+dofile(mg.script_name:gsub('[^\\/]*$','')..'util.lua')
 
 path='Setting\\HttpPublic.ini'
 oneseg=0+edcb.GetPrivateProfile('GUIDE','oneseg',false,path)~=0
@@ -123,7 +123,7 @@ ct.css='<style>\n'
   ..'px;}}\n'
   ..'</style>\n'
 
-ct.js='<script src="/js/tvguide.js"></script>\n'
+ct.js='<script src="js/tvguide.js"></script>\n'
   ..'<script>\n'
   ..'oneminpx='..ONE_MIN_PX..';\n'
   ..'basehour='..baseHour..';\n'
@@ -189,12 +189,6 @@ end
 
 if not st then
   st=sort[1]
-end
-
-b=edcb.EnumEventInfo({{onid=st.onid, tsid=st.tsid, sid=st.sid}})
-if b then
- st.event=b
- table.sort(st.event, function(a,b) return os.time(a.startTime)<os.time(b.startTime) end)
 end
 
 ct.title='週間番組表 <span class="mdl-typography--subhead mdl-cell--hide-phone">('..(st and st.service_name or '')..')</span>'
@@ -286,19 +280,21 @@ end
 ct.main=ct.main..'</div>\n'
 
 
-  ..'<div id="tv-guide">\n'
+ctt={'<div id="tv-guide">\n'}
 
 for i=0,7 do
-  ct.main=ct.main..'<div class="station">\n'
+  table.insert(ctt, '<div class="station">\n')
   lastPx=0
   total=0
-  for j,w in ipairs(st.event) do
+  b=edcb.EnumEventInfo({{onid=st.onid, tsid=st.tsid, sid=st.sid}}, {startTime=os.date('*t',baseTime+(i*24-6)*3600), durationSecond=(interval+6)*3600}) or {}
+  table.sort(b, function(a,b) return os.time(a.startTime)<os.time(b.startTime) end)
+  for j,w in ipairs(b) do
     startTime=os.time(w.startTime)
     startPx=math.min(math.floor((startTime-baseTime-i*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
     endTime=w.durationSecond and startTime+w.durationSecond or (j<#v.et and os.time(v.et[j+1].startTime) or startTime) --終了時間未定
     endPx=math.min(math.floor((endTime-baseTime-i*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
     if startPx-lastPx>0 then
-      ct.main=ct.main..'<div class="cell" style="height:'..(startPx-lastPx)..'px"><div class="content nothing"></div></div>\n'
+      table.insert(ctt, '<div class="cell" style="height:'..(startPx-lastPx)..'px"><div class="content nothing"></div></div>\n')
       total=total+startPx-lastPx
       lastPx=startPx
     end
@@ -318,7 +314,7 @@ for i=0,7 do
       mark=(r and '<span class="mark reserve">'..(rs.recMode==5 and '無' or r.overlapMode==1 and '部' or r.overlapMode==2 and '不' or rs.recMode==4 and '視'or '録')..'</span>' or '')	--録画マーク
       recmode=r and ' reserve'..(rs.recMode==5 and ' disabled' or r.overlapMode==1 and ' partially' or r.overlapMode==2 and ' shortage' or rs.recMode==4 and ' view' or '') or ''	--録画モード
 
-      ct.main=ct.main..'<div class="cell" style="height:'..(endPx-lastPx)..'px">\n'
+      table.insert(ctt, '<div class="cell" style="height:'..(endPx-lastPx)..'px">\n'
         ..'<div class="content '..category..recmode..'" style="min-height:'..(endPx-lastPx-2)..'px">\n'
 
         ..'<div><div class="startTime">'..os.date('%M', startTime)..'</div>'..mark..'</div>'
@@ -326,7 +322,7 @@ for i=0,7 do
         ..'<div class="mdl-layout-spacer"><span class="mdl-typography--body-1-force-preferred-font">'..title..'</span>'..(w.durationSecond and w.durationSecond>=30*60 and info..'<div class="popup">' or '<div class="popup">'..info)..search
 
         ..'<p class="tool mdl-typography--caption-color-contrast">'
-        ..'<a class="mdl-button mdl-js-button mdl-button--raised" href="epginfo.html?onid='..w.onid..'&tsid='..w.tsid..'&sid='..w.sid..'&eid='..w.eid..hrefGene..'">番組詳細</a>'
+        ..'<a class="mdl-button mdl-js-button mdl-button--raised" href="epginfo.html?onid='..w.onid..'&tsid='..w.tsid..'&sid='..w.sid..'&eid='..w.eid..'&week='..hrefGene..'">番組詳細</a>'
         ..(endTime~=startTime and endTime-now>0 and '<a class="addreserve mdl-button mdl-js-button mdl-button--raised"'								--終了前
           ..(r and ' data-reserve="'..id..'">'..(rs.recMode==5 and '有効' or '無効')										--予約あり有効無効
                 or ' data-onid="'..w.onid..'" data-tsid="'..w.tsid..'" data-sid="'..w.sid..'" data-eid="'..w.eid..'">録画予約')..'</a>' or '')		--なし新規追加
@@ -335,19 +331,19 @@ for i=0,7 do
 
         ..string.gsub(string.gsub((w.extInfo and '<p class="mdl-typography--caption-color-contrast"><tt>'..w.extInfo.text_char..'</tt></p>' or ''), 'https?://[%w/:%#%$&%?%(%)~%.=%+%-_]+', '<a href="%1" target="_blank">%1</a>'), '\r?\n', '<br>')
 
-        ..'</div></div></div></div>\n'
+        ..'</div></div></div></div>\n')
 
       total=total+endPx-lastPx
       lastPx=endPx
     end
   end
   if total<interval*60*ONE_MIN_PX then
-    ct.main=ct.main..'<div class="cell" style="height:'..(interval*60*ONE_MIN_PX-total)..'px"><div class="content nothing"></div></div>\n'
+    table.insert(ctt, '<div class="cell" style="height:'..(interval*60*ONE_MIN_PX-total)..'px"><div class="content nothing"></div></div>\n')
   end
-  ct.main=ct.main..'</div>\n'
+  table.insert(ctt, '</div>\n')
 end
 
-ct.main=ct.main..'</div>\n'
+ct.main=ct.main..table.concat(ctt)..'</div>\n'
 
   ..'<form id="autoepg" method="POST" action="autoaddepginfo.html?week=&onid='..onid..'&tsid='..tsid..'&sid='..sid..'">\n'
   ..'<input type="hidden" name="andKey">\n'
@@ -358,9 +354,6 @@ ct.main=ct.main..'</div>\n'
 
 ct=template(ct)
 
-mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: '..#ct..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n', ct)
-
-cl=0
-for i,v in ipairs(ctt) do cl=cl+#v end
-mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: '..cl..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n')
-for i,v in ipairs(ctt) do mg.write(v) end
+zl=Deflate(ct)
+mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'..(zl and 'Content-Encoding: deflate\r\n' or '')
+  ..'Content-Length: '..(zl and #zl or #ct)..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n', zl or ct)

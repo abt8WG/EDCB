@@ -289,6 +289,11 @@ BOOL CEpgDBManager::ConvertEpgInfo(const EPGDB_SERVICE_INFO* service, const EPG_
 	// EpgDataCap_Bon から serviceName を参照することはなさそうなので、EpgTimerSrv でのみ設定することにしておく。
 	dest->serviceName = service->service_name;
 
+	// 検索用文字列を再生成するためにクリアしておく。
+	dest->search_event_name.clear();
+	dest->search_text_char.clear();
+	dest->searchResult.clear();
+
 	return TRUE;
 }
 
@@ -823,55 +828,49 @@ BOOL CEpgDBManager::SearchServiceName(
 //ConvertText.txtと異なり半角濁点カナを(意図通り)置換する点、［］，．全角空白を置換する点、―(U+2015)ゐヰゑヱΖ(U+0396)を置換しない点に注意
 void CEpgDBManager::ConvertSearchText(wstring& str)
 {
-	//全角英数およびこのテーブルにある文字列を置換する
-	static const wchar_t convertFrom[][3] = {
-		L"’", L"”", L"　",
-		L"！", L"＃", L"＄", L"％", L"＆", L"（", L"）", L"＊", L"＋", L"，", L"－", L"．", L"／",
-		L"：", L"；", L"＜", L"＝", L"＞", L"？", L"＠", L"［", L"］", L"＾", L"＿", L"｀", L"｛", L"｜", L"｝", L"～",
-		L"｡", L"｢", L"｣", L"､", L"･", L"ｦ", L"ｧ", L"ｨ", L"ｩ", L"ｪ", L"ｫ", L"ｬ", L"ｭ", L"ｮ", L"ｯ", L"ｰ", L"ｱ", L"ｲ", L"ｳ", L"ｴ", L"ｵ",
-		L"ｶﾞ", L"ｷﾞ", L"ｸﾞ", L"ｹﾞ", L"ｺﾞ", L"ｶ", L"ｷ", L"ｸ", L"ｹ", L"ｺ",
-		L"ｻﾞ", L"ｼﾞ", L"ｽﾞ", L"ｾﾞ", L"ｿﾞ", L"ｻ", L"ｼ", L"ｽ", L"ｾ", L"ｿ",
-		L"ﾀﾞ", L"ﾁﾞ", L"ﾂﾞ", L"ﾃﾞ", L"ﾄﾞ", L"ﾀ", L"ﾁ", L"ﾂ", L"ﾃ", L"ﾄ",
-		L"ﾅ", L"ﾆ", L"ﾇ", L"ﾈ", L"ﾉ",
-		L"ﾊﾞ", L"ﾋﾞ", L"ﾌﾞ", L"ﾍﾞ", L"ﾎﾞ", L"ﾊﾟ", L"ﾋﾟ", L"ﾌﾟ", L"ﾍﾟ", L"ﾎﾟ", L"ﾊ", L"ﾋ", L"ﾌ", L"ﾍ", L"ﾎ",
-		L"ﾏ", L"ﾐ", L"ﾑ", L"ﾒ", L"ﾓ", L"ﾔ", L"ﾕ", L"ﾖ", L"ﾗ", L"ﾘ", L"ﾙ", L"ﾚ", L"ﾛ", L"ﾜ", L"ﾝ", L"ﾞ", L"ﾟ",
-		L"￥",
-	};
-	static const wchar_t convertTo[][2] = {
-		L"'", L"\"", L" ",
-		L"!", L"#", L"$", L"%", L"&", L"(", L")", L"*", L"+", L",", L"-", L".", L"/",
-		L":", L";", L"<", L"=", L">", L"?", L"@", L"[", L"]", L"^", L"_", L"`", L"{", L"|", L"}", L"~",
-		L"。", L"「", L"」", L"、", L"・", L"ヲ", L"ァ", L"ィ", L"ゥ", L"ェ", L"ォ", L"ャ", L"ュ", L"ョ", L"ッ", L"ー", L"ア", L"イ", L"ウ", L"エ", L"オ",
-		L"ガ", L"ギ", L"グ", L"ゲ", L"ゴ", L"カ", L"キ", L"ク", L"ケ", L"コ",
-		L"ザ", L"ジ", L"ズ", L"ゼ", L"ゾ", L"サ", L"シ", L"ス", L"セ", L"ソ",
-		L"ダ", L"ヂ", L"ヅ", L"デ", L"ド", L"タ", L"チ", L"ツ", L"テ", L"ト",
-		L"ナ", L"ニ", L"ヌ", L"ネ", L"ノ",
-		L"バ", L"ビ", L"ブ", L"ベ", L"ボ", L"パ", L"ピ", L"プ", L"ペ", L"ポ", L"ハ", L"ヒ", L"フ", L"ヘ", L"ホ",
-		L"マ", L"ミ", L"ム", L"メ", L"モ", L"ヤ", L"ユ", L"ヨ", L"ラ", L"リ", L"ル", L"レ", L"ロ", L"ワ", L"ン", L"゛", L"゜",
-		L"\\",
+	static const wchar_t FF0X_table[] = {
+		//+0     +1     +2     +3     +4     +5     +6     +7     +8     +9     +A     +B     +C     +D     +E     +F
+		0,     L'!',  0,     L'#',  L'$',  L'%',  L'&',  0,     L'(',  L')',  L'*',  L'+',  L',',  L'-',  L'.',  L'/',  // FF00 - FF0F
+		L'0',  L'1',  L'2',  L'3',  L'4',  L'5',  L'6',  L'7',  L'8',  L'9',  L':',  L';',  L'<',  L'=',  L'>',  L'?',  // FF10 - FF1F
+		L'@',  L'A',  L'B',  L'C',  L'D',  L'E',  L'F',  L'G',  L'H',  L'I',  L'J',  L'K',  L'L',  L'M',  L'N',  L'O',  // FF20 - FF2F
+		L'P',  L'Q',  L'R',  L'S',  L'T',  L'U',  L'V',  L'W',  L'X',  L'Y',  L'Z',  L'[',  0,     L']',  L'^',  L'_',  // FF30 - FF3F
+		L'`',  L'a',  L'b',  L'c',  L'd',  L'e',  L'f',  L'g',  L'h',  L'i',  L'j',  L'k',  L'l',  L'm',  L'n',  L'o',  // FF40 - FFFF
+		L'p',  L'q',  L'r',  L's',  L't',  L'u',  L'v',  L'w',  L'x',  L'y',  L'z',  L'{',  L'|',  L'}',  L'~',  0,     // FF50 - FF5E
+		0,     L'。', L'「', L'」', L'、', L'・', L'ヲ', L'ァ', L'ィ', L'ゥ', L'ェ', L'ォ', L'ャ', L'ュ', L'ョ', L'ッ', // FF60 - FF6F
+		L'ー', L'ア', L'イ', L'ウ', L'エ', L'オ', L'カ', L'キ', L'ク', L'ケ', L'コ', L'サ', L'シ', L'ス', L'セ', L'ソ', // FF70 - FF7F
+		L'タ', L'チ', L'ツ', L'テ', L'ト', L'ナ', L'ニ', L'ヌ', L'ネ', L'ノ', L'ハ', L'ヒ', L'フ', L'ヘ', L'ホ', L'マ', // FF80 - FF8F
+		L'ミ', L'ム', L'メ', L'モ', L'ヤ', L'ユ', L'ヨ', L'ラ', L'リ', L'ル', L'レ', L'ロ', L'ワ', L'ン', L'゛', L'゜', // FF90 - FF9F
+		0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFA0 - FFAF
+		0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFB0 - FFBF
+		0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFC0 - FFCF
+		0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFD0 - FFDF
+		0,     0,     0,     0,     0,     L'\\', 0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFE0 - FFEF
+		0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFF0 - FFFF
 	};
 
-	for( size_t i = 0; i < str.size(); i++ ){
-		if( L'０' <= str[i] && str[i] <= L'９' ){
-			str[i] = str[i] - L'０' + L'0';
-		}else if( L'Ａ' <= str[i] && str[i] <= L'Ｚ' ){
-			str[i] = str[i] - L'Ａ' + L'A';
-		}else if( L'ａ' <= str[i] && str[i] <= L'ｚ' ){
-			str[i] = str[i] - L'ａ' + L'a';
-		}
-		//注意: これは符号位置の連続性を利用してテーブル参照を減らすための条件。上記のテーブルを弄る場合はここを確認すること
-		else if( str[i] == L'’' || str[i] == L'”' || str[i] == L'　' || L'！' <= str[i] && str[i] <= L'￥' ){
-			for( size_t j = 0; j < _countof(convertFrom); j++ ){
-				if( str[i] == convertFrom[j][0] ){
-					if( convertFrom[j][1] == L'\0' ){
-						str.replace(i, 1, convertTo[j]);
-						break;
-					}else if( i + 1 < str.size() && str[i + 1] == convertFrom[j][1] ){
-						str.replace(i, 2, convertTo[j]);
-						break;
-					}
+	size_t j = 0;
+	for (size_t i = 0; i < str.size(); i++) {
+		wchar_t wch = str[i];
+		if (wch >= 0xFF00 && wch <= 0xFFFF)
+		{
+			wchar_t wch2 = FF0X_table[wch & 0xFF];
+			if (wch2)
+			{
+				if (str.c_str()[i+1] == L'ﾞ' && ((wch >= L'ｶ' && wch <= L'ﾄ') || (wch >= L'ﾊ' && wch <= L'ﾎ')))
+				{
+					wch2++; i++;
 				}
+				else if (str.c_str()[i+1] == L'ﾟ' && wch >= L'ﾊ' && wch <= L'ﾎ')
+				{
+					wch2 += 2; i++;
+				}
+				wch = wch2;
 			}
 		}
+		else if (wch == L'’') { wch = L'\''; }
+		else if (wch == L'”') { wch = L'"'; }
+		else if (wch == L'　') { wch = L' '; }
+		str[j++] = wch;
 	}
+	str.resize(j);
 }

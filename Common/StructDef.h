@@ -401,6 +401,11 @@ typedef struct _EPGDB_EVENT_INFO{
 
 	wstring serviceName;
 
+	// 検索用
+	mutable wstring search_event_name; // ConvertSearchText(shortInfo.event_name) の保存用
+	mutable wstring search_text_char;  // ConvertSearchText(shortInfo.text_char + extInfo.text_char) の保存用
+	mutable std::map<size_t, wstring> searchResult; // searchKey に対する検索結果 matchKey の保存用 
+
 	_EPGDB_EVENT_INFO(void){
 	};
 	void DeepCopy(const _EPGDB_EVENT_INFO & o){
@@ -421,6 +426,9 @@ typedef struct _EPGDB_EVENT_INFO{
 		audioInfo.reset(o.audioInfo ? new EPGDB_AUDIO_COMPONENT_INFO(*o.audioInfo) : NULL);
 		eventGroupInfo.reset(o.eventGroupInfo ? new EPGDB_EVENTGROUP_INFO(*o.eventGroupInfo) : NULL);
 		eventRelayInfo.reset(o.eventRelayInfo ? new EPGDB_EVENTGROUP_INFO(*o.eventRelayInfo) : NULL);
+		search_event_name = o.search_event_name;
+		search_text_char = o.search_text_char;
+		searchResult = o.searchResult;
 	};
 #if defined(_MSC_VER) && _MSC_VER < 1900
 	//暗黙ムーブ未対応の古いコンパイラに限りコピーを定義しておく

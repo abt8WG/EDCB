@@ -354,45 +354,72 @@ public:
 					}
 
 					//キーワード確認
-					if (itrEvent->second->shortInfo == NULL) {
+					if (itrEvent->second->shortInfo == NULL || itrEvent->second->shortInfo->event_name.empty()) {
 						if (andKeyList.size() != 0) {
 							//内容にかかわらず対象外
 							continue;
 						}
 					}
 					else if (andKeyList.size() != 0 || notKeyList.size() != 0) {
-						//検索対象の文字列作成
-						targetWord = itrEvent->second->shortInfo->event_name;
-						if (key->titleOnlyFlag == FALSE) {
-							targetWord += L"\r\n";
-							targetWord += itrEvent->second->shortInfo->text_char;
-							if (itrEvent->second->extInfo != NULL) {
+						static const wstring strNotFound = L"\x0001";
+						// 検索キー毎に結果を保存するための検索キーIDを生成する
+						std::hash<int> hash_int;
+						std::hash<wstring> hash_wstr;
+						DWORD flags = (key->titleOnlyFlag ? 1 : 0) | (key->regExpFlag ? 2 : 0) | (key->aimaiFlag ? 4 : 0) | (caseFlag ? 8 : 0);
+						size_t searchKeyID = (hash_int(flags) ^ (hash_wstr(key->andKey) << 1)) ^ (hash_wstr(key->notKey) << 1);
+						
+						// 検索結果が保存されてなければ検索する
+						auto itrResult = itrEvent->second->searchResult.find(searchKeyID);
+						if (itrResult == itrEvent->second->searchResult.end()) {
+							//検索対象文字列が保存されていなければ作成する
+							if (itrEvent->second->search_event_name.size() == 0) {
+								itrEvent->second->search_event_name = itrEvent->second->shortInfo->event_name;
+								itrEvent->second->search_text_char = itrEvent->second->shortInfo->text_char;
+								if (itrEvent->second->extInfo != NULL) {
+									itrEvent->second->search_text_char += L"\r\n";
+									itrEvent->second->search_text_char += itrEvent->second->extInfo->text_char;
+								}
+								ConvertSearchText(itrEvent->second->search_event_name);
+								ConvertSearchText(itrEvent->second->search_text_char);
+								itrEvent->second->searchResult.clear();
+							}
+							//検索対象の文字列作成
+							targetWord = itrEvent->second->search_event_name;
+							if (key->titleOnlyFlag == FALSE) {
 								targetWord += L"\r\n";
-								targetWord += itrEvent->second->extInfo->text_char;
+								targetWord += itrEvent->second->search_text_char;
 							}
-						}
-						ConvertSearchText(targetWord);
 
-						if (notKeyList.size() != 0) {
-							if (IsFindKeyword(key->regExpFlag, regExp, caseFlag, &notKeyList, targetWord, FALSE) != FALSE) {
-								//notキーワード見つかったので対象外
-								continue;
+							if (notKeyList.size() != 0) {
+								if (IsFindKeyword(key->regExpFlag, regExp, caseFlag, &notKeyList, targetWord, FALSE) != FALSE) {
+									//notキーワード見つかったので対象外
+									itrEvent->second->searchResult.insert(pair<size_t,wstring>(searchKeyID, strNotFound));
+									continue;
+								}
 							}
+							if (andKeyList.size() != 0) {
+								if (key->regExpFlag == FALSE && key->aimaiFlag == 1) {
+									//あいまい検索
+									if (IsFindLikeKeyword(caseFlag, &andKeyList, targetWord, TRUE, &matchKey) == FALSE) {
+										//andキーワード見つからなかったので対象外
+										itrEvent->second->searchResult.insert(pair<size_t, wstring>(searchKeyID, strNotFound));
+										continue;
+									}
+								}
+								else {
+									if (IsFindKeyword(key->regExpFlag, regExp, caseFlag, &andKeyList, targetWord, TRUE, &matchKey) == FALSE) {
+										//andキーワード見つからなかったので対象外
+										itrEvent->second->searchResult.insert(pair<size_t, wstring>(searchKeyID, strNotFound));
+										continue;
+									}
+								}
+							}
+							itrEvent->second->searchResult.insert(pair<size_t, wstring>(searchKeyID, matchKey));
 						}
-						if (andKeyList.size() != 0) {
-							if (key->regExpFlag == FALSE && key->aimaiFlag == 1) {
-								//あいまい検索
-								if (IsFindLikeKeyword(caseFlag, &andKeyList, targetWord, TRUE, &matchKey) == FALSE) {
-									//andキーワード見つからなかったので対象外
-									continue;
-								}
-							}
-							else {
-								if (IsFindKeyword(key->regExpFlag, regExp, caseFlag, &andKeyList, targetWord, TRUE, &matchKey) == FALSE) {
-									//andキーワード見つからなかったので対象外
-									continue;
-								}
-							}
+						else {
+							if (itrResult->second == strNotFound)
+								continue;
+							matchKey = itrResult->second;
 						}
 					}
 

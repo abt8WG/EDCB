@@ -55,7 +55,7 @@ protected:
 	static UINT WINAPI ServerThread(LPVOID pParam);
 
 	BOOL Authenticate(SOCKET sock, AUTH_INFO *auth);
-	BOOL CheckkCmd(DWORD cmd, DWORD size);
+	BOOL CheckCmd(DWORD cmd, DWORD size);
 	BOOL ReceiveHeader(SOCKET sock, CMD_STREAM& stCmd, AUTH_INFO* auth = nullptr);
 	BOOL ReceiveData(SOCKET sock, CMD_STREAM& stCmd, AUTH_INFO* auth = nullptr);
 	BOOL SendData(SOCKET sock, CMD_STREAM& stRes);

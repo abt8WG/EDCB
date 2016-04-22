@@ -1,133 +1,95 @@
 EDCB Material WebUI
+===================
 
+**EDCBã®WebUIã‚’Material Design Liteã§ãƒžãƒ†ãƒªã‚¢ãƒ«ãƒ‡ã‚¶ã‚¤ãƒ³ã£ã½ãã—ã¾ã™**  
+[xtne6fæ°](https://github.com/xtne6f/EDCB)ã®[9bdd0a0](https://github.com/xtne6f/EDCB/commit/9bdd0a0f0c72a24eb680b1f890bf54c46bd2e939)ä»¥é™ãŒå¿…è¦ã«ãªã‚Šã¾ã™
 
-xtne6fŽ”ÅEDCB‚ÌwebUI‚ðƒ}ƒeƒŠƒAƒ‹ƒfƒUƒCƒ“‚Á‚Û‚­‚µ‚Ü‚·
+###ä½¿ã„æ–¹
+EDCBã®Readme_Mod.txtã®[Civetwebã®çµ„ã¿è¾¼ã¿ã«ã¤ã„ã¦](https://github.com/xtne6f/EDCB/blob/work-plus-s/Document/Readme_Mod.txt#L407-L481)ã‚’ã‚ˆãèª­ã¿
+HttpPublicã®ä¸­èº«ã‚’[HttpPublicFolder](https://github.com/xtne6f/EDCB/blob/work-plus-s/Document/Readme_Mod.txt#L429-L432)ã«å…¥ã‚Œã¦ãã ã•ã„  
 
-EDCB‚ÌReadme_Mod_S.txt‚ð‚æ‚­“Ç‚ÝHttpPublic‚Ì’†g‚ðdocument_root‚É“ü‚ê
-(ƒfƒtƒHƒ‹ƒg‚ÍEpgTimerSrv.exe‚Æ“¯‚¶êŠ‚ÉHttpPublic‚ð)
-•\Ž¦‚Å‚«‚È‚¢ê‡lua52.dll‚ª“ü‚Á‚Ä‚é‚©Šm”F‚µ‚Ä‚­‚¾‚³‚¢
+###ãƒ†ãƒ¼ãƒžã‚«ãƒ©ãƒ¼
+ãƒ†ãƒ¼ãƒžã‚«ãƒ©ãƒ¼ã‚’å¤‰ãˆã‚‹ã“ã¨ãŒå‡ºæ¥ã¾ã™  
+[MDLã®customize](http://www.getmdl.io/customize/index.html)ã§è‰²ã‚’é¸æŠžã—
+cssã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—material.min.cssã‚’ç½®ãæ›ãˆã‚‹ã‹  
+Setting\HttpPublic.iniã®SETã®cssã«ä¸‹éƒ¨ã«è¡¨ç¤ºã•ã‚Œã¦ã‚‹<LINK>ã‚¿ã‚°ã‚’è¿½åŠ ã—ã¦è¨­å®šã—ã¦ãã ã•ã„  
+â€»ä¸€éƒ¨(borderå‘¨ã‚Š)ãŒç½®ãæ›ãˆãŸã ã‘ã§ã¯å¯¾å¿œã§ããªã„éƒ¨åˆ†ãŒã‚ã‚Šã¾ã™(.mark)  
+æ°—ã«ãªã‚‹æ–¹ã¯cssã‚’user.cssã«è¨˜è¿°ã—ã¦ãã ã•ã„  
+è‰²ã¯[Material design](http://www.google.com/design/spec/style/color.html#color-color-palette)ã‹ã‚‰é¸æŠžã™ã‚‹ã“ã¨ã‚’ãŠå‹§ã‚ã—ã¾ã™  
+.markã®borderã¯A700ã‚’æŒ‡å®šã—ã¦ã„ã¾ã™
 
-ƒtƒ@ƒCƒ‹Ä¶‚É‚Â‚¢‚Ä
-  Setting\HttpPublic.ini‚ÌSET‚ÉˆÈ‰º‚ÌƒL[[=ƒfƒtƒHƒ‹ƒg]‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢
-  ffmpeg[=ffmpeg]
-    ffmpeg.exe‚ÌƒpƒX
-  readex[=readex]
-    readex.exe‚ÌƒpƒX
+###ãƒ•ã‚¡ã‚¤ãƒ«å†ç”Ÿã«ã¤ã„ã¦
+Setting\HttpPublic.iniã®SETã«ä»¥ä¸‹ã®ã‚­ãƒ¼[=ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ]ã‚’æŒ‡å®šã—ã¦ãã ã•ã„  
+`ffmpeg[=ffmpeg]`  
+ffmpeg.exeã®ãƒ‘ã‚¹
 
-  ˆÈ‰º‚Í•K—v‚É‰ž‚¶‚Ä’Ç‰Á‚µ‚Ä‚­‚¾‚³‚¢
-  ffmpegoption[=-vcodec libvpx -b 896k -quality realtime -cpu-used 1 -vf yadif=0:-1:1 -s 512x288 -r 30000/1001 -acodec libvorbis -ab 128k -f webm -]
-    ffmpeg‚ÌƒIƒvƒVƒ‡ƒ“
-    # -i‚ÍŽw’è‚·‚é•K—v‚ ‚è‚Ü‚¹‚ñ
-    # ƒŠƒAƒ‹ƒ^ƒCƒ€•ÏŠ·‚Æ‰æŽ¿‚ª—¼—§‚·‚é‚æ‚¤‚ÉƒrƒbƒgƒŒ[ƒg-b‚ÆŒvŽZ—Ê-cpu-used‚ð’²®‚·‚é
-  xprepare[=48128]
-    “]‘—ŠJŽn‘O‚É•ÏŠ·‚µ‚Ä‚¨‚­—Ê(bytes)
+`readex[=readex]`  
+readex.exeã®ãƒ‘ã‚¹  
+\# ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã¯EDCBã®ã‚½ãƒ¼ã‚¹[ã“ã“](https://github.com/xtne6f/EDCB/blob/work-plus-s/ini/HttpPublic/video/readtool.zip)ã‹ã‚‰
 
-  ¦˜^‰æŒ‹‰Ê‚©‚çƒtƒ@ƒCƒ‹ƒpƒX‚ðŽæ“¾‚µ‚Ä‚Ü‚·
-    ƒŠƒl[ƒ€‚âˆÚ“®‚µ‚Ä‚¢‚é‚ÆÄ¶‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚¹‚ñ
+ä»¥ä¸‹ã¯å¿…è¦ã«å¿œã˜ã¦è¿½åŠ ã—ã¦ãã ã•ã„  
+`ffmpegoption[=-vcodec libvpx -b 896k -quality realtime -cpu-used 1 -vf yadif=0:-1:1 -s 512x288 -r 30000/1001 -acodec libvorbis -ab 128k -f webm -]`  
+ffmpegã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³  
+\# -iã¯æŒ‡å®šã™ã‚‹å¿…è¦ã‚ã‚Šã¾ã›ã‚“  
+\# ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ å¤‰æ›ã¨ç”»è³ªãŒä¸¡ç«‹ã™ã‚‹ã‚ˆã†ã«ãƒ“ãƒƒãƒˆãƒ¬ãƒ¼ãƒˆ-bã¨è¨ˆç®—é‡-cpu-usedã‚’èª¿æ•´ã™ã‚‹
 
-”Ô‘g•\‚Ì‰B‚µƒRƒ}ƒ“ƒh
-  hour:®”
-    ŠJŽnŽžŠÔ‚ðŽw’è
-  interval:®”
-    •\Ž¦ŠÔŠu‚ðŽw’è
-  chcount:®”
-    “Ç‚Ýž‚Þƒ`ƒƒƒ“ƒlƒ‹”‚ðˆêŽž“I‚É•ÏX
-    # show‚ª—LŒøŽž‚Í”ñ•\Ž¦‚Ìƒ`ƒƒƒ“ƒlƒ‹‚ðŠÜ‚Ý‚Ü‚·
-  show
-  @”ñ•\Ž¦Žw’è‚µ‚½ƒ`ƒƒƒ“ƒlƒ‹‚ð“Ç‚Ýž‚Þ(ƒTƒCƒhƒo[‚Å•\Ž¦E”ñ•\Ž¦)
-  @# ’l‚ÍŽw’è‚·‚é•K—v‚Í‚ ‚è‚Ü‚¹‚ñ
+`xprepare[=48128]`  
+è»¢é€é–‹å§‹å‰ã«å¤‰æ›ã—ã¦ãŠãé‡(bytes)
 
-  ˆÈã‚ðgetƒƒ]ƒbƒg‚ÅŽæ“¾‚µ‚Ü‚·url‚ÉŠÜ‚ß‚Ä‚­‚¾‚³‚¢
-  chcount‚Æshow‚ÍTŠÔ”Ô‘g•\‚Å‚ÍŽg‚¦‚Ü‚¹‚ñ
+â€»éŒ²ç”»çµæžœã‹ã‚‰ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã‚’å–å¾—ã—ã¦ã¾ã™  
+ãƒªãƒãƒ¼ãƒ ã‚„ç§»å‹•ã—ã¦ã„ã‚‹ã¨å†ç”Ÿã™ã‚‹ã“ã¨ãŒå‡ºæ¥ã¾ã›ã‚“
 
-  ƒXƒ}ƒz‚ÌƒuƒbƒNƒ}[ƒN‚È‚Ç‚Å‚ÌŽg—p‚ð„‘E(Ý’è‚É‚æ‚Á‚Ä‚ÍŒy‚­‚È‚é‚©‚à)
-  —áepg.html?interval=6&chcount=5
-  @epg.html?hour=4&interval=6&chcount=5&show=
+#####ç•ªçµ„è¡¨ã®éš ã—ã‚³ãƒžãƒ³ãƒ‰
+`hour=æ•´æ•°`  
+é–‹å§‹æ™‚é–“ã‚’æŒ‡å®š
 
-’ˆÓ
-  ƒ`ƒƒƒ“ƒlƒ‹‚ª‘‚¦‚½‚è‚µ‚½‚çÝ’è‚ð•Û‘¶‚µ‚È‚¨‚µ‚Ä‚­‚¾‚³‚¢
-  ”Ô‘g•\‚É•\Ž¦‚³‚ê‚Ü‚¹‚ñ
-  tkntrecŽ”Å‚ð‚¨Žg‚¢‚Ì‚©‚½‚Í•K‚¸tkntrecŽ”Å‚ð—LŒø‚É‚µ‚Ä‚­‚¾‚³‚¢
-  —LŒø‚¹‚¸‚ÉŽg—p‚µEPG—\–ñ‚ð•ÏX‚µ‚æ‚¤‚Æ‚·‚é‚Æ”Ô‘g’·‚È‚Ç‚Ì’Ç‰Á‹@”\‚ÌÝ’è‚ªƒŠƒZƒbƒg‚³‚ê‚Ü‚·
+`interval=æ•´æ•°`  
+è¡¨ç¤ºé–“éš”ã‚’æŒ‡å®š
 
-“®ìŠm”F
-  PC‚ÌChrome,Opera,firefox‚Å Android‚ÌChrome,Opera‚Åˆê‰žŠm”F‚µ‚Ä‚¢‚Ü‚·
-  IE‚Í”ñ‘Î‰ž‚Å‚·
+`chcount=æ•´æ•°`  
+èª­ã¿è¾¼ã‚€ãƒãƒ£ãƒ³ãƒãƒ«æ•°ã‚’ä¸€æ™‚çš„ã«å¤‰æ›´  
+\# showãŒæœ‰åŠ¹æ™‚ã¯éžè¡¨ç¤ºã®ãƒãƒ£ãƒ³ãƒãƒ«ã‚’å«ã¿ã¾ã™
 
-‰ü•ÏE—˜—p‚È‚Ç‚Í‚à‚¿‚ë‚ñŽ©—R‚É‚µ‚Ä‚à‚ç‚Á‚Ä‚©‚Ü‚¢‚Ü‚¹‚ñ
-‚±‚êˆÈã‚Ì‹@”\’Ç‰Á‚Í‚ ‚Ü‚èŠú‘Ò‚Å‚«‚È‚¢‚Ì‚Å‚Þ‚µ‚ë‚¨Šè‚¢‚µ‚Ü‚·
+`show=`  
+éžè¡¨ç¤ºæŒ‡å®šã—ãŸãƒãƒ£ãƒ³ãƒãƒ«ã‚’èª­ã¿è¾¼ã‚€(ã‚µã‚¤ãƒ‰ãƒãƒ¼ã§è¡¨ç¤ºãƒ»éžè¡¨ç¤º)  
+\# å€¤ã¯æŒ‡å®šã™ã‚‹å¿…è¦ã¯ã‚ã‚Šã¾ã›ã‚“  
 
+ä»¥ä¸Šã‚’getãƒ¡ã‚¾ãƒƒãƒˆã§å–å¾—ã—ã¾ã™urlã«å«ã‚ã¦ãã ã•ã„  
+chcountã¨showã¯é€±é–“ç•ªçµ„è¡¨ã§ã¯ä½¿ãˆã¾ã›ã‚“  
+ã‚¹ãƒžãƒ›ã®ãƒ–ãƒƒã‚¯ãƒžãƒ¼ã‚¯ãªã©ã§ã®ä½¿ç”¨ã‚’æŽ¨è–¦(è¨­å®šã«ã‚ˆã£ã¦ã¯è»½ããªã‚‹ã‹ã‚‚)
 
-Material Design Lite
-http://www.getmdl.io
-Material icons
-https://design.google.com/icons/
+###æ³¨æ„
+ãƒãƒ£ãƒ³ãƒãƒ«ãŒå¢—ãˆãŸã‚Šã—ãŸã‚‰è¨­å®šã‚’ä¿å­˜ã—ãªãŠã—ã¦ãã ã•ã„(ç•ªçµ„è¡¨ã«è¡¨ç¤ºã•ã‚Œã¾ã›ã‚“)  
+tkntrecæ°ç‰ˆã‚’ãŠä½¿ã„ã®ã‹ãŸã¯å¿…ãšè¨­å®šã®tkntrecæ°ç‰ˆã‚’**æœ‰åŠ¹**ã«ã—ã¦ãã ã•ã„  
+æœ‰åŠ¹ã›ãšã«ä½¿ç”¨ã—EPGäºˆç´„ã‚’å¤‰æ›´ã—ã‚ˆã†ã¨ã™ã‚‹ã¨ç•ªçµ„é•·ãªã©ã®è¿½åŠ æ©Ÿèƒ½ã®è¨­å®šãŒãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ã•ã‚Œã¾ã™
 
+###å‹•ä½œç¢ºèª
 
+- PC
+  - Chrome
+  - ~~Opera~~
+  - Vivaldi
+  - firefox
+- Android
+  - Chrome
+  - Opera
 
-2016.02.29
-—\–ñˆê——‚ÉƒRƒƒ“ƒg‚ð’Ç‰Á
-”Ô‘g•\‚Å“ú•tŽw’è‚ÌƒŠƒ“ƒN‚ª‚¨‚©‚µ‚­‚È‚é‚Ì‚ðC³
+â€»IEã§ã‚‚åŸºæœ¬çš„ã«å‹•ä½œã™ã‚‹ã¨æ€ã„ã¾ã™ãŒãŠã™ã™ã‚ã—ã¾ã›ã‚“  
+~~â€»**iPhoneãªã©ã®ä¸€éƒ¨ãƒ–ãƒ©ã‚¦ã‚¶ã§ç•ªçµ„è¡¨ã§flexãŒåŠ¹ã‹ãšãªã®ã‹è¡¨ç¤ºãŒå´©ã‚Œã¦ã‚‹ã‚ˆã†ã§ã™**  
+è©²å½“æ©Ÿç¨®ã‚’æ‰€æŒã—ã¦ãŠã‚‰ãšç¢ºèªã§ããšå¯¾å¿œã§ãã¦ãŠã‚Šã¾ã›ã‚“  
+å¯¾å¿œã§ãã‚‹æ–¹ãŒã„ã¾ã—ãŸã‚‰å”åŠ›ãŠé¡˜ã„ã—ã¾ã™~~
 
-2016.02.28_2
-•\Ž¦ƒ`ƒƒƒ“ƒlƒ‹”‚ÌÝ’è‚ð’Ç‰Á
-ƒtƒ@ƒCƒ‹Ä¶‚Åmp4,webm‚ª‚ ‚ê‚ÎƒvƒŠƒ[ƒh‚·‚é‚æ‚¤‚É
+###ãã®ä»–
+ã“ã®ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®ä½¿ç”¨ã—ä¸åˆ©ç›ŠãŒç”Ÿã˜ã¦ã‚‚ä¸€åˆ‡ã®è²¬ä»»ã‚’è² ã„ã¾ã›ã‚“  
+ã¾ãŸæ”¹å¤‰ãƒ»å†é…å¸ƒãªã©ã¯ã”è‡ªç”±ã«ã©ã†ãž
 
-2016.02.28
-”Ô‘g•\‚Å1ƒy[ƒW‚É•\Ž¦‚·‚éƒ`ƒƒƒ“ƒlƒ‹”‚ð10‚Æ‚µ‚½
-˜^‰æŒ‹‰Ê‚Ìƒtƒ@ƒCƒ‹Ä¶‚ÅvideoƒtƒHƒ‹ƒ_‚É˜^‰æƒtƒ@ƒCƒ‹–¼.(mp4|webm)‚ª‚ ‚ê‚Î‚»‚¿‚ç‚ðÄ¶‚·‚é‚æ‚¤‚É‚µ‚½
+####Framework & JavaScriptãƒ©ã‚¤ãƒ–ãƒ©ãƒª
 
-2016.02.27
-”Ô‘g•\‚ÉEPG—\–ñ‚Ìƒ{ƒ^ƒ“‚ð’Ç‰Á
-
-2016.02.26
-TŠÔ”Ô‘g•\‚ð’Ç‰Á
-
-2016.02.24
-Žw“E‚³‚ê‚½ƒ~ƒX‚ðC³
-
-2016.02.23
- ƒtƒ@ƒCƒ‹Ä¶‚ÌÝ’è(readex.exe‚ÌƒpƒX‚È‚Ç)‚ðHttpPublic.ini‚É
- ˜^‰æ’†‚Ìƒtƒ@ƒCƒ‹Ä¶‚É‘Î‰ž
- api‚Ìvideo‚ðmovie‚É•ÏX(‹C•ª)
-
-2016.02.20 beta 2
- ƒtƒ@ƒCƒ‹Ä¶‚Å"#"‚ªŠÜ‚Ü‚ê‚Ä‚àÄ¶‚Å‚«‚é‚æ‚¤‚É
-
-2016.02.19 beta
- ˜^‰æŒ‹‰Ê‚Éƒtƒ@ƒCƒ‹Ä¶‚ð’Ç‰Á
-  api\video‚ðreadex.exe‚Æffmpeg.exe‚ÌƒpƒX‚ª’Ê‚é‚æ‚¤‚É•ÒW‚µ‚Ä‚­‚¾‚³‚¢
-  ¦\‚Í\\‚É’u‚«Š·‚¦‚é‚±‚Æ
-    —á C:\dtv\readex.exe¨C:\\dtv\\readex.exe
-  “®‰æ‚Ìƒpƒ‰ƒ[ƒ^‚à‚±‚±‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢
-  ¦˜^‰æŒ‹‰Ê‚©‚çƒtƒ@ƒCƒ‹ƒpƒX‚ðŽæ“¾‚µ‚Ä‚Ü‚·
-    ƒŠƒl[ƒ€‚âˆÚ“®‚µ‚Ä‚¢‚é‚ÆÄ¶‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚¹‚ñ
-    ƒtƒ@ƒCƒ‹–¼‚É"#"‚ªŠÜ‚Ü‚ê‚é‚ÆÄ¶‚Å‚«‚È‚¢‚±‚Æ‚ðŠm”F‚µ‚Ä‚¢‚Ü‚·
-
-2016.01.31
- Žw“E‚Ì‚ ‚Á‚½ƒ^ƒO‚Ìƒ~ƒX‚ðC³
- ”Ô‘g•\‚ð”÷’²®
- ‚»‚Ì‘¼×‚©‚¢•ÏX
-
-2016.01.27
- ”Ô‘g•\‚ðŒy‚³—Dæ‚Å”ñ•\Ž¦‚ÌƒT[ƒrƒX‚ðŠ®‘S–³Ž‹‚µ‚Ä‚¢‚½‚ªURL‚É"show="‚ÅˆÈ‘O‚ÌŽd—l‚ð•œŠˆ‚·‚é‚æ‚¤‚É‚µ‚½
- ‚³‚ç‚ÉŒy‚³‚ð‹‚ß‚él—p‚É”Ô‘g•\‚ð25ŽžŠÔŒÅ’è‚¾‚Á‚½‚Ì‚ðŽ©—R‚É‚Å‚«‚é‚æ‚¤‚É(URL‚É"interval=" —áepg.html?interval=6‚Å6ŽžŠÔŠÔŠu)
- ios‚Å‚à”Ô‘g•\‚ÅŠµ«ƒXƒNƒ[ƒ‹‚·‚é‚æ‚¤‚É‚È‚Á‚½‚Í‚¸
- ŒŸõ‚ÅGETƒƒ]ƒbƒg‚ð•œŠˆ(€–Ú‚²‚Æpost—Dæ)
- Ý’è‚ÉƒTƒuƒWƒƒƒ“ƒ‹•\Ž¦‚ÌƒfƒtƒHƒ‹ƒgÝ’è‚ð’Ç‰Á
- ‰Šú‰»‚Å‚«‚È‚­‚È‚Á‚Ä‚½‘¼Ý’è‰æ–Ê‚ð‰ü—Ç
-
-2016.01.25
- ŽžŠÔi‚èž‚Ý‚ÌUI‚ð‰ü‘P
- —\–ñ‚Ì’Ç‰Á“™‚ð‚·‚×‚ÄAPIŒo—R‚Å‚·‚é‚æ‚¤‚É‚µ‚½
- i‹ŒŽd—l‚Ì•¨‚Í¡‰ñ‚Ì‚ÝoldƒtƒHƒ‹ƒ_‚É“¯«j
- ‚»‚Ì‘¼×‚©‚¢•ÏX
-
-2016.01.18
-‚±‚Á‚»‚èXV
- jquery‚ðv2.xŒn‚É
- ”Ô‘g•\‚Åƒhƒ‰ƒbƒOƒXƒNƒ[ƒ‹‚Å‚«‚é‚æ‚¤‚É‚µ‚½
- ”Ô‘g•\‚ð–³‘Ê‚É‚ ‚Á‚½—v‘f‚ð‚È‚­‚µŒy—Ê‰»c‚ª‚Ù‚ÚŒø‰Ê‚È‚µ
- ŒŸõƒo[‚ð’Ç‰Á
- ˆê•”ƒXƒƒCƒv‘Î‰ž(ƒTƒCƒhƒƒjƒ…[•\Ž¦Eƒ^ƒuØ‘Ö)
- ‚»‚Ì‘¼×‚©‚¢•ÏX
+* [Material Design Lite](http://www.getmdl.io)
+* [Material icons](https://design.google.com/icons/)
+* [dialog-polyfill](https://github.com/GoogleChrome/dialog-polyfill)
+* [jQuery](https://jquery.com)
+* [jQuery UI](https://jqueryui.com)
+* [jQuery UI Touch Punch](http://touchpunch.furf.com)
+* [Hammer.JS](http://hammerjs.github.io)
+* [jquery.hammer.js](https://github.com/hammerjs/jquery.hammer.js)

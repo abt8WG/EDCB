@@ -137,8 +137,7 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 		ctx->sys->reserveManager.Initialize();
 		ctx->sys->ReloadSetting();
 		ctx->sys->ReloadNetworkSetting();
-		//管理者権限で起動した EpgTimerSrv に対して一般ユーザーが接続すると以後繋がらなくなるみたいなので insecure モードで動かす
-		ctx->pipeServer.StartServer(CMD2_EPG_SRV_EVENT_WAIT_CONNECT, CMD2_EPG_SRV_PIPE, CtrlCmdPipeCallback, ctx->sys, TRUE/*ctx->serviceFlag*/);
+		ctx->pipeServer.StartServer(CMD2_EPG_SRV_EVENT_WAIT_CONNECT, CMD2_EPG_SRV_PIPE, CtrlCmdPipeCallback, ctx->sys, ctx->serviceFlag);
 		ctx->sys->epgDB.ReloadEpgData();
 		SendMessage(hwnd, WM_RELOAD_EPG_CHK, 0, 0);
 		SendMessage(hwnd, WM_TIMER, TIMER_SET_RESUME, 0);
@@ -1105,22 +1104,12 @@ vector<EPG_AUTO_ADD_DATA> CEpgTimerSrvMain::GetAutoAddList()
 
 bool CEpgTimerSrvMain::DelAutoAdd(vector<DWORD>& val) {
 	bool modified = false;
-	vector<DWORD> reserveList;
 
 	CBlockLock lock(&settingLock);
 
 	for (size_t i = 0; i < val.size(); i++) {
 		auto it = epgAutoAdd.GetMap().find(val[i]);
 		if (it != epgAutoAdd.GetMap().end()) {
-#if _MSC_VER < 1700
-			for (auto itr = it->second.reserveList.cbegin(); itr != it->second.reserveList.cend(); itr++) {
-				reserveList.push_back(itr->reserveID);
-			}
-#else
-			for (const RESERVE_BASIC_DATA& rsv : it->second.reserveList) {
-				reserveList.push_back(rsv.reserveID);
-			}
-#endif
 			reserveManager.AutoAddDeleted(it->second);
 			epgAutoAdd.DelData(val[i]);
 			modified = true;
@@ -1128,7 +1117,6 @@ bool CEpgTimerSrvMain::DelAutoAdd(vector<DWORD>& val) {
 	}
 	if (modified) {
 		epgAutoAdd.SaveText();
-		RemoveNolinkedReserve(reserveList);
 		notifyManager.AddNotify(NOTIFY_UPDATE_AUTOADD_EPG);
 	}
 	return modified;
@@ -1174,7 +1162,6 @@ bool CEpgTimerSrvMain::ChgAutoAdd(vector<EPG_AUTO_ADD_DATA>& val) {
 }
 
 bool CEpgTimerSrvMain::AddAutoAdd(vector<EPG_AUTO_ADD_DATA>& val) {
-	vector<DWORD> reserveList;
 	{
 		CBlockLock lock(&settingLock);
 		for (size_t i = 0; i < val.size(); i++) {

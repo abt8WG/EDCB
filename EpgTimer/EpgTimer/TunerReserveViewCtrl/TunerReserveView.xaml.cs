@@ -125,10 +125,9 @@ namespace EpgTimer.TunerReserveViewCtrl
                 minText.Text = viewInfo.ReserveInfo.StartTime.Minute.ToString("d02");
                 minText.FontFamily = fontNormal;
                 minText.FontSize = sizeNormal;
-                minText.VerticalAlignment = VerticalAlignment.Center;
                 //minText.FontWeight = FontWeights.Normal;
                 minText.Foreground = colorTitle;
-                minText.Margin = new Thickness(1, 0, 0, 2);
+                minText.Margin = new Thickness(1, 1, 0, 0);
                 minText.LineHeight = Settings.Instance.TunerFontHeight;
             }
 
@@ -138,7 +137,6 @@ namespace EpgTimer.TunerReserveViewCtrl
             titleText.FontSize = sizeTitle;
             titleText.FontWeight = weightTitle;
             titleText.Foreground = colorTitle;
-            titleText.VerticalAlignment = VerticalAlignment.Center;
             titleText.Margin = new Thickness(2 + indentTitle, 1, 0, 2);
             titleText.LineHeight = Math.Max(Settings.Instance.TunerFontHeightService, sizeTitle + 2);
 

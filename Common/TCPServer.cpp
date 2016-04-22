@@ -256,12 +256,16 @@ BOOL CTCPServer::Authenticate(SOCKET sock, AUTH_INFO *auth)
 	return ReceiveData(sock, auth->stRes);
 }
 
-BOOL CTCPServer::CheckkCmd(DWORD cmd, DWORD size)
+BOOL CTCPServer::CheckCmd(DWORD cmd, DWORD size)
 {
 	// size ‚ª cmd ‚É‘Î‚µ“K³‚©Šm”F
 
-	// ‚Æ‚è‚ ‚¦‚¸ 64KB –¢–‚Ì‚İó‚¯‚Â‚¯‚é‚æ‚¤‚É‚µ‚Ä‚¨‚­
-	return size < 64*1024 ? TRUE : FALSE;
+	if( size > 64 * 1024 ){
+		_OutputDebugString(L"Warning: Large command size: cmd = %d, size = %d\r\n", cmd, size);
+	}
+
+	// ‚Æ‚è‚ ‚¦‚¸ 256KB –¢–‚Ì‚İó‚¯‚Â‚¯‚é‚æ‚¤‚É‚µ‚Ä‚¨‚­
+	return size < 256*1024 ? TRUE : FALSE;
 }
 
 UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
@@ -354,7 +358,7 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 
 				if( pSys->Authenticate(sock, &auth) == FALSE ||
 					pSys->ReceiveHeader(sock, stCmd, &auth) == FALSE ||
-					pSys->CheckkCmd(stCmd.param, stCmd.dataSize) == FALSE ||
+					pSys->CheckCmd(stCmd.param, stCmd.dataSize) == FALSE ||
 					pSys->ReceiveData(sock, stCmd, &auth) == FALSE ){
 					_OutputDebugString(L"Authentication error from IP:0x%08x\r\n", ntohl(client.sin_addr.s_addr));
 					blacklist[client.sin_addr.S_un.S_addr].dwCount++;
