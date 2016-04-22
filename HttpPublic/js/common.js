@@ -393,6 +393,9 @@ $(function(){
 					var annotation = '<div>※プリセットによる変更のみ</div>';
 
 					$('#preset').append(annotation).append( wrap.clone().append( before.clone().text('録画後実行bat') ).append( after.clone().text(batFilePath) ) );
+					
+					$("[name=recTag]").val($(this).find('recTag').text());			//録画タグ
+					
 					if (recFolderList.text().length > 0){
 						$(recFolderList).children('recFolderInfo').each(function(i){
 							var recFolder = $(this).children('recFolder').text();

@@ -336,6 +336,7 @@ void CReserveDialog::InitDialog(HWND hDlg)
 		SetComboBoxDroppedWidth(hDlg,IDC_RESERVE_BAT);
 	}
 	::SetDlgItemTextW(hDlg,IDC_RESERVE_BAT,RecSetting.batFilePath.c_str());
+	::SetDlgItemTextW(hDlg,IDC_RESERVE_REC_TAG,RecSetting.recTag.c_str());
 
 	::CheckDlgButton(hDlg,IDC_RESERVE_USEMARGIN,
 					 RecSetting.useMargineFlag?BST_CHECKED:BST_UNCHECKED);
@@ -436,6 +437,7 @@ bool CReserveDialog::GetSettings(HWND hDlg)
 	else
 		RecSetting.rebootFlag=0;
 	GetDlgItemString(hDlg,IDC_RESERVE_BAT,&RecSetting.batFilePath);
+	GetDlgItemString(hDlg,IDC_RESERVE_REC_TAG,&RecSetting.recTag);
 	RecSetting.useMargineFlag=::IsDlgButtonChecked(hDlg,IDC_RESERVE_USEMARGIN)==BST_CHECKED;
 	if (RecSetting.useMargineFlag) {
 		RecSetting.startMargine=::GetDlgItemInt(hDlg,IDC_RESERVE_STARTMARGIN,NULL,TRUE);

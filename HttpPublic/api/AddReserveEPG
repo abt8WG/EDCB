@@ -64,6 +64,7 @@ if post then
         break
       end
     end
+    r.recSetting.recTag=mg.get_var(post, 'recTag')
     r.recSetting.recMode=0+recMode
     r.recSetting.tuijyuuFlag=0+tuijyuuFlag~=0
     r.recSetting.priority=0+priority

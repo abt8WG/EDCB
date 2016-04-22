@@ -185,6 +185,7 @@ namespace EpgTimer
 
             setInfo.PittariFlag = ((YesNoInfo)comboBox_pittari.SelectedItem).Value;
             setInfo.BatFilePath = textBox_bat.Text;
+            setInfo.RecTag = textBox_recTag.Text;
             setInfo.RecFolderList.Clear();
             setInfo.PartialRecFolder.Clear();
             foreach (RecFileSetInfoView view in listView_recFolder.Items)
@@ -316,6 +317,7 @@ namespace EpgTimer
 
 
                 textBox_bat.Text = recSetting.BatFilePath;
+                textBox_recTag.Text = recSetting.RecTag;
 
                 listView_recFolder.Items.Clear();
                 foreach (RecFileSetInfo info in recSetting.RecFolderList)

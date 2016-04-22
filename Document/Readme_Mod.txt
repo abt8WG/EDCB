@@ -762,6 +762,7 @@ I GetNotifyUpdateCount( 通知ID:I )
   serviceMode:I=処理対象データモード
   pittariFlag:B=ぴったり?録画
   batFilePath:S=録画後BATファイルパス
+  recTag:S=録画タグ
   suspendMode:I=休止モード
   rebootFlag:B=録画後再起動する
   startMargin:I|nil=録画開始時のマージン(デフォルトのときnil)

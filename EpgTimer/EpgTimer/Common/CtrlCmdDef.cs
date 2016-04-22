@@ -146,6 +146,8 @@ namespace EpgTimer
     /// <summary>録画設定情報</summary>
     public class RecSettingData : ICtrlCmdReadWrite
     {
+        /// <summary>BatFilePathとTagを結合/分離する際のセパレーターキャラクター</summary>
+        private static readonly char SEPARATOR = '*';
         /// <summary>録画モード</summary>
         public byte RecMode;
         /// <summary>優先度</summary>
@@ -158,6 +160,8 @@ namespace EpgTimer
         public byte PittariFlag;
         /// <summary>録画後BATファイルパス</summary>
         public string BatFilePath;
+        /// <summary>録画タグ</summary>
+        public string RecTag;
         /// <summary>録画フォルダパス</summary>
         public List<RecFileSetInfo> RecFolderList;
         /// <summary>休止モード</summary>
@@ -186,6 +190,7 @@ namespace EpgTimer
             ServiceMode = 0;
             PittariFlag = 0;
             BatFilePath = "";
+            RecTag = "";
             RecFolderList = new List<RecFileSetInfo>();
             SuspendMode = 0;
             RebootFlag = 0;
@@ -206,7 +211,9 @@ namespace EpgTimer
             w.Write(TuijyuuFlag);
             w.Write(ServiceMode);
             w.Write(PittariFlag);
-            w.Write(BatFilePath);
+            // versionを上げてbatFilePathとrecTagを別々に書き込んだ方が良いのだけど
+            // versionを上げたときの影響が把握できなかったためbatFilePathにrecTagを埋め込む
+            w.Write(GetBatFilePathAndRecTag());
             w.Write(RecFolderList);
             w.Write(SuspendMode);
             w.Write(RebootFlag);
@@ -231,7 +238,13 @@ namespace EpgTimer
             r.Read(ref TuijyuuFlag);
             r.Read(ref ServiceMode);
             r.Read(ref PittariFlag);
-            r.Read(ref BatFilePath);
+            {
+                // versionを上げてbatFilePathとrecTagを別々に読み込んだ方が良いのだけど
+                // versionを上げたときの影響が把握できなかったためbatFilePathからrecTagを分離する
+                string batFilePathAndRecTag = "";
+                r.Read(ref batFilePathAndRecTag);
+                SetBatFilePathAndRecTag(batFilePathAndRecTag);
+            }
             r.Read(ref RecFolderList);
             r.Read(ref SuspendMode);
             r.Read(ref RebootFlag);
@@ -246,6 +259,32 @@ namespace EpgTimer
                 r.Read(ref PartialRecFolder);
             }
             r.End();
+        }
+        /// <summary>
+        /// batFilePathとrecTagを合成した文字列を分離してbatFilePathとrecTagに設定する
+        /// </summary>
+        /// <param name="val">batFilePathとrecTagを合成したもの</param>
+        public void SetBatFilePathAndRecTag(string val)
+        {
+            int pos = val.IndexOf(SEPARATOR);
+            if (pos < 0)
+            {
+                BatFilePath = val;
+                RecTag = "";
+            }
+            else
+            {
+                BatFilePath = val.Substring(0, pos);
+                RecTag = val.Substring(pos + 1);
+            }
+        }
+        /// <summary>
+        /// batFilePathとrecTagを合成した文字列を返す
+        /// </summary>
+        /// <returns>batFilePathとrecTagを合成した文字列</returns>
+        public string GetBatFilePathAndRecTag()
+        {
+            return (RecTag.Length == 0) ? BatFilePath : BatFilePath + SEPARATOR + RecTag;
         }
     }
 

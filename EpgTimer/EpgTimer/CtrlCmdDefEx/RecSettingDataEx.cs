@@ -97,6 +97,7 @@ namespace EpgTimer
         private static void CopyData(RecSettingData src, RecSettingData dest)
         {
             dest.BatFilePath = src.BatFilePath;
+            dest.RecTag = src.RecTag;
             dest.ContinueRecFlag = src.ContinueRecFlag;
             dest.EndMargine = src.EndMargine;
             dest.PartialRecFlag = src.PartialRecFlag;
@@ -119,6 +120,7 @@ namespace EpgTimer
         public static bool EqualsValue(RecSettingData src, RecSettingData dest)
         {
             return src.BatFilePath == dest.BatFilePath
+                && src.RecTag == dest.RecTag
                 && src.ContinueRecFlag == dest.ContinueRecFlag
                 && src.EndMargine == dest.EndMargine
                 && src.PartialRecFlag == dest.PartialRecFlag
@@ -140,6 +142,7 @@ namespace EpgTimer
         {
             if (src == null || dest == null) return false;
             return src.BatFilePath == dest.BatFilePath
+                && src.RecTag == dest.RecTag
                 && src.ContinueRecFlag == dest.ContinueRecFlag
                 && (src.EndMargine == dest.EndMargine || src.UseMargineFlag == 0)//マージンデフォルト時
                 && src.PartialRecFlag == dest.PartialRecFlag

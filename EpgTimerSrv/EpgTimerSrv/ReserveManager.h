@@ -147,7 +147,7 @@ private:
 	//バッチに渡す予約情報マクロを追加する
 	static void AddReserveDataMacro(vector<pair<string, wstring>>& macroList, const RESERVE_DATA& data, LPCSTR suffix);
 	//バッチに渡す録画済み情報マクロを追加する
-	static void AddRecInfoMacro(vector<pair<string, wstring>>& macroList, const REC_FILE_INFO& recInfo);
+	static void AddRecInfoMacro(vector<pair<string, wstring>>& macroList, const REC_FILE_INFO& recInfo, const RESERVE_DATA& data);
 	//予約情報を追加する
 	vector<const RESERVE_DATA*> AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false);
 	//録画ファイルを検索

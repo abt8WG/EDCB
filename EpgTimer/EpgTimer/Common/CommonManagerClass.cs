@@ -780,6 +780,7 @@ namespace EpgTimer
             }
 
             view += "録画実行bat : " + reserveInfo.RecSetting.BatFilePath + "\r\n";
+            view += "録画タグ : " + reserveInfo.RecSetting.RecTag + "\r\n";
 
             if (reserveInfo.RecSetting.RecFolderList.Count == 0)
             {

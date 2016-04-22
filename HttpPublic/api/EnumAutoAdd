@@ -12,7 +12,8 @@ for i,v in ipairs(a) do
     ..(v.recSetting.tuijyuuFlag and 1 or 0)..'</tuijyuuFlag><serviceMode>'
     ..v.recSetting.serviceMode..'</serviceMode><pittariFlag>'
     ..(v.recSetting.pittariFlag and 1 or 0)..'</pittariFlag><batFilePath>'
-    ..v.recSetting.batFilePath..'</batFilePath><recFolderList>')
+    ..v.recSetting.batFilePath..'</batFilePath><recTag>'
+    ..v.recSetting.recTag..'</recTag><recFolderList>')
   for j,w in ipairs(v.recSetting.recFolderList) do
     recName,recName2,recName3=string.match(w.recNamePlugIn, '^(.+%.dll)(%?(.*))??')
     recNamePlugInoption=option and '<recNamePlugIndll>'..(recName and recName or w.recNamePlugIn)..'</recNamePlugIndll><recNamePlugInoption>'..(recName3 and recName3 or '')..'</recNamePlugInoption>' or ''

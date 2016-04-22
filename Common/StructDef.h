@@ -25,12 +25,14 @@ typedef struct _REC_FILE_SET_INFO{
 
 //録画設定情報
 typedef struct _REC_SETTING_DATA{
+	static const wchar_t SEPARATOR = '*';	// batFilePathとrecTagを結合/分離する際のセパレーターキャラクター
 	BYTE recMode;				//録画モード
 	BYTE priority;				//優先度
 	BYTE tuijyuuFlag;			//イベントリレー追従するかどうか
 	DWORD serviceMode;			//処理対象データモード
 	BYTE pittariFlag;			//ぴったり？録画
 	wstring batFilePath;		//録画後BATファイルパス
+	wstring recTag;				//録画タグ
 	vector<REC_FILE_SET_INFO> recFolderList;		//録画フォルダパス
 	BYTE suspendMode;			//休止モード
 	BYTE rebootFlag;			//録画後再起動する
@@ -49,6 +51,7 @@ typedef struct _REC_SETTING_DATA{
 		serviceMode = 0;
 		pittariFlag = FALSE;
 		batFilePath = L"";
+		recTag = L"";
 		suspendMode = 0;
 		rebootFlag = FALSE;
 		useMargineFlag = FALSE;
@@ -57,6 +60,19 @@ typedef struct _REC_SETTING_DATA{
 		continueRecFlag = 0;
 		partialRecFlag = 0;
 		tunerID = 0;
+	};
+	void setBatFilePathAndRecTag(const wstring& val){
+		size_t pos = val.find_first_of(SEPARATOR);
+		if( pos == wstring::npos ){
+			batFilePath = val;
+			recTag = L"";
+		}else{
+			batFilePath = val.substr(0, pos);
+			recTag = val.substr(pos + 1);
+		}
+	};
+	wstring getBatFilePathAndRecTag() const{
+		return (recTag.empty()) ? batFilePath : batFilePath + SEPARATOR + recTag;
 	};
 } REC_SETTING_DATA;
 

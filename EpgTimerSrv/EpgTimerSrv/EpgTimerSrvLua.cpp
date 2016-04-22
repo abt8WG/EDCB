@@ -1045,6 +1045,7 @@ void CEpgTimerSrvMain::PushRecSettingData(CLuaWorkspace& ws, const REC_SETTING_D
 	LuaHelp::reg_int(L, "serviceMode", (int)rs.serviceMode);
 	LuaHelp::reg_boolean(L, "pittariFlag", rs.pittariFlag != 0);
 	LuaHelp::reg_string(L, "batFilePath", ws.WtoUTF8(rs.batFilePath));
+	LuaHelp::reg_string(L, "recTag", ws.WtoUTF8(rs.recTag));
 	LuaHelp::reg_int(L, "suspendMode", rs.suspendMode);
 	LuaHelp::reg_boolean(L, "rebootFlag", rs.rebootFlag != 0);
 	if( rs.useMargineFlag ){
@@ -1150,6 +1151,7 @@ void CEpgTimerSrvMain::FetchRecSettingData(CLuaWorkspace& ws, REC_SETTING_DATA& 
 	rs.serviceMode = (BYTE)LuaHelp::get_int(L, "serviceMode");
 	rs.pittariFlag = LuaHelp::get_boolean(L, "pittariFlag");
 	UTF8toW(LuaHelp::get_string(L, "batFilePath"), rs.batFilePath);
+	UTF8toW(LuaHelp::get_string(L, "recTag"), rs.recTag);
 	rs.suspendMode = (BYTE)LuaHelp::get_int(L, "suspendMode");
 	rs.rebootFlag = LuaHelp::get_boolean(L, "rebootFlag");
 	rs.useMargineFlag = LuaHelp::isnil(L, "startMargin") == false;

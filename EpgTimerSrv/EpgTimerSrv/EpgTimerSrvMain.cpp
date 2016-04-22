@@ -787,6 +787,7 @@ pair<wstring, REC_SETTING_DATA> CEpgTimerSrvMain::LoadRecSetData(WORD preset) co
 	rs.serviceMode = (BYTE)GetPrivateProfileInt(defName, L"ServiceMode", 0, iniPath.c_str());
 	rs.pittariFlag = (BYTE)GetPrivateProfileInt(defName, L"PittariFlag", 0, iniPath.c_str());
 	rs.batFilePath = GetPrivateProfileToString(defName, L"BatFilePath", L"", iniPath.c_str());
+	rs.recTag = GetPrivateProfileToString(defName, L"RecTag", L"", iniPath.c_str());
 	for( int i = 0; i < 2; i++ ){
 		vector<REC_FILE_SET_INFO>& recFolderList = i == 0 ? rs.recFolderList : rs.partialRecFolder;
 		int count = GetPrivateProfileInt(defFolderName[i], L"Count", 0, iniPath.c_str());

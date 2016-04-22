@@ -1424,10 +1424,7 @@ DWORD CReserveManager::Check()
 
 					//ÉoÉbÉ`èàóùí«â¡
 					BAT_WORK_INFO batInfo;
-					AddRecInfoMacro(batInfo.macroList, item);
-					batInfo.macroList.push_back(pair<string, wstring>("AddKey",
-						itrRes->second.comment.compare(0, 8, EPG_AUTO_ADD_TEXT L"(") == 0 && itrRes->second.comment.size() >= 9 ?
-						itrRes->second.comment.substr(8, itrRes->second.comment.size() - 9) : wstring()));
+					AddRecInfoMacro(batInfo.macroList, item, itrRes->second);
 					if( (itrRet->type == CTunerBankCtrl::CHECK_END || itrRet->type == CTunerBankCtrl::CHECK_END_NEXT_START_END || this->errEndBatRun) &&
 					    item.recFilePath.empty() == false && itrRes->second.recSetting.batFilePath.empty() == false && itrRet->continueRec == false ){
 						batInfo.batFilePath = itrRes->second.recSetting.batFilePath;
@@ -2207,9 +2204,10 @@ void CReserveManager::AddReserveDataMacro(vector<pair<string, wstring>>& macroLi
 	macroList.push_back(std::make_pair(string("Title") + suffix, data.title));
 	macroList.push_back(std::make_pair(string("ServiceName") + suffix, data.stationName));
 	macroList.push_back(std::make_pair(string("ReserveComment") + suffix, data.comment));
+	macroList.push_back(std::make_pair(string("RecTag") + suffix, data.recSetting.recTag));
 }
 
-void CReserveManager::AddRecInfoMacro(vector<pair<string, wstring>>& macroList, const REC_FILE_INFO& recInfo)
+void CReserveManager::AddRecInfoMacro(vector<pair<string, wstring>>& macroList, const REC_FILE_INFO& recInfo, const RESERVE_DATA& data)
 {
 	WCHAR v[64];
 	AddTimeMacro(macroList, recInfo.startTime, recInfo.durationSecond, "");
@@ -2247,6 +2245,11 @@ void CReserveManager::AddRecInfoMacro(vector<pair<string, wstring>>& macroList, 
 	macroList.push_back(pair<string, wstring>("Title2", strVal));
 	CheckFileName(strVal);
 	macroList.push_back(pair<string, wstring>("Title2F", strVal));
+
+	macroList.push_back(pair<string, wstring>("AddKey",
+		data.comment.compare(0, 8, EPG_AUTO_ADD_TEXT L"(") == 0 && data.comment.size() >= 9 ?
+		data.comment.substr(8, data.comment.size() - 9) : wstring()));
+	macroList.push_back(pair<string, wstring>("RecTag", data.recSetting.recTag));
 }
 
 vector<REC_FILE_BASIC_INFO> CReserveManager::SearchRecFile(const EPGDB_SEARCH_KEY_INFO& item, bool fromNew) {

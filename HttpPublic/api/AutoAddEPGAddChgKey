@@ -64,6 +64,7 @@ if post and (aa.dataID==0 or lastRecSetting) then
         end
       end
     end
+    rs.recTag=mg.get_var(post, 'recTag')
     rs.recMode=0+recMode
     rs.tuijyuuFlag=0+(tuijyuuFlag or 0)~=0
     rs.priority=0+priority

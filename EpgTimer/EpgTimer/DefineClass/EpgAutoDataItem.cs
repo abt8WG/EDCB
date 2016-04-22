@@ -358,6 +358,7 @@ namespace EpgTimer
                     }
 
                     view += "録画実行bat : " + EpgAutoAddInfo.recSetting.BatFilePath + "\r\n";
+                    view += "録画タグ : " + EpgAutoAddInfo.recSetting.RecTag + "\r\n";
 
                     if (EpgAutoAddInfo.recSetting.RecFolderList.Count == 0)
                     {

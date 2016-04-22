@@ -48,6 +48,7 @@ if post and r then
         end
       end
     end
+    rs.recTag=mg.get_var(post, 'recTag')
     rs.recFolderList={}
     for i=0,10000 do
      if not mg.get_var(post, 'recFolder', i) then break end

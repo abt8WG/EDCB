@@ -62,6 +62,7 @@ namespace EpgTimer
             recPresetData.PittariFlag = (Byte)IniFileHandler.GetPrivateProfileInt(defName, "PittariFlag", 0, SettingPath.TimerSrvIniPath);
 
             recPresetData.BatFilePath = IniFileHandler.GetPrivateProfileString(defName, "BatFilePath", "", SettingPath.TimerSrvIniPath);
+            recPresetData.RecTag = IniFileHandler.GetPrivateProfileString(defName, "RecTag", "", SettingPath.TimerSrvIniPath);
 
             recPresetData.RecFolderList.Clear();
             int count = IniFileHandler.GetPrivateProfileInt(defFolderName, "Count", 0, SettingPath.TimerSrvIniPath);
@@ -118,6 +119,7 @@ namespace EpgTimer
             IniFileHandler.WritePrivateProfileString(defName, "ServiceMode", recPresetData.ServiceMode.ToString(), SettingPath.TimerSrvIniPath);
             IniFileHandler.WritePrivateProfileString(defName, "PittariFlag", recPresetData.PittariFlag.ToString(), SettingPath.TimerSrvIniPath);
             IniFileHandler.WritePrivateProfileString(defName, "BatFilePath", recPresetData.BatFilePath, SettingPath.TimerSrvIniPath);
+            IniFileHandler.WritePrivateProfileString(defName, "RecTag", recPresetData.RecTag, SettingPath.TimerSrvIniPath);
 
             IniFileHandler.WritePrivateProfileString(defFolderName, "Count", recPresetData.RecFolderList.Count.ToString(), SettingPath.TimerSrvIniPath);
             for (int j = 0; j < recPresetData.RecFolderList.Count; j++)

@@ -1004,6 +1004,7 @@ $Title2F$	$Title2$と同内容でファイル名に使用できない記号が存在した場合全角に変換
 $Genre$		番組のジャンル（EPGデータ存在時のみ）（RecName_Macro.dllのみ）
 $Genre2$	番組の詳細ジャンル（EPGデータ存在時のみ）（RecName_Macro.dllのみ）
 $AddKey$	EPG自動予約で登録されたキーワード（バッチのみ）
+$RecTag$	録画設定で指定した録画タグ（バッチのみ）
 $SubTitle$	サブタイトル（番組内容）（EPGデータ存在時のみ）（RecName_Macro.dllのみ）
 $SubTitle2$	$SubTitle$の内容で「^[#＃第][0-9０１２３４５６７８９]」の検索にヒットした場合のみ（EPGデータ存在時のみ）（RecName_Macro.dllのみ）
 

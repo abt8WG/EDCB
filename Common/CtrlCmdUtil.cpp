@@ -96,7 +96,7 @@ DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const REC_SETTING_DATA
 	pos += WriteVALUE(ver, buff, pos, val.tuijyuuFlag);
 	pos += WriteVALUE(ver, buff, pos, val.serviceMode);
 	pos += WriteVALUE(ver, buff, pos, val.pittariFlag);
-	pos += WriteVALUE(ver, buff, pos, val.batFilePath);
+	pos += WriteVALUE(ver, buff, pos, val.getBatFilePathAndRecTag());
 	pos += WriteVALUE(ver, buff, pos, val.recFolderList);
 	pos += WriteVALUE(ver, buff, pos, val.suspendMode);
 	pos += WriteVALUE(ver, buff, pos, val.rebootFlag);
@@ -130,7 +130,11 @@ BOOL ReadVALUE( WORD ver, REC_SETTING_DATA* val, const BYTE* buff, DWORD buffSiz
 		READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->tuijyuuFlag );
 		READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->serviceMode );
 		READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->pittariFlag );
-		READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->batFilePath );
+		{
+			wstring batFilePathAndRecTag;
+			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &batFilePathAndRecTag );
+			val->setBatFilePathAndRecTag(batFilePathAndRecTag);
+		}
 		READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->recFolderList );
 		READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->suspendMode );
 		READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->rebootFlag );
