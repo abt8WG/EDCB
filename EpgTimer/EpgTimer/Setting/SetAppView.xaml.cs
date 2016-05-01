@@ -793,6 +793,7 @@ namespace EpgTimer.Setting
             {
                 "（空白）",
                 "設定",
+                "再接続",
                 "検索",
                 "スタンバイ",
                 "休止",
@@ -803,7 +804,6 @@ namespace EpgTimer.Setting
                 "カスタム２",
                 "NetworkTV終了",
                 "情報通知ログ",
-                "再接続",
                 "予約簡易表示"
             };
             Settings.Instance.ViewButtonList.ForEach(str => listBox_viewBtn.Items.Add(str));
@@ -813,10 +813,12 @@ namespace EpgTimer.Setting
             {
                 "（セパレータ）",
                 "設定",
+                "再接続",
                 "スタンバイ",
                 "休止",
                 "EPG取得",
-                "終了"
+                "終了",
+                "予約簡易表示"
             };
             Settings.Instance.TaskMenuList.ForEach(str => listBox_viewTask.Items.Add(str));
             reLoadButtonItem(bxt, taskItem);

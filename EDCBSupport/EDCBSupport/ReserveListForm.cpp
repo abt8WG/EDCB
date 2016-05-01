@@ -70,7 +70,7 @@ namespace EDCBSupport
 	}
 
 
-	bool CReserveListForm::Create(HWND hwndParent,int ID)
+	bool CReserveListForm::Create(HWND hwndParent,INT_PTR ID)
 	{
 		if (m_ClassAtom==0)
 			return false;

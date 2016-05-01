@@ -25,7 +25,7 @@ namespace EDCBSupport
 		CReserveListForm(CEDCBSupportCore *pCore);
 		~CReserveListForm();
 
-		bool Create(HWND hwndParent,int ID=0) override;
+		bool Create(HWND hwndParent,INT_PTR ID=0) override;
 		bool Show();
 		void SetReserveList(std::vector<RESERVE_DATA> *pReserveList);
 		bool NotifyReserveListChanged();

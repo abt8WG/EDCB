@@ -443,6 +443,12 @@
                             <CheckBox Name="checkBox_recNoSecond" Content="'秒'" Margin="4,0" VerticalAlignment="Center" />
                             <CheckBox Name="checkBox_recNoDurSecond" Content="長さの'秒'" Margin="4,0" VerticalAlignment="Center" />
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <Label Content="番組情報・エラーログのキャッシュ" VerticalAlignment="Center" ToolTip="起動中、取得したテキストデータを保持します。(キャッシュしない場合、必要時に毎回EpgTimerSrvから取得します。)" />
+                            <CheckBox Name="checkBox_ChacheOn" Content="する　（" Margin="12,0,0,0" VerticalAlignment="Center" />
+                            <CheckBox Name="checkBox_CacheOptimize" Content="不要データを削除する" Margin="12,0,12,0" VerticalAlignment="Center" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_ChacheOn, UpdateSourceTrigger=PropertyChanged}"/>
+                            <CheckBox Name="checkBox_CacheKeepConnect"  Content="再接続時も保持する　）" Margin="12,0,0,0" VerticalAlignment="Center" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_ChacheOn, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel >
                         <GroupBox Header="ドロップ・スクランブル未解除" Margin="6,2">
                             <WrapPanel>
                                 <StackPanel>

@@ -66,7 +66,7 @@ namespace EpgTimer
             this.gvSorter.SortByMultiHeaderWithKey(dataList, gridView.Columns, initialSortKey, true, initialDirection);
         }
         public void SetViewSetting(ListView lv, GridView gv, bool defaultContextMenu, bool isSortOnReload
-            , List<GridViewColumn> cols_source = null, RoutedEventHandler headerclick = null)
+            , List<GridViewColumn> cols_source = null, RoutedEventHandler headerclick = null, bool hasSortFeature = true)
         {
             listView = lv;
             gridView = gv;
@@ -77,15 +77,18 @@ namespace EpgTimer
             {
                 cols_source.ForEach(col => gridView.Columns.Add(col));
             }
-            
-            var hclick = headerclick != null ? headerclick : (sender, e) => this.GridViewHeaderClickSort(e);
-            foreach (GridViewColumn info in gridView.Columns)
+
+            if (hasSortFeature)
             {
-                var header = info.Header as GridViewColumnHeader;
-                header.Click += new RoutedEventHandler(hclick);
-                if (header.ToolTip == null)
+                var hclick = headerclick != null ? headerclick : (sender, e) => this.GridViewHeaderClickSort(e);
+                foreach (GridViewColumn info in gridView.Columns)
                 {
-                    header.ToolTip = "Ctrl+Click(マルチ・ソート)、Shift+Click(解除)";
+                    var header = info.Header as GridViewColumnHeader;
+                    header.Click += new RoutedEventHandler(hclick);
+                    if (header.ToolTip == null)
+                    {
+                        header.ToolTip = "Ctrl+Click(マルチ・ソート)、Shift+Click(解除)";
+                    }
                 }
             }
 

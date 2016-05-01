@@ -1,21 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace EpgTimer
 {
@@ -26,6 +13,8 @@ namespace EpgTimer
     {
         private NotifyIcon notifyIcon = new NotifyIcon();
         private bool trueClosing = false;
+
+        private ListViewController<ReserveItem> lstCtrl;
 
         public InfoWindow(InfoWindowViewModel dataContext)
         {
@@ -42,6 +31,22 @@ namespace EpgTimer
             closeMenu.Click += (s, e) => TrueClose();
             menu.Items.Add(closeMenu);
             notifyIcon.ContextMenuStrip = menu;
+
+            //リストビュー関連の設定
+            var list_columns = Resources["ReserveItemViewColumns"] as GridViewColumnList;
+            //list_columns.AddRange(Resources["RecSettingViewColumns"] as GridViewColumnList);
+
+            lstCtrl = new ListViewController<ReserveItem>(this);
+            lstCtrl.SetSavePath(CommonUtil.GetMemberName(() => Settings.Instance.InfoWindowListColumn));
+            lstCtrl.SetViewSetting(listView_InfoWindow, girdView_InfoWindow, false, false, list_columns, null, false);
+
+            var StartTime = list_columns.Find(item => (item.Header as GridViewColumnHeader).Uid == "StartTime");
+            if (StartTime != null)
+            {
+                StartTime.DisplayMemberBinding = new System.Windows.Data.Binding("StartTimeShort");
+            }
+            listView_InfoWindow.Style = null;
+            girdView_InfoWindow.ColumnHeaderContainerStyle = TryFindResource(Settings.Instance.InfoWindowHeaderIsVisible ? "VisibleHeader" : "HiddenHeader") as Style;
 
             DataContext = dataContext;
         }
@@ -69,27 +74,9 @@ namespace EpgTimer
             Activate();
         }
 
-#if false
-        // 最小化できないようにする //
-        private const int GWL_STYLE = -16,
-                      WS_MINIMIZEBOX = 0x20000;
-
-        [DllImport("user32.dll")]
-        extern private static int GetWindowLong(IntPtr hwnd, int index);
-
-        [DllImport("user32.dll")]
-        extern private static int SetWindowLong(IntPtr hwnd, int index, int value);
-
-        private void Window_SourceInitialized(object sender, EventArgs e)
-        {
-            IntPtr hwnd = new WindowInteropHelper(this).Handle;
-            int currentStyle = GetWindowLong(hwnd, GWL_STYLE);
-            SetWindowLong(hwnd, GWL_STYLE, (currentStyle & ~WS_MINIMIZEBOX));
-        }
-#endif
-
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            lstCtrl.SaveViewDataToSettings();
             if (!trueClosing)
             {
                 e.Cancel = true;
@@ -106,6 +93,12 @@ namespace EpgTimer
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             TrueClose();
+        }
+
+        private void listView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Settings.Instance.InfoWindowHeaderIsVisible = !Settings.Instance.InfoWindowHeaderIsVisible;
+            girdView_InfoWindow.ColumnHeaderContainerStyle = TryFindResource(Settings.Instance.InfoWindowHeaderIsVisible ? "VisibleHeader" : "HiddenHeader") as Style;
         }
     }
 }

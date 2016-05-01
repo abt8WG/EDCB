@@ -5,7 +5,11 @@ if not exist %2 goto :eof
 
 @rem git.exe ‚ðŒ©‚Â‚¯‚é
 set gitcmd=
-if /i (%1) == (Release) for /f %%a in ('where /f git.exe') do set gitcmd=%%a
+if /i (%1) == (Release) for /f "delims=" %%a in ('where /f git.exe') do (
+  set gitcmd=%%a
+  goto found_git
+)
+:found_git
 
 @rem revision ‚ðŽæ“¾‚·‚é
 set REV=""

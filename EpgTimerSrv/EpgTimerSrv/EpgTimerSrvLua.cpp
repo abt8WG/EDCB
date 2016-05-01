@@ -41,6 +41,7 @@ int CEpgTimerSrvMain::InitLuaCallback(lua_State* L)
 	LuaHelp::reg_function(L, "GetNotifyUpdateCount", LuaGetNotifyUpdateCount, sys);
 	LuaHelp::reg_function(L, "ListDmsPublicFile", LuaListDmsPublicFile, sys);
 	LuaHelp::reg_int(L, "htmlEscape", 0);
+	LuaHelp::reg_string(L, "serverRandom", sys->httpServerRandom.c_str());
 	lua_setglobal(L, "edcb");
 	return 0;
 }

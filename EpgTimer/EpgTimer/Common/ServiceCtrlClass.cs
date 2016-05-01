@@ -27,32 +27,32 @@ namespace EpgTimer
             public int dwWaitHint = 0;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private class QUERY_SERVICE_CONFIG
         {
-            public int dwServiceType = 0;
-            public int dwStartType = 0;
-            public int dwErrorControl = 0;
-            public IntPtr lpBinaryPathName = IntPtr.Zero;
-            public IntPtr lpLoadOrderGroup = IntPtr.Zero;
-            public int dwTagId = 0;
-            public IntPtr lpDependencies = IntPtr.Zero;
-            public IntPtr lpServiceStartName = IntPtr.Zero;
-            public IntPtr lpDisplayName = IntPtr.Zero;
+            public int dwServiceType;
+            public int dwStartType;
+            public int dwErrorControl;
+            public string lpBinaryPathName;
+            public string lpLoadOrderGroup;
+            public int dwTagId;
+            public string lpDependencies;
+            public string lpServiceStartName;
+            public string lpDisplayName;
         }
 
         #region OpenSCManager
-        [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerW", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static extern IntPtr OpenSCManager(string machineName, string databaseName, ScmAccessRights dwDesiredAccess);
         #endregion
 
         #region OpenService
-        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, ServiceAccessRights dwDesiredAccess);
         #endregion
 
         #region CreateService
-        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr CreateService(IntPtr hSCManager, string lpServiceName, string lpDisplayName, ServiceAccessRights dwDesiredAccess, int dwServiceType, ServiceBootFlag dwStartType, ServiceError dwErrorControl, string lpBinaryPathName, string lpLoadOrderGroup, IntPtr lpdwTagId, string lpDependencies, string lp, string lpPassword);
         #endregion
 
@@ -68,7 +68,7 @@ namespace EpgTimer
         #endregion
 
         #region QueryServiceConfig
-        [DllImport("advapi32.dll", SetLastError = true, CharSet=CharSet.Unicode)]
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern int QueryServiceConfig(IntPtr hService, IntPtr lpServiceConfig, int cbBufSize, ref int pcbBytesNeeded);
         #endregion
 
@@ -85,7 +85,7 @@ namespace EpgTimer
 
         #region StartService
         [DllImport("advapi32.dll", SetLastError = true)]
-        private static extern int StartService(IntPtr hService, int dwNumServiceArgs, int lpServiceArgVectors);
+        private static extern int StartService(IntPtr hService, int dwNumServiceArgs, IntPtr lpServiceArgVectors);
         #endregion
 
         public static string QueryServiceExePath(string serviceName)
@@ -99,17 +99,29 @@ namespace EpgTimer
                 if (service != IntPtr.Zero)
                 {
                     int bytesNeeded = 1000;
-                    IntPtr qscPtr = Marshal.AllocCoTaskMem(bytesNeeded);
-                    int ret = QueryServiceConfig(service, qscPtr, bytesNeeded, ref bytesNeeded);
-                    if (ret == 0)
+                    IntPtr qscPtr = IntPtr.Zero;
+                    try
                     {
                         qscPtr = Marshal.AllocCoTaskMem(bytesNeeded);
-                        ret = QueryServiceConfig(service, qscPtr, bytesNeeded, ref bytesNeeded);
+                        int ret = QueryServiceConfig(service, qscPtr, bytesNeeded, ref bytesNeeded);
+                        if (ret == 0)
+                        {
+                            qscPtr = Marshal.ReAllocCoTaskMem(qscPtr, bytesNeeded);
+                            ret = QueryServiceConfig(service, qscPtr, bytesNeeded, ref bytesNeeded);
+                        }
+                        if (ret > 0)
+                        {
+                            QUERY_SERVICE_CONFIG qsc = Marshal.PtrToStructure(qscPtr, typeof(QUERY_SERVICE_CONFIG)) as QUERY_SERVICE_CONFIG;
+                            exePath = qsc.lpBinaryPathName;
+                        }
                     }
-                    if (ret > 0)
+                    catch (Exception ex)
                     {
-                        QUERY_SERVICE_CONFIG qsc = Marshal.PtrToStructure(qscPtr, typeof(QUERY_SERVICE_CONFIG)) as QUERY_SERVICE_CONFIG;
-                        exePath = Marshal.PtrToStringUni(qsc.lpBinaryPathName);
+                        System.Windows.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    }
+                    finally
+                    {
+                        Marshal.FreeCoTaskMem(qscPtr);
                     }
                 }
                 CloseServiceHandle(service);

@@ -12,7 +12,7 @@ namespace EDCBSupport
 	public:
 		CTab();
 		~CTab();
-		bool Create(HWND hwndParent,int ID=0) override;
+		bool Create(HWND hwndParent,INT_PTR ID=0) override;
 		bool InsertItem(int Index,LPCTSTR pszText,int Image=-1);
 		bool AddItem(LPCTSTR pszText,int Image=-1) { return InsertItem(-1,pszText,Image); }
 		int GetTabHeight() const;

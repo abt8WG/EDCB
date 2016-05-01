@@ -37,6 +37,8 @@ public:
 	void DelReserveData(const vector<DWORD>& idList);
 	//˜^‰æÏ‚İî•ñˆê——‚ğæ“¾‚·‚é
 	vector<REC_FILE_INFO> GetRecFileInfoAll(bool getExtraInfo = true) const;
+	//˜^‰æÏ‚İî•ñ‚ğw’èƒŠƒXƒg‚Åæ“¾‚·‚é
+	vector<REC_FILE_INFO> GetRecFileInfoList(const vector<DWORD>& idLis, bool getExtraInfo = true) const;
 	//˜^‰æÏ‚İî•ñ‚ğæ“¾‚·‚é
 	bool GetRecFileInfo(DWORD id, REC_FILE_INFO* recInfo, bool getExtraInfo = true) const;
 	//˜^‰æÏ‚İî•ñ‚ğíœ‚·‚é

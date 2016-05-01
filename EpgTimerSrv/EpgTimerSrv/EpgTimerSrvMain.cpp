@@ -13,6 +13,7 @@
 #include "resource.h"
 #include <shellapi.h>
 #include <tlhelp32.h>
+#include <wincrypt.h>
 #include <LM.h>
 #include <set>
 #pragma comment (lib, "netapi32.lib")
@@ -514,7 +515,18 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 					op = ctx->sys->httpOptions;
 					enableSsdpServer_ = ctx->sys->enableSsdpServer;
 				}
+				if( op.ports.empty() == false && ctx->sys->httpServerRandom.empty() ){
+					HCRYPTPROV prov;
+					if( CryptAcquireContext(&prov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) ){
+						unsigned __int64 r[4] = {};
+						if( CryptGenRandom(prov, sizeof(r), (BYTE*)r) ){
+							Format(ctx->sys->httpServerRandom, "%016I64x%016I64x%016I64x%016I64x", r[0], r[1], r[2], r[3]);
+						}
+						CryptReleaseContext(prov, 0);
+					}
+				}
 				if( op.ports.empty() == false &&
+				    ctx->sys->httpServerRandom.empty() == false &&
 				    ctx->httpServer.StartServer(op, InitLuaCallback, ctx->sys) &&
 				    enableSsdpServer_ ){
 					//"ddd.xml"‚Ìæ“ª‚©‚ç2KBˆÈ“à‚É"<UDN>uuid:{UUID}</UDN>"‚ª•K—v
@@ -694,8 +706,9 @@ void CEpgTimerSrvMain::ReloadNetworkSetting()
 		}
 		this->httpOptions.accessControlList = GetPrivateProfileToString(L"SET", L"HttpAccessControlList", L"+127.0.0.1", iniPath.c_str());
 		this->httpOptions.authenticationDomain = GetPrivateProfileToString(L"SET", L"HttpAuthenticationDomain", L"", iniPath.c_str());
-		this->httpOptions.numThreads = GetPrivateProfileInt(L"SET", L"HttpNumThreads", 3, iniPath.c_str());
+		this->httpOptions.numThreads = GetPrivateProfileInt(L"SET", L"HttpNumThreads", 5, iniPath.c_str());
 		this->httpOptions.requestTimeout = GetPrivateProfileInt(L"SET", L"HttpRequestTimeoutSec", 120, iniPath.c_str()) * 1000;
+		this->httpOptions.sslProtocolVersion = GetPrivateProfileInt(L"SET", L"HttpSslProtocolVersion", 2, iniPath.c_str());
 		this->httpOptions.keepAlive = GetPrivateProfileInt(L"SET", L"HttpKeepAlive", 0, iniPath.c_str()) != 0;
 		this->httpOptions.ports = GetPrivateProfileToString(L"SET", L"HttpPort", L"5510", iniPath.c_str());
 		this->httpOptions.saveLog = enableHttpSrv == 2;
@@ -2160,6 +2173,21 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 				resParam->data = NewWriteVALUE2WithVersion(ver,
 					sys->reserveManager.GetRecFileInfoAll(cmdParam->param == CMD2_EPG_SRV_ENUM_RECINFO2), resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
+			}
+		}
+		break;
+	case CMD2_EPG_SRV_GET_RECINFO_LIST2:
+		{
+			OutputDebugString(L"CMD2_EPG_SRV_GET_RECINFO_LIST2\r\n");
+			WORD ver;
+			DWORD readSize;
+			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
+				vector<DWORD> idList;
+				if( ReadVALUE2(ver, &idList, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+					resParam->data = NewWriteVALUE2WithVersion(ver,
+						sys->reserveManager.GetRecFileInfoList(idList), resParam->dataSize);
+					resParam->param = CMD_SUCCESS;
+				}
 			}
 		}
 		break;

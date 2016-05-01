@@ -70,7 +70,7 @@ namespace EDCBSupport
 		CListView();
 		virtual ~CListView();
 
-		bool Create(HWND hwndParent,int ID=0) override;
+		bool Create(HWND hwndParent,INT_PTR ID=0) override;
 
 		int GetItemCount() const;
 		int GetSelectedItemCount() const;

@@ -536,6 +536,32 @@ vector<REC_FILE_INFO> CReserveManager::GetRecFileInfoAll(bool getExtraInfo) cons
 	return infoList;
 }
 
+vector<REC_FILE_INFO> CReserveManager::GetRecFileInfoList(const vector<DWORD>& idList, bool getExtraInfo) const
+{
+	vector<REC_FILE_INFO> infoList;
+	wstring folder;
+	{
+		CBlockLock lock(&this->managerLock);
+		infoList.reserve(idList.size());
+		for( size_t i = 0; i < idList.size(); i++ ){
+			map<DWORD, REC_FILE_INFO>::const_iterator itr = this->recInfoText.GetMap().find(idList[i]);
+			if( itr != this->recInfoText.GetMap().end() ){
+				infoList.push_back(itr->second);
+			}
+		}
+		if( getExtraInfo ){
+			folder = this->recInfoText.GetRecInfoFolder();
+		}
+	}
+	if( getExtraInfo ){
+		for( size_t i = 0; i < infoList.size(); i++ ){
+			infoList[i].programInfo = CParseRecInfoText::GetExtraInfo(infoList[i].recFilePath.c_str(), L".program.txt", folder);
+			infoList[i].errInfo = CParseRecInfoText::GetExtraInfo(infoList[i].recFilePath.c_str(), L".err", folder);
+		}
+	}
+	return infoList;
+}
+
 bool CReserveManager::GetRecFileInfo(DWORD id, REC_FILE_INFO* recInfo, bool getExtraInfo) const
 {
 	wstring folder;

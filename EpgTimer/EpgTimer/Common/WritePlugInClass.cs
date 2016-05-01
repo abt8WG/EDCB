@@ -8,7 +8,7 @@ namespace EpgTimer
 {
     class WritePlugInClass
     {
-        [DllImport("kernel32", CharSet = CharSet.Auto, ExactSpelling = false)]
+        [DllImport("kernel32", CharSet = CharSet.Unicode, ExactSpelling = false)]
         private extern static IntPtr LoadLibrary(String lpFileName);
 
         [DllImport("kernel32", ExactSpelling = true)]

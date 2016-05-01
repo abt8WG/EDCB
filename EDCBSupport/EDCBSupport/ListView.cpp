@@ -32,7 +32,7 @@ namespace EDCBSupport
 	}
 
 
-	bool CListView::Create(HWND hwndParent,int ID)
+	bool CListView::Create(HWND hwndParent,INT_PTR ID)
 	{
 		Destroy();
 

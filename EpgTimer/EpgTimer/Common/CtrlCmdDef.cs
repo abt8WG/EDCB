@@ -604,9 +604,9 @@ namespace EpgTimer
         /// <summary>コメント</summary>
         public string Comment;
         /// <summary>.program.txtファイルの内容</summary>
-        public string ProgramInfo;
+        public string _ProgramInfo;
         /// <summary>.errファイルの内容</summary>
-        public string ErrInfo;
+        public string _ErrInfo;
         public byte ProtectFlag;
 
         public byte FileExist;
@@ -630,8 +630,8 @@ namespace EpgTimer
             RecStatus = 0;
             StartTimeEpg = new DateTime();
             Comment = "";
-            ProgramInfo = "";
-            ErrInfo = "";
+            _ProgramInfo = "";
+            _ErrInfo = "";
             ProtectFlag = 0;
             FileExist = 0;
             AutoAddInfoFlag = 0;
@@ -656,8 +656,8 @@ namespace EpgTimer
             w.Write(RecStatus);
             w.Write(StartTimeEpg);
             w.Write(Comment);
-            w.Write(ProgramInfo);
-            w.Write(ErrInfo);
+            w.Write(_ProgramInfo);
+            w.Write(_ErrInfo);
             if (version >= 4)
             {
                 w.Write(ProtectFlag);
@@ -689,8 +689,8 @@ namespace EpgTimer
             r.Read(ref RecStatus);
             r.Read(ref StartTimeEpg);
             r.Read(ref Comment);
-            r.Read(ref ProgramInfo);
-            r.Read(ref ErrInfo);
+            r.Read(ref _ProgramInfo);
+            r.Read(ref _ErrInfo);
             if (version >= 4)
             {
                 r.Read(ref ProtectFlag);

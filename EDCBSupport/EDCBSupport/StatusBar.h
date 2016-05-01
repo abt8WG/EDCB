@@ -13,7 +13,7 @@ namespace EDCBSupport
 	public:
 		CStatusBar();
 		~CStatusBar();
-		bool Create(HWND hwndParent,int ID=0) override;
+		bool Create(HWND hwndParent,INT_PTR ID=0) override;
 		bool SetText(LPCTSTR pszText);
 	};
 

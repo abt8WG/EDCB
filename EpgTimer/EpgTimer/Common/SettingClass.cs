@@ -17,7 +17,7 @@ namespace EpgTimer
     class IniFileHandler
     {
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        public static extern uint
+        private static extern uint
           GetPrivateProfileStringW(string lpAppName,
           string lpKeyName, string lpDefault,
           StringBuilder lpReturnedString, uint nSize,
@@ -48,7 +48,7 @@ namespace EpgTimer
         // 現在使われていないようなので、コメントアウトしておく。
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode, ExactSpelling = true,
             EntryPoint = "GetPrivateProfileStringW")]
-        public static extern uint
+        private static extern uint
             GetPrivateProfileStringByByteArray(string lpAppName,
             string lpKeyName, string lpDefault,
             byte[] lpReturnedString, uint nSize,
@@ -56,7 +56,7 @@ namespace EpgTimer
         */
 
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        public static extern int
+        private static extern int
           GetPrivateProfileIntW(string lpAppName,
           string lpKeyName, int nDefault, string lpFileName);
 
@@ -89,7 +89,7 @@ namespace EpgTimer
         }
 
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        public static extern uint WritePrivateProfileStringW(
+        private static extern uint WritePrivateProfileStringW(
           string lpAppName,
           string lpKeyName,
           string lpString,
@@ -420,6 +420,8 @@ namespace EpgTimer
             }
         }
 
+        [DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        private static extern uint WritePrivateProfileStringW(string lpAppName, string lpKeyName, string lpString, string lpFileName);
         public void UpToDate()
         {
             if (_files != null && CanReadInifile)
@@ -445,7 +447,7 @@ namespace EpgTimer
                                     foreach (string lpKeyName in _files[lpFileName][lpAppName].UpdatedKeys)
                                     {
                                         string lpString = _files[lpFileName][lpAppName][lpKeyName];
-                                        IniFileHandler.WritePrivateProfileStringW(lpAppName, lpKeyName, lpString, lpFileName);
+                                        WritePrivateProfileStringW(lpAppName, lpKeyName, lpString, lpFileName);
                                     }
                                 }
                             }
@@ -805,12 +807,17 @@ namespace EpgTimer
         public bool LaterTimeUse { get; set; }
         public int LaterTimeHour { get; set; }
         public bool DisplayPresetOnSearch { get; set; }
+        public bool RecInfoExtraDataCache { get; set; }
+        public bool RecInfoExtraDataCacheOptimize { get; set; }
+        public bool RecInfoExtraDataCacheKeepConnect { get; set; }
 
         public bool ApplyMultiInstance { get; set; }
         public double ReserveMinHeight { get; set; }
         public bool ReservePopup { get; set; }
         public bool AlwaysSaveEpgSetting { get; set; }
         public SerializableDictionary<string, WINDOWPLACEMENT> Placement { get; set; }
+        public List<ListColumnInfo> InfoWindowListColumn { get; set; }
+        public bool InfoWindowHeaderIsVisible { get; set; }
         public bool InfoWindowTopMost { get; set; }
         public bool InfoWindowEnabled { get; set; }
         public bool RecItemToolTip { get; set; }
@@ -981,6 +988,9 @@ namespace EpgTimer
             LaterTimeUse = false;
             LaterTimeHour = 28 - 24;
             DisplayPresetOnSearch = false;
+            RecInfoExtraDataCache = true;
+            RecInfoExtraDataCacheOptimize = true;
+            RecInfoExtraDataCacheKeepConnect = false;
 
             recPresetList = null;
             ApplyMultiInstance = false;
@@ -988,6 +998,8 @@ namespace EpgTimer
             ReservePopup = false;
             AlwaysSaveEpgSetting = false;
             Placement = new SerializableDictionary<string, WINDOWPLACEMENT>();
+            InfoWindowListColumn = new List<ListColumnInfo>();
+            InfoWindowHeaderIsVisible = true;
             InfoWindowTopMost = true;
             InfoWindowEnabled = false;
             RecItemToolTip = false;
@@ -1271,6 +1283,16 @@ namespace EpgTimer
                     Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.JyanruKey), double.NaN));
                     Instance.SearchColumnHead = CommonUtil.GetMemberName(() => obj.StartTime);
                     Instance.SearchSortDirection = ListSortDirection.Ascending;
+                }
+                if (Instance.InfoWindowListColumn.Count == 0)
+                {
+                    var obj = new ReserveItem();
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Status), double.NaN));
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), 80));
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), 300));
+                    Instance.ResColumnHead = CommonUtil.GetMemberName(() => obj.StartTime);
+                    Instance.ResSortDirection = ListSortDirection.Ascending;
                 }
                 if (Instance.RecInfoDropExclude.Count == 0)
                 {

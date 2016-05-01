@@ -94,6 +94,7 @@ function RecSettingTemplate(rs)
     s=s..'<tr><td>'..v.recFolder..'</td><td>'..v.writePlugIn..'</td><td>'..v.recNamePlugIn..'</td></tr>\n'
   end
   s=s..'</table>'
+    ..'録画タグ: <input type="text" name="recTag" value="'..rs.recTag..'"><br>\n'
     ..'部分受信サービス:<br><input type="checkbox" name="partialRecFlag" value="1"'..(rs.partialRecFlag~=0 and ' checked="checked"' or '')..'>別ファイルに同時出力する<br>\n'
     ..'録画フォルダ、使用プラグイン（プリセットによる変更のみ対応）:<table border="1">'
     ..'<tr><td>フォルダ</td><td>出力PlugIn</td><td>ファイル名PlugIn</td></tr>\n'
@@ -107,16 +108,50 @@ end
 --可能ならコンテンツをzlib圧縮する(lua-zlib(zlib.dll)が必要)
 function Deflate(ct)
   local zl
+  local trim
   for k,v in pairs(mg.request_info.http_headers) do
-    if k:match('^[Aa]ccept%-[Ee]ncoding$') and v:find('deflate') then
+    if not zl and k:match('^[Aa]ccept%-[Ee]ncoding$') and v:find('deflate') then
       local status, zlib = pcall(require, 'zlib')
       if status then
         zl=zlib.deflate()(ct, 'finish')
       end
-    elseif k:match('^[Uu]ser%-[Aa]gent$') and (v:find(' MSIE ') or v:find(' Trident/7%.')) then
-      --IEのdeflate対応は腐っているので弾く
-      return nil
+    elseif k:match('^[Uu]ser%-[Aa]gent$') and (v:find(' MSIE ') or v:find(' Trident/7%.') or v:find(' Edge/')) then
+      --RFC2616非準拠のブラウザはzlibヘッダを取り除く
+      trim=true
     end
   end
+  if trim and zl and #zl >= 6 then
+    zl=zl:sub(3, #zl-4)
+  end
   return zl
+end
+
+--POSTメッセージボディをすべて読む
+function ReadPost()
+  local post, s
+  if mg.request_info.request_method=='POST' then
+    post=''
+    repeat
+      s=mg.read()
+      post=post..(s or '')
+    until not s
+    if #post~=mg.request_info.content_length then
+      post=nil
+    end
+  end
+  return post
+end
+
+--CSRFトークンを取得する
+--※このトークンを含んだコンテンツを圧縮する場合はBEAST攻撃に少し気を配る
+function CsrfToken()
+  return edcb.serverRandom and edcb.serverRandom:sub(1,16) or ''
+end
+
+--CSRFトークンを検査する
+--※サーバに変更を加える要求(POSTに限らない)を処理する前にこれを呼ぶべき
+function AssertCsrf(qs)
+  if edcb.serverRandom and mg.get_var(qs,'ctok')~=edcb.serverRandom:sub(1,16) then
+    error('failed')
+  end
 end

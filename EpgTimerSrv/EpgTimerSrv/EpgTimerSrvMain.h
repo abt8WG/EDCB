@@ -153,6 +153,7 @@ private:
 	wstring tcpAccessControlList;
 	wstring tcpPassword;
 	CHttpServer::SERVER_OPTIONS httpOptions;
+	string httpServerRandom;
 	bool enableSsdpServer;
 	vector<pair<int, wstring>> dmsPublicFileList;
 	int autoAddHour;

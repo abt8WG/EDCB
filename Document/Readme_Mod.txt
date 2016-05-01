@@ -437,13 +437,17 @@ HttpAuthenticationDomain[=Civetwebのデフォルト]
   認証領域
   # Civetwebのauthentication_domainに相当
   # パスワード確認画面の文字列ぐらいの役割しかない
-HttpNumThreads[=3]
+HttpNumThreads[=5]
   ワーカスレッド数
   # Civetwebのnum_threadsに相当
   # 最大50
 HttpRequestTimeoutSec[=120]
   リクエストタイムアウト(秒)
   # Civetwebのrequest_timeout_msに相当
+HttpSslProtocolVersion[=2]
+  受け入れるSSL/TLSプロトコルのバージョン
+  # Civetwebのssl_protocol_versionに相当
+  # 値が大きいほど安全。ガラケーなどでSSL3.0が必要な場合は1にする
 HttpKeepAlive[=0]
   Keep-Aliveを有効にするかどうか
   # Civetwebのenable_keep_aliveに相当
@@ -502,6 +506,9 @@ htmlEscape:I
   文字列返却値の実体参照変換を指示するフラグ(+1=amp,+2=lt,+4=gt,+8=quot,+16=apos)
   初期値は0。
   例えばedcb.htmlEscape=15とすると'<&"テスト>'は'&lt;&amp;&quot;テスト&gt;'のように変換される。
+
+serverRandom:S
+  EpgTimerSrv.exeの起動毎に変化する256bitの暗号論的乱数
 
 S GetGenreName( 大分類*256+中分類:I )
   STD-B10のジャンル指定の文字列を取得する

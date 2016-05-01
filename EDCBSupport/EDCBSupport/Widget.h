@@ -9,7 +9,7 @@ namespace EDCBSupport
 	public:
 		CWidget();
 		virtual ~CWidget();
-		virtual bool Create(HWND hwndParent,int ID=0) = 0;
+		virtual bool Create(HWND hwndParent,INT_PTR ID=0) = 0;
 		void Destroy();
 		bool IsCreated() const { return m_hwnd!=NULL; }
 		void SetPosition(int Left,int Top,int Width,int Height);

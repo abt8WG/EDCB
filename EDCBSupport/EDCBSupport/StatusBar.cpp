@@ -17,7 +17,7 @@ namespace EDCBSupport
 	}
 
 
-	bool CStatusBar::Create(HWND hwndParent,int ID)
+	bool CStatusBar::Create(HWND hwndParent,INT_PTR ID)
 	{
 		Destroy();
 

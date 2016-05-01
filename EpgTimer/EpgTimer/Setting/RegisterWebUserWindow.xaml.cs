@@ -62,7 +62,6 @@ namespace EpgTimer.Setting
                     {
                         UserList.Add(new auth_user(line));
                     }
-                    sr.Close();
                 }
             }
             catch { }
@@ -118,7 +117,6 @@ namespace EpgTimer.Setting
                                     sw.WriteLine(user.User + ":" + user.Domain + ":" + user.Hash);
                                 }
                             }
-                            sw.Close();
                         }
                     }
                     else

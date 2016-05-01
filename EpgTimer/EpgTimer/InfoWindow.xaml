@@ -7,6 +7,20 @@
         mc:Ignorable="d"
         Title="EpgTimer" Height="100" Width="370"
         Topmost="{Binding Path=IsTopMost}" ShowInTaskbar="False" Closing="Window_Closing" WindowStyle="ToolWindow">
+    <local:RestorableWindow.Resources>
+        <ResourceDictionary>
+            <Style x:Key="VisibleHeader" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="Visibility" Value="Visible" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+            </Style>
+            <Style x:Key="HiddenHeader" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </Style>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="UserCtrlView\ReserveListViewStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </local:RestorableWindow.Resources>
     <Grid>
         <Grid.ContextMenu>
             <ContextMenu>
@@ -14,17 +28,10 @@
                 <MenuItem Header="消す" Click="MenuItem_Click"/>
             </ContextMenu>
         </Grid.ContextMenu>
-        <ListBox Name="listBox" ItemsSource="{Binding Path=ReserveList}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Path=Status}" Foreground="{Binding StatusColor}" Width="20"/>
-                        <TextBlock Text="{Binding Path=StartTimeShort}" Margin="0,0,4,0"/>
-                        <TextBlock Text="{Binding Path=ServiceName}" Width="80" Margin="0,0,4,0"/>
-                        <TextBlock Text="{Binding Path=EventName}"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <ListView Name="listView_InfoWindow" ItemsSource="{Binding Path=ReserveList}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Style="{StaticResource DataListViewStyle}" MouseDoubleClick="listView_MouseDoubleClick">
+            <ListView.View>
+                <GridView x:Name="girdView_InfoWindow" />
+            </ListView.View>
+        </ListView>
     </Grid>
 </local:RestorableWindow>

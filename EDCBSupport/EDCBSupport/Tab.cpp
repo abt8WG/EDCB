@@ -25,7 +25,7 @@ namespace EDCBSupport
 	}
 
 
-	bool CTab::Create(HWND hwndParent,int ID)
+	bool CTab::Create(HWND hwndParent,INT_PTR ID)
 	{
 		Destroy();
 

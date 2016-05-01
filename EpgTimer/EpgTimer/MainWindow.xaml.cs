@@ -185,6 +185,13 @@ namespace EpgTimer
 
                 ResetButtonView();
 
+                CheckCmdLine();
+
+                if(Settings.Instance.InfoWindowEnabled)
+                {
+                    ShowInfoWindow();
+                }
+
                 //タスクトレイの表示
                 taskTray = new TaskTrayClass(this);
                 taskTray.Icon = Properties.Resources.TaskIconBlue;
@@ -192,13 +199,6 @@ namespace EpgTimer
                 taskTray.ContextMenuClick += new EventHandler(taskTray_ContextMenuClick);
                 taskTray.Text = GetTaskTrayReserveInfoText();
                 ResetTaskMenu();
-
-                CheckCmdLine();
-
-                if(Settings.Instance.InfoWindowEnabled)
-                {
-                    ShowInfoWindow();
-                }
             }
             catch (Exception ex)
             {
@@ -301,6 +301,10 @@ namespace EpgTimer
             else if (String.Compare("再接続", tag) == 0)
             {
                 ConnectCmd(true);
+            }
+            else if (String.Compare("予約簡易表示", tag) == 0)
+            {
+                ShowInfoWindow();
             }
         }
 
@@ -443,6 +447,7 @@ namespace EpgTimer
 
                 DisconnectServer();
 
+                CommonManager.Instance.DB.ClearRecFileAppend(true);
                 CommonManager.Instance.DB.SetNoAutoReloadEPG(Settings.Instance.NgAutoEpgLoadNW);
                 ChkRegistTCPTimerWork();
 
@@ -564,6 +569,8 @@ namespace EpgTimer
                 CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.EpgData);
                 CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.PlugInFile);
                 CommonManager.Instance.DB.ReloadReserveInfo();
+                CommonManager.Instance.DB.ReloadEpgAutoAddInfo();
+                CommonManager.Instance.DB.ReloadManualAutoAddInfo();
                 CommonManager.Instance.DB.ReloadEpgData();
                 reserveView.UpdateInfo();
                 infoWindowViewModel.UpdateInfo();
@@ -1437,11 +1444,9 @@ namespace EpgTimer
                     break;
                 case UpdateNotifyItem.AutoAddEpgInfo:
                     {
+                        //使用箇所多いので即取得する。
                         CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.AutoAddEpgInfo);
-                        if (CommonManager.Instance.NWMode == false)
-                        {
-                            CommonManager.Instance.DB.ReloadEpgAutoAddInfo();
-                        }
+                        CommonManager.Instance.DB.ReloadEpgAutoAddInfo();
                         autoAddView.epgAutoAddView.UpdateInfo();
 
                         if (Settings.Instance.DisplayReserveAutoAddMissing == true)
@@ -1456,11 +1461,9 @@ namespace EpgTimer
                     break;
                 case UpdateNotifyItem.AutoAddManualInfo:
                     {
+                        //使用箇所多いので即取得する。
                         CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.AutoAddManualInfo);
-                        if (CommonManager.Instance.NWMode == false)
-                        {
-                            CommonManager.Instance.DB.ReloadManualAutoAddInfo();
-                        }
+                        CommonManager.Instance.DB.ReloadManualAutoAddInfo();
                         autoAddView.manualAutoAddView.UpdateInfo();
 
                         if (Settings.Instance.DisplayReserveAutoAddMissing == true)
