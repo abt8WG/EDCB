@@ -748,8 +748,8 @@ namespace EpgTimer
                 {
                     foreach (Window win in Application.Current.Windows)
                     {
-                        // ToolWindow は消さないことにする (InfoWindow用)
-                        if (win.WindowStyle == WindowStyle.ToolWindow)
+                        // InfoWindow は消さない
+                        if (win is InfoWindow)
                             continue;
 
                         win.Visibility = Visibility.Hidden;
@@ -760,8 +760,8 @@ namespace EpgTimer
             {
                 foreach (Window win in Application.Current.Windows)
                 {
-                    // ToolWindow は触らない (InfoWindow用)
-                    if (win.WindowStyle == WindowStyle.ToolWindow)
+                    // InfoWindow は触らない
+                    if (win is InfoWindow)
                         continue;
 
                     win.Visibility = Visibility.Visible;

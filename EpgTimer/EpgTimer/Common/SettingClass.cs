@@ -817,6 +817,7 @@ namespace EpgTimer
         public bool AlwaysSaveEpgSetting { get; set; }
         public SerializableDictionary<string, WINDOWPLACEMENT> Placement { get; set; }
         public List<ListColumnInfo> InfoWindowListColumn { get; set; }
+        public bool InfoWindowTitleIsVisible { get; set; }
         public bool InfoWindowHeaderIsVisible { get; set; }
         public bool InfoWindowTopMost { get; set; }
         public bool InfoWindowEnabled { get; set; }
@@ -999,6 +1000,7 @@ namespace EpgTimer
             AlwaysSaveEpgSetting = false;
             Placement = new SerializableDictionary<string, WINDOWPLACEMENT>();
             InfoWindowListColumn = new List<ListColumnInfo>();
+            InfoWindowTitleIsVisible = true;
             InfoWindowHeaderIsVisible = true;
             InfoWindowTopMost = true;
             InfoWindowEnabled = false;

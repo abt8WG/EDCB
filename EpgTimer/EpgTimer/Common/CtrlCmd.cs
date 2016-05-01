@@ -863,14 +863,14 @@ namespace EpgTimer
         {
             if (Settings.Instance.NWPassword != null && Settings.Instance.NWPassword.Length > 0)
             {
-                // nonce要求
-                byte[] header = new byte[8];
-                BitConverter.GetBytes((uint)CtrlCmd.CMD2_EPG_SRV_AUTH_REQUEST).CopyTo(header, 0);
-                BitConverter.GetBytes(0).CopyTo(header, 4);
-                ns.Write(header, 0, 8);
-
                 try
                 {
+                    // nonce要求
+                    byte[] header = new byte[8];
+                    BitConverter.GetBytes((uint)CtrlCmd.CMD2_EPG_SRV_AUTH_REQUEST).CopyTo(header, 0);
+                    BitConverter.GetBytes(0).CopyTo(header, 4);
+                    ns.Write(header, 0, 8);
+
                     // nonce を受け取る
                     if (ns.Read(header, 0, 8) != 8)
                     {
@@ -912,7 +912,7 @@ namespace EpgTimer
 
                     byte[] nonceHeader = new byte[nonce.Length + 8];
                     nonce.CopyTo(nonceHeader, 0);
-                    Array.Copy(origCmd, 0, nonceHeader, nonce.Length, 8);                    
+                    Array.Copy(origCmd, 0, nonceHeader, nonce.Length, 8);
                     hmac.ComputeHash(nonceHeader).CopyTo(cmd, 8);
 
                     if (origCmd.Length > 8)
@@ -926,8 +926,9 @@ namespace EpgTimer
                     // オリジナルのコマンドパケットを認証応答パケットの後ろに追加する
                     origCmd.CopyTo(cmd, sizeAuthPacket);
                 }
-                catch (IOException)
+                catch (Exception ex)
                 {
+                    System.Diagnostics.Trace.WriteLine(ex);
                     return ErrCode.CMD_ERR;
                 }
             }
@@ -972,7 +973,15 @@ namespace EpgTimer
                         }
 
                         // 送信: 認証応答パケットとコマンドパケットをまとめて送る
-                        ns.Write(head, 0, head.Length);
+                        try
+                        {
+                            ns.Write(head, 0, head.Length);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Trace.WriteLine(ex);
+                            return ErrCode.CMD_ERR;
+                        }
 
                         // 受信
                         return ReadCmdResponse(ns, ref res);

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -45,10 +46,20 @@ namespace EpgTimer
             {
                 StartTime.DisplayMemberBinding = new System.Windows.Data.Binding("StartTimeShort");
             }
-            listView_InfoWindow.Style = null;
-            girdView_InfoWindow.ColumnHeaderContainerStyle = TryFindResource(Settings.Instance.InfoWindowHeaderIsVisible ? "VisibleHeader" : "HiddenHeader") as Style;
+
+            MouseLeftButtonDown += (s, e) => { DragMove(); };
+            UpdateWindowState();
 
             DataContext = dataContext;
+        }
+
+        private void UpdateWindowState()
+        {
+            MenuItem_Header.IsChecked = Settings.Instance.InfoWindowHeaderIsVisible;
+            girdView_InfoWindow.ColumnHeaderContainerStyle = TryFindResource(Settings.Instance.InfoWindowHeaderIsVisible ? "VisibleHeader" : "HiddenHeader") as Style;
+
+            WindowStyle = Settings.Instance.InfoWindowTitleIsVisible ? WindowStyle.ToolWindow : WindowStyle.None;
+            ResizeMode = Settings.Instance.InfoWindowTitleIsVisible ? ResizeMode.CanResize : ResizeMode.NoResize;
         }
 
         private void NotifyIcon_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -90,15 +101,21 @@ namespace EpgTimer
             }
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_HeaderClick(object sender, EventArgs e)
+        {
+            Settings.Instance.InfoWindowHeaderIsVisible = !Settings.Instance.InfoWindowHeaderIsVisible;
+            UpdateWindowState();
+        }
+
+        private void MenuItem_CloseClick(object sender, EventArgs e)
         {
             TrueClose();
         }
 
         private void listView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Settings.Instance.InfoWindowHeaderIsVisible = !Settings.Instance.InfoWindowHeaderIsVisible;
-            girdView_InfoWindow.ColumnHeaderContainerStyle = TryFindResource(Settings.Instance.InfoWindowHeaderIsVisible ? "VisibleHeader" : "HiddenHeader") as Style;
+            Settings.Instance.InfoWindowTitleIsVisible = !Settings.Instance.InfoWindowTitleIsVisible;
+            UpdateWindowState();
         }
     }
 }

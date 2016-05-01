@@ -9,6 +9,9 @@
         Topmost="{Binding Path=IsTopMost}" ShowInTaskbar="False" Closing="Window_Closing" WindowStyle="ToolWindow">
     <local:RestorableWindow.Resources>
         <ResourceDictionary>
+            <Style TargetType="{x:Type ListViewItem}">
+                <Setter Property="IsHitTestVisible" Value="False"/>
+            </Style>
             <Style x:Key="VisibleHeader" TargetType="{x:Type GridViewColumnHeader}">
                 <Setter Property="Visibility" Value="Visible" />
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -25,10 +28,11 @@
         <Grid.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="最前面に表示" IsCheckable="True" IsChecked="{Binding Path=IsTopMost, Mode=TwoWay}"/>
-                <MenuItem Header="消す" Click="MenuItem_Click"/>
+                <MenuItem Name="MenuItem_Header" Header="ヘッダーを表示" IsCheckable="True" Click="MenuItem_HeaderClick" />
+                <MenuItem Header="消す" Click="MenuItem_CloseClick"/>
             </ContextMenu>
         </Grid.ContextMenu>
-        <ListView Name="listView_InfoWindow" ItemsSource="{Binding Path=ReserveList}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Style="{StaticResource DataListViewStyle}" MouseDoubleClick="listView_MouseDoubleClick">
+        <ListView Name="listView_InfoWindow" ItemsSource="{Binding Path=ReserveList}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="listView_MouseDoubleClick">
             <ListView.View>
                 <GridView x:Name="girdView_InfoWindow" />
             </ListView.View>
