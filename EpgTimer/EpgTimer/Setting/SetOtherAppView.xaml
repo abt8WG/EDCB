@@ -5,11 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="780">
-    <UserControl.Resources>
-        <Style TargetType="{x:Type TextBox}">
-            <Setter Property="InputMethod.PreferredImeState" Value="Off" />
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <TabControl Name="tabControl">
             <TabItem Header="TVTest連携" Name="tabItem_tvtest">
@@ -33,10 +28,10 @@
                             <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" Name="label2" Content="TVTest.exeパス" Margin="4" />
-                        <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_exe" Margin="4" VerticalContentAlignment="Center" />
-                        <Button Grid.Column="2" Grid.Row="0" Name="button_exe" Content="開く" Margin="20,4" Width="56" Click="button_exe_Click" />
+                        <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_exe" Margin="0,4" />
+                        <Button Grid.Column="2" Grid.Row="0" Name="button_exe" Content="開く" Margin="20,4,0,4" Click="button_exe_Click" />
                         <Label Grid.Column="0" Grid.Row="1" Name="label4" Content="コマンドライン引数" Margin="4" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_cmd" VerticalContentAlignment="Center" Margin="4"/>
+                        <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_cmd" Margin="0,4"/>
                         <TextBlock Grid.Column="1" Grid.Row="2" Name="label5" Text="(BonDriverに関するオプションは自動的に付加されます)" Margin="4,0,4,4" TextWrapping="Wrap" />
                     </Grid>
                     <Grid Grid.Row="2" Margin="0,8">
@@ -51,50 +46,52 @@
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" Name="label3" Content="視聴に使用するBonDriver" Margin="4" />
                         <ListBox Grid.Column="0" Grid.Row="1" Name="listBox_bon" Margin="40,4,0,4" />
-                        <Button Grid.Column="1" Grid.Row="1" Name="button_del" Content="削除" Margin="20,4" Width="56" Height="25" Click="button_del_Click" VerticalAlignment="Top" />
+                        <Button Grid.Column="1" Grid.Row="1" Name="button_del" Content="削除" Margin="20,4,0,4" Click="button_del_Click" VerticalAlignment="Top" />
                         <ComboBox Grid.Column="0" Grid.Row="2" Name="comboBox_bon" Margin="40,4,0,4" />
-                        <Button Grid.Column="1" Grid.Row="2" Name="button_add" Content="追加" Margin="20,4" Width="56" Height="25" Click="button_add_Click" />
+                        <Button Grid.Column="1" Grid.Row="2" Name="button_add" Content="追加" Margin="20,4,0,4" Click="button_add_Click" />
                     </Grid>
-                    <StackPanel Grid.Row="3" Margin="4,8">
-                        <CheckBox Name="checkBox_nwTvMode" Margin="0,4">
+                    <StackPanel Grid.Row="3" Margin="0,8">
+                        <CheckBox Name="checkBox_nwTvMode" Margin="4">
                             <TextBlock Text="NetworkTVモード(録画用アプリやEpgTimerSrvからのUDP、TCP送信)で視聴する" TextWrapping="Wrap" />
                         </CheckBox>
-                        <TextBlock Name="label9" Text="NetworkTVモードの送信方式 (追っかけ再生はNetworkTVモードで動作します。使用する場合はチェックしてください)" TextWrapping="Wrap" Margin="0,4"/>
+                        <TextBlock Name="label9" Text="NetworkTVモードの送信方式 (追っかけ再生はNetworkTVモードで動作します。使用する場合はチェックしてください)" TextWrapping="Wrap" Margin="4"/>
                         <WrapPanel Margin="40,0">
-                            <CheckBox Name="checkBox_nwUDP" Content="UDP有効" Width="100" />
-                            <CheckBox Name="checkBox_nwTCP" Content="TCP有効" Width="100" />
+                            <CheckBox Name="checkBox_nwUDP" Content="UDP有効" MinWidth="80" Margin="0,4,10,0" />
+                            <CheckBox Name="checkBox_nwTCP" Content="TCP有効" MinWidth="80" Margin="0,4,10,0" />
                         </WrapPanel>
                     </StackPanel>
                 </Grid>
             </TabItem>
             <TabItem Header="ファイル再生" Name="tabItem_play">
-                <Grid Margin="20,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition  />
-                        <ColumnDefinition Width="auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" />
-                    </Grid.RowDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" Name="label6" Content="再生アプリのexeパス" Margin="4" />
-                    <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_playExe" Margin="4" VerticalContentAlignment="Center" />
-                    <Button Grid.Column="2" Grid.Row="0" Name="button_playExe" Content="開く" Margin="10,4" Width="56" Click="button_playExe_Click" />
-                    <Label Grid.Column="0" Grid.Row="1" Name="label7" Content="コマンドライン引数" Margin="4" />
-                    <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_playCmd" Margin="4" />
-                    <CheckBox Grid.Column="1" Grid.Row="2" Name="checkBox_playOnAirWithExe" Margin="4">
-                        <TextBlock Text="追っかけ再生にも使用する" TextWrapping="Wrap" />
-                    </CheckBox>
-                    <TextBlock Grid.Column="1" Grid.Row="3" Name="label8" TextWrapping="Wrap" Margin="5" LineHeight="20">
+                <ScrollViewer>
+                    <Grid Margin="20,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition  />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" Name="label6" Content="再生アプリのexeパス" Margin="4" />
+                        <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_playExe" Margin="4" />
+                        <Button Grid.Column="2" Grid.Row="0" Name="button_playExe" Content="開く" Margin="10,4" Click="button_playExe_Click" />
+                        <Label Grid.Column="0" Grid.Row="1" Name="label7" Content="コマンドライン引数" Margin="4" />
+                        <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_playCmd" Margin="4" />
+                        <CheckBox Grid.Column="1" Grid.Row="2" Name="checkBox_playOnAirWithExe" Margin="4">
+                            <TextBlock Text="追っかけ再生にも使用する" TextWrapping="Wrap" />
+                        </CheckBox>
+                        <TextBlock Grid.Column="1" Grid.Row="3" Name="label8" TextWrapping="Wrap" Margin="5" LineHeight="20">
                         再生アプリのexeパスが未指定の場合は規定の再生アプリを使用します。<LineBreak/>
                         コマンドラインでは、$FilePath$:ファイルパス、$FileNameExt$:ファイル名、が使用出来ます。<LineBreak/>
                         ※再生アプリが未指定の場合も、コマンドラインをファイル名として展開します。<LineBreak/>
                         ※空白は$FilePath$相当です。
-                    </TextBlock>
-                </Grid>
+                        </TextBlock>
+                    </Grid>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </Grid>

@@ -26,6 +26,8 @@ namespace EpgTimer.Setting
 
         private MenuSettingData ctxmSetInfo;
 
+        //Dictionary<string, ColorReferenceViewItem> colorReference;
+
         public SetEpgView()
         {
             InitializeComponent();
@@ -108,63 +110,66 @@ namespace EpgTimer.Setting
                 var setComboColor1 = new Action<string, ComboBox>((name, cmb) =>
                 {
                     cmb.ItemsSource = colorReference.Values;
-                    try 
-                    {
-                        cmb.SelectedItem = colorReference[name];
-                    }
-                    catch
-                    {
-                        cmb.SelectedItem = colorReference["カスタム"];
-                    }
+                    cmb.SelectedItem = colorReference.ContainsKey(name) ? colorReference[name] : colorReference["カスタム"];
                 });
-                var setComboColors = new Action<List<string>, Panel>((list, pnl) =>
+                var setButtonColor1 = new Action<uint, Button>((clr, btn) => btn.Background = new SolidColorBrush(ColorDef.FromUInt(clr)));
+                var setColors = new Action<UIElement, List<string>, List<uint>>((ui, stockColors, custColors) =>
                 {
-                    foreach (var cmb in pnl.Children.OfType<ComboBox>())
+                    List<UIElement> uiList = new List<UIElement>();
+                    uiList.Add(ui);
+                    for (int n = 0; n < uiList.Count; n++)
                     {
-                        int idx = int.Parse((string)cmb.Tag);
-                        setComboColor1(list[idx], cmb);
+                        foreach (var child in LogicalTreeHelper.GetChildren(uiList[n]))
+                        {
+                            if (child is Control)
+                            {
+                                int index = int.Parse((string)(child as Control).Tag ?? "-1");
+                                if (index >= 0)
+                                {
+                                    if (child is ComboBox && index < stockColors.Count)
+                                    {
+                                        setComboColor1(stockColors[index], child as ComboBox);
+                                    }
+                                    else if (child is Button && index < custColors.Count)
+                                    {
+                                        setButtonColor1(custColors[index], child as Button);
+                                    }
+                                }
+                            }
+                            else if (child is UIElement)
+                            {
+                                uiList.Add(child as UIElement);
+                            }
+                        }
                     }
                 });
 
                 //番組表のフォント色と予約枠色はSettingsが個別のため個別処理。
                 //これをまとめて出来るようにSettingsを変えると以前の設定が消える。
+                // [番組表] - [基本]
                 setComboColor1(Settings.Instance.TitleColor1, comboBox_colorTitle1);
+                setButtonColor1(Settings.Instance.TitleCustColor1, button_colorTitle1);
                 setComboColor1(Settings.Instance.TitleColor2, comboBox_colorTitle2);
-                setComboColors(Settings.Instance.ContentColorList, grid_EpgColors);
+                setButtonColor1(Settings.Instance.TitleCustColor2, button_colorTitle2);
+                // [番組表] - [色1]
+                setColors(groupEpgColors, Settings.Instance.ContentColorList, Settings.Instance.ContentCustColorList);
                 setComboColor1(Settings.Instance.ReserveRectColorNormal, comboBox_reserveNormal);
                 setComboColor1(Settings.Instance.ReserveRectColorNo, comboBox_reserveNo);
                 setComboColor1(Settings.Instance.ReserveRectColorNoTuner, comboBox_reserveNoTuner);
                 setComboColor1(Settings.Instance.ReserveRectColorWarning, comboBox_reserveWarning);
                 setComboColor1(Settings.Instance.ReserveRectColorAutoAddMissing, comboBox_reserveAutoAddMissing);
-                setComboColors(Settings.Instance.EpgEtcColors, grid_EpgTimeColors);
-                setComboColors(Settings.Instance.EpgEtcColors, grid_EpgEtcColors);
-                setComboColors(Settings.Instance.TunerServiceColors, grid_TunerFontColor);
-                setComboColors(Settings.Instance.TunerServiceColors, grid_TunerColors);
+                setColors(groupEpgColorsReserve, null, Settings.Instance.ContentCustColorList);
+                // [番組表] - [色2]
+                setColors(groupEpgTimeColors, Settings.Instance.EpgEtcColors, Settings.Instance.EpgEtcCustColors);
+                setColors(groupEpgEtcColors, Settings.Instance.EpgEtcColors, Settings.Instance.EpgEtcCustColors);
 
-                var setButtonColor1 = new Action<uint, Button>((clr, btn) => btn.Background = new SolidColorBrush(ColorDef.FromUInt(clr)));
-                var setButtonColors = new Action<List<uint>, Panel>((list, pnl) =>
-                {
-                    foreach (var btn in pnl.Children.OfType<Button>())
-                    {
-                        int idx = int.Parse((string)btn.Tag);
-                        setButtonColor1(list[idx], btn);
-                    }
-                });
-                setButtonColor1(Settings.Instance.TitleCustColor1, button_colorTitle1);
-                setButtonColor1(Settings.Instance.TitleCustColor2, button_colorTitle2);
-                setButtonColors(Settings.Instance.ContentCustColorList, grid_EpgColors);
-                setButtonColors(Settings.Instance.ContentCustColorList, grid_EpgColorsReserve);
-                setButtonColors(Settings.Instance.EpgEtcCustColors, grid_EpgTimeColors);
-                setButtonColors(Settings.Instance.EpgEtcCustColors, grid_EpgEtcColors);
-                setButtonColors(Settings.Instance.TunerServiceCustColors, grid_TunerFontColor);
-                setButtonColors(Settings.Instance.TunerServiceCustColors, grid_TunerColors);
+                // [使用予定チューナー] - [基本]
+                setColors(groupTunerFontColor, Settings.Instance.TunerServiceColors, Settings.Instance.TunerServiceCustColors);
+                // [使用予定チューナー] - [色]
+                setColors(groupTunerColors, Settings.Instance.TunerServiceColors, Settings.Instance.TunerServiceCustColors);
 
-                //録画済み一覧画面
-                textBox_dropErrIgnore.Text = Settings.Instance.RecInfoDropErrIgnore.ToString();
-                textBox_dropWrnIgnore.Text = Settings.Instance.RecInfoDropWrnIgnore.ToString();
-                textBox_scrambleIgnore.Text = Settings.Instance.RecInfoScrambleIgnore.ToString();
+                // [録画済み一覧]
                 checkBox_playDClick.IsChecked = Settings.Instance.PlayDClick;
-                checkBox_recinfo_errCritical.IsChecked = Settings.Instance.RecinfoErrCriticalDrops;
                 checkBox_recNoYear.IsChecked = Settings.Instance.RecInfoNoYear;
                 checkBox_recNoSecond.IsChecked = Settings.Instance.RecInfoNoSecond;
                 checkBox_recNoDurSecond.IsChecked = Settings.Instance.RecInfoNoDurSecond;
@@ -175,31 +180,29 @@ namespace EpgTimer.Setting
                 {
                     checkBox_CacheKeepConnect.IsEnabled = false;//{Binding}を破棄しているので注意
                 }
-                setComboColors(Settings.Instance.RecEndColors, grid_RecInfoBackColors);
-                setButtonColors(Settings.Instance.RecEndCustColors, grid_RecInfoBackColors);
+                textBox_dropErrIgnore.Text = Settings.Instance.RecInfoDropErrIgnore.ToString();
+                textBox_dropWrnIgnore.Text = Settings.Instance.RecInfoDropWrnIgnore.ToString();
+                textBox_scrambleIgnore.Text = Settings.Instance.RecInfoScrambleIgnore.ToString();
+                checkBox_recinfo_errCritical.IsChecked = Settings.Instance.RecinfoErrCriticalDrops;
+                setColors(groupRecInfoBackColors, Settings.Instance.RecEndColors, Settings.Instance.RecEndCustColors);
 
-                //予約一覧画面
+                // [予約一覧・共通] - [基本]
                 this.ctxmSetInfo = Settings.Instance.MenuSet.Clone();
                 checkBox_displayAutoAddMissing.IsChecked = Settings.Instance.DisplayReserveAutoAddMissing;
+                textBox_DisplayJumpTime.Text = Settings.Instance.DisplayNotifyJumpTime.ToString();
                 checkBox_resNoYear.IsChecked = Settings.Instance.ResInfoNoYear;
                 checkBox_resNoSecond.IsChecked = Settings.Instance.ResInfoNoSecond;
                 checkBox_resNoDurSecond.IsChecked = Settings.Instance.ResInfoNoDurSecond;
-
-                setComboColor1(Settings.Instance.ListDefColor, cmb_ListDefFontColor);
-                setComboColors(Settings.Instance.RecModeFontColors, grid_ReserveRecModeColors);
-                setComboColors(Settings.Instance.ResBackColors, grid_ReserveBackColors);
-                setComboColors(Settings.Instance.StatColors, grid_StatColors);
-
-                setButtonColor1(Settings.Instance.ListDefCustColor, btn_ListDefFontColor);
-                setButtonColors(Settings.Instance.RecModeFontCustColors, grid_ReserveRecModeColors);
-                setButtonColors(Settings.Instance.ResBackCustColors, grid_ReserveBackColors);
-                setButtonColors(Settings.Instance.StatCustColors, grid_StatColors);
-
-                textBox_DisplayJumpTime.Text = Settings.Instance.DisplayNotifyJumpTime.ToString();
                 checkBox_LaterTimeUse.IsChecked = Settings.Instance.LaterTimeUse;
                 textBox_LaterTimeHour.Text = (Settings.Instance.LaterTimeHour + 24).ToString();
                 checkBox_displayPresetOnSearch.IsChecked = Settings.Instance.DisplayPresetOnSearch;
                 checkBox_nekopandaToolTip.IsChecked = Settings.Instance.RecItemToolTip;
+                // [予約一覧・共通] - [色]
+                setComboColor1(Settings.Instance.ListDefColor, cmb_ListDefFontColor);
+                setButtonColor1(Settings.Instance.ListDefCustColor, btn_ListDefFontColor);
+                setColors(groupReserveRecModeColors, Settings.Instance.RecModeFontColors, Settings.Instance.RecModeFontCustColors);
+                setColors(groupReserveBackColors, Settings.Instance.ResBackColors, Settings.Instance.ResBackCustColors);
+                setColors(groupStatColors, Settings.Instance.StatColors, Settings.Instance.StatCustColors);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
@@ -322,83 +325,94 @@ namespace EpgTimer.Setting
                 Settings.SetCustomEpgTabInfoID();
 
                 var getComboColor1 = new Func<ComboBox, string>((cmb) => ((ColorReferenceViewItem)(cmb.SelectedItem)).ColorName);
-                var getComboColors = new Action<List<string>, Panel>((list, pnl) =>
+                var getButtonColor1 = new Func<Button, uint>((btn) => ColorDef.ToUInt((btn.Background as SolidColorBrush).Color));
+                var getColors = new Action<UIElement, List<string>, List<uint>>((ui, stockColors, custColors) =>
                 {
-                    foreach (var cmb in pnl.Children.OfType<ComboBox>())
+                    List<UIElement> uiList = new List<UIElement>();
+                    uiList.Add(ui);
+                    for (int n = 0; n < uiList.Count; n++)
                     {
-                        int idx = int.Parse((string)cmb.Tag);
-                        list[idx] = getComboColor1(cmb);
+                        foreach (var child in LogicalTreeHelper.GetChildren(uiList[n]))
+                        {
+                            if (child is Control)
+                            {
+                                int index = int.Parse((string)(child as Control).Tag ?? "-1");
+                                if (index >= 0)
+                                {
+                                    if (child is ComboBox && index < stockColors.Count)
+                                    {
+                                        stockColors[index] = getComboColor1(child as ComboBox);
+                                    }
+                                    else if (child is Button && index < custColors.Count)
+                                    {
+                                        custColors[index] = getButtonColor1(child as Button);
+                                    }
+                                }
+                            }
+                            else if (child is UIElement)
+                            {
+                                uiList.Add(child as UIElement);
+                            }
+                        }
                     }
                 });
+
+                // [番組表] - [基本]
                 Settings.Instance.TitleColor1 = getComboColor1(comboBox_colorTitle1);
+                Settings.Instance.TitleCustColor1 = getButtonColor1(button_colorTitle1);
                 Settings.Instance.TitleColor2 = getComboColor1(comboBox_colorTitle2);
-                getComboColors(Settings.Instance.ContentColorList, grid_EpgColors);
+                Settings.Instance.TitleCustColor2 = getButtonColor1(button_colorTitle2);
+                // [番組表] - [色1]
+                getColors(groupEpgColors, Settings.Instance.ContentColorList, Settings.Instance.ContentCustColorList);
                 Settings.Instance.ReserveRectColorNormal = getComboColor1(comboBox_reserveNormal);
                 Settings.Instance.ReserveRectColorNo = getComboColor1(comboBox_reserveNo);
                 Settings.Instance.ReserveRectColorNoTuner = getComboColor1(comboBox_reserveNoTuner);
                 Settings.Instance.ReserveRectColorWarning = getComboColor1(comboBox_reserveWarning);
                 Settings.Instance.ReserveRectColorAutoAddMissing = getComboColor1(comboBox_reserveAutoAddMissing);
-                getComboColors(Settings.Instance.EpgEtcColors, grid_EpgTimeColors);
-                getComboColors(Settings.Instance.EpgEtcColors, grid_EpgEtcColors);
-                getComboColors(Settings.Instance.TunerServiceColors, grid_TunerFontColor);
-                getComboColors(Settings.Instance.TunerServiceColors, grid_TunerColors);
+                getColors(groupEpgColorsReserve, null, Settings.Instance.ContentCustColorList);
+                // [番組表] - [色2]
+                getColors(groupEpgTimeColors, Settings.Instance.EpgEtcColors, Settings.Instance.EpgEtcCustColors);
+                getColors(groupEpgEtcColors, Settings.Instance.EpgEtcColors, Settings.Instance.EpgEtcCustColors);
 
-                var getButtonColor1 = new Func<Button, uint>((btn) => ColorDef.ToUInt((btn.Background as SolidColorBrush).Color));
-                var getButtonColors = new Action<List<uint>, Panel>((list, pnl) =>
-                {
-                    foreach (var btm in pnl.Children.OfType<Button>())
-                    {
-                        int idx = int.Parse((string)btm.Tag);
-                        list[idx] = getButtonColor1(btm);
-                    }
-                });
+                // [使用予定チューナー] - [基本]
+                getColors(groupTunerFontColor, Settings.Instance.TunerServiceColors, Settings.Instance.TunerServiceCustColors);
+                // [使用予定チューナー] - [色]
+                getColors(groupTunerColors, Settings.Instance.TunerServiceColors, Settings.Instance.TunerServiceCustColors);
 
-                Settings.Instance.TitleCustColor1 = getButtonColor1(button_colorTitle1);
-                Settings.Instance.TitleCustColor2 = getButtonColor1(button_colorTitle2);
-                getButtonColors(Settings.Instance.ContentCustColorList, grid_EpgColors);
-                getButtonColors(Settings.Instance.ContentCustColorList, grid_EpgColorsReserve);
-                getButtonColors(Settings.Instance.EpgEtcCustColors, grid_EpgTimeColors);
-                getButtonColors(Settings.Instance.EpgEtcCustColors, grid_EpgEtcColors);
-                getButtonColors(Settings.Instance.TunerServiceCustColors, grid_TunerFontColor);
-                getButtonColors(Settings.Instance.TunerServiceCustColors, grid_TunerColors);
-
-                //録画済み一覧画面
+                // [録画済み一覧]
                 Settings.Instance.PlayDClick = (checkBox_playDClick.IsChecked == true);
+                Settings.Instance.RecInfoNoYear = (checkBox_recNoYear.IsChecked == true);
+                Settings.Instance.RecInfoNoSecond = (checkBox_recNoSecond.IsChecked == true);
+                Settings.Instance.RecInfoNoDurSecond = (checkBox_recNoDurSecond.IsChecked == true);
+                Settings.Instance.RecInfoExtraDataCache = (checkBox_ChacheOn.IsChecked == true);
+                Settings.Instance.RecInfoExtraDataCacheOptimize = (checkBox_CacheOptimize.IsChecked == true);
+                if (checkBox_CacheKeepConnect.IsEnabled)
+                {
+                    Settings.Instance.RecInfoExtraDataCacheKeepConnect = (checkBox_CacheKeepConnect.IsChecked == true);
+                }
                 Settings.Instance.RecInfoDropErrIgnore = mutil.MyToNumerical(textBox_dropErrIgnore, Convert.ToInt64, Settings.Instance.RecInfoDropErrIgnore);
                 Settings.Instance.RecInfoDropWrnIgnore = mutil.MyToNumerical(textBox_dropWrnIgnore, Convert.ToInt64, Settings.Instance.RecInfoDropWrnIgnore);
                 Settings.Instance.RecInfoScrambleIgnore = mutil.MyToNumerical(textBox_scrambleIgnore, Convert.ToInt64, Settings.Instance.RecInfoScrambleIgnore);
                 Settings.Instance.RecinfoErrCriticalDrops = (checkBox_recinfo_errCritical.IsChecked == true);
-                Settings.Instance.RecInfoNoYear = (checkBox_recNoYear.IsChecked == true);
-                Settings.Instance.RecInfoNoSecond = (checkBox_recNoSecond.IsChecked == true);
-                Settings.Instance.RecInfoNoDurSecond = (checkBox_recNoDurSecond.IsChecked == true);
-                getComboColors(Settings.Instance.RecEndColors, grid_RecInfoBackColors);
-                getButtonColors(Settings.Instance.RecEndCustColors, grid_RecInfoBackColors);
-                Settings.Instance.RecInfoExtraDataCache = (checkBox_ChacheOn.IsChecked == true);
-                Settings.Instance.RecInfoExtraDataCacheOptimize = (checkBox_CacheOptimize.IsChecked == true);
-                Settings.Instance.RecInfoExtraDataCacheKeepConnect = (checkBox_CacheKeepConnect.IsChecked == true);
+                getColors(groupRecInfoBackColors, Settings.Instance.RecEndColors, Settings.Instance.RecEndCustColors);
 
-                //予約一覧画面
+                // [予約一覧・共通] - [基本]
                 Settings.Instance.MenuSet = this.ctxmSetInfo.Clone();
                 Settings.Instance.DisplayReserveAutoAddMissing = (checkBox_displayAutoAddMissing.IsChecked != false);
+                Settings.Instance.DisplayNotifyJumpTime = mutil.MyToNumerical(textBox_DisplayJumpTime, Convert.ToDouble, Double.MaxValue, 0, 3);
                 Settings.Instance.ResInfoNoYear = (checkBox_resNoYear.IsChecked == true);
                 Settings.Instance.ResInfoNoSecond = (checkBox_resNoSecond.IsChecked == true);
                 Settings.Instance.ResInfoNoDurSecond = (checkBox_resNoDurSecond.IsChecked == true);
-
-                Settings.Instance.ListDefColor = getComboColor1(cmb_ListDefFontColor);
-                getComboColors(Settings.Instance.RecModeFontColors, grid_ReserveRecModeColors);
-                getComboColors(Settings.Instance.ResBackColors, grid_ReserveBackColors);
-                getComboColors(Settings.Instance.StatColors, grid_StatColors);
-
-                Settings.Instance.ListDefCustColor = getButtonColor1(btn_ListDefFontColor);
-                getButtonColors(Settings.Instance.RecModeFontCustColors, grid_ReserveRecModeColors);
-                getButtonColors(Settings.Instance.ResBackCustColors, grid_ReserveBackColors);
-                getButtonColors(Settings.Instance.StatCustColors, grid_StatColors);
-
-                Settings.Instance.DisplayNotifyJumpTime = mutil.MyToNumerical(textBox_DisplayJumpTime, Convert.ToDouble, Double.MaxValue, 0, 3);
                 Settings.Instance.LaterTimeUse = (checkBox_LaterTimeUse.IsChecked == true);
                 Settings.Instance.LaterTimeHour = mutil.MyToNumerical(textBox_LaterTimeHour, Convert.ToInt32, 36, 24, 28) - 24;
                 Settings.Instance.DisplayPresetOnSearch = (checkBox_displayPresetOnSearch.IsChecked == true);
                 Settings.Instance.RecItemToolTip = (checkBox_nekopandaToolTip.IsChecked == true);
+                // [予約一覧・共通] - [色]
+                Settings.Instance.ListDefColor = getComboColor1(cmb_ListDefFontColor);
+                Settings.Instance.ListDefCustColor = getButtonColor1(btn_ListDefFontColor);
+                getColors(groupReserveRecModeColors, Settings.Instance.RecModeFontColors, Settings.Instance.RecModeFontCustColors);
+                getColors(groupReserveBackColors, Settings.Instance.ResBackColors, Settings.Instance.ResBackCustColors);
+                getColors(groupStatColors, Settings.Instance.StatColors, Settings.Instance.StatCustColors);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }

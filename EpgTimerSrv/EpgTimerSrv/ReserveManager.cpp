@@ -268,13 +268,13 @@ bool CReserveManager::GetReserveData(DWORD id, RESERVE_DATA* reserveData, bool g
 	return false;
 }
 
-bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus)
+bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus, bool noReportNotify)
 {
 	CBlockLock lock(&this->managerLock);
-	return AddReserveData2(reserveList, setComment, setReserveStatus).size() > 0;
+	return AddReserveData2(reserveList, setComment, setReserveStatus, noReportNotify).size() > 0;
 }
 
-vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus)
+vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus, bool noReportNotify)
 {
 	__int64 minStartTime = LLONG_MAX;
 	__int64 now = GetNowI64Time();
@@ -309,7 +309,10 @@ vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERV
 		this->reserveText.SaveText();
 		ReloadBankMap(minStartTime);
 		CheckAutoDel();
-		AddNotifyAndPostBat(NOTIFY_UPDATE_RESERVE_INFO);
+		//自動登録リスト更新時(EPG更新時など)にNOTIFYの発生を抑制するため
+		if( noReportNotify != true){
+			AddNotifyAndPostBat(NOTIFY_UPDATE_RESERVE_INFO);
+		}
 		AddPostBatWork(batWorkList, L"PostAddReserve.bat");
 	}
 	return addList;
@@ -2034,7 +2037,7 @@ vector<pair<DWORD, vector<REC_FILE_BASIC_INFO> > > CReserveManager::UpdateAndMer
 
 bool CReserveManager::AutoAddReserveEPG(
 	const EPG_AUTO_ADD_DATA& data, int autoAddHour_, bool chkGroupEvent_,
-	vector<RESERVE_DATA>* reserveData)
+	vector<RESERVE_DATA>* reserveData, bool noReportNotify)
 {
 	CBlockLock lock(&this->managerLock);
 
@@ -2098,6 +2101,7 @@ bool CReserveManager::AutoAddReserveEPG(
 					item.startTime = info.start_time;
 					item.startTimeEpg = item.startTime;
 					item.durationSecond = info.durationSec;
+					//this->epgDB.SearchServiceName(info.original_network_id, info.transport_stream_id, info.service_id, item.stationName);
 					item.stationName = info.serviceName;
 					item.originalNetworkID = info.original_network_id;
 					item.transportStreamID = info.transport_stream_id;
@@ -2127,7 +2131,7 @@ bool CReserveManager::AutoAddReserveEPG(
 		}
 	}
 	if (setList.empty() == false) {
-		auto addTmp = AddReserveData2(setList, true);
+		auto addTmp = AddReserveData2(setList, true, false, noReportNotify);
 		if (addTmp.size() > 0) {
 			modified = true;
 			addList.insert(addList.end(), addTmp.begin(), addTmp.end());

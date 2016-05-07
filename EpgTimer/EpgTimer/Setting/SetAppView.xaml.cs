@@ -65,21 +65,8 @@ namespace EpgTimer.Setting
             // 保存できない項目は IsEnabled = false にする
             if (IniFileHandler.CanUpdateInifile == false)
             {
-                tabItem1.Foreground = Brushes.Gray; // 録画動作
-                groupBox1.Foreground = Brushes.Gray; //  録画、EPG取得終了後のデフォルト動作
-                CommonManager.Instance.VUtil.DisableControlChildren(groupBox2); // 録画時の処理
+                CommonManager.Instance.VUtil.DisableControlChildren(tabItem1);
             }
-            radioButton_none.IsEnabled = IniFileHandler.CanUpdateInifile; // 何もしない
-            radioButton_standby.IsEnabled = IniFileHandler.CanUpdateInifile; // スタンバイ
-            radioButton_suspend.IsEnabled = IniFileHandler.CanUpdateInifile; // 休止
-            radioButton_shutdown.IsEnabled = IniFileHandler.CanUpdateInifile; // シャットダウン
-            checkBox_reboot.IsEnabled = IniFileHandler.CanUpdateInifile; // スタンバイ or 休止復帰後に再起動を行う
-            label1.IsEnabled = IniFileHandler.CanUpdateInifile; // 復帰処理開始時間
-            label4.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画開始
-            textBox_pcWakeTime.IsEnabled = IniFileHandler.CanUpdateInifile;
-            label2.IsEnabled = IniFileHandler.CanUpdateInifile; // 分前 (再起動ありの場合は＋5分)
-            label5.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画後動作
-            button_standbyCtrl.IsEnabled = IniFileHandler.CanReadInifile; // 抑制条件
 
             // 読める設定のみ項目に反映させる
             if (IniFileHandler.CanReadInifile)
@@ -274,14 +261,6 @@ namespace EpgTimer.Setting
             if (CommonManager.Instance.NWMode == true)
             {
                 checkBox_tcpServer.IsEnabled = false; // ネットワーク接続を許可する
-                label41.IsEnabled = false; // ポート
-                textBox_tcpPort.IsEnabled = false;
-                label_tcpAcl.IsEnabled = false; // アクセス制御
-                textBox_tcpAcl.IsEnabled = false;
-                label_tcpPassword.IsEnabled = false; // パスワード
-                passwordBox_tcpPassword.IsEnabled = false;
-                label_tcpResTo.IsEnabled = false; // 無通信タイムアウト(秒)
-                textBox_tcpResTo.IsEnabled = false;
 
                 checkBox_timeSync.IsEnabled = false; // EPG取得時に放送波時間でPC時計を同期する
                 checkBox_srvResident.IsEnabled = false; // EpgTimerSrvを常駐させる
@@ -292,8 +271,6 @@ namespace EpgTimer.Setting
                 checkBox_suspendClose.IsEnabled = true; // 休止／スタンバイ移行時にEpgTimerNWを終了する
                 checkBox_ngAutoEpgLoad.IsEnabled = true; // EPGデータを自動的に読み込まない
                 checkBox_keepTCPConnect.IsEnabled = true; // EpgTimerSrvとの接続維持を試みる
-                textBox_keepTCPConnect.IsEnabled = true;
-                label_keepTCPConnect.IsEnabled = true; // 分間隔
             }
             if (ServiceCtrlClass.IsStarted("EpgTimer Service") == true)
             {
@@ -302,8 +279,6 @@ namespace EpgTimer.Setting
 
             checkBox_autoDelRecInfo.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画結果を自動的に削除する
             checkBox_autoDelRecFile.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画ファイルも削除する
-            label42.IsEnabled = IniFileHandler.CanUpdateInifile; // 保持件数
-            textBox_autoDelRecInfo.IsEnabled = IniFileHandler.CanUpdateInifile;
             checkBox_srvSaveNotifyLog.IsEnabled = IniFileHandler.CanUpdateInifile; // 情報通知ログをファイルに保存する
             checkBox_srvSaveDebugLog.IsEnabled = IniFileHandler.CanUpdateInifile; // デバッグ出力をファイルに保存する
             if (IniFileHandler.CanUpdateInifile == false)
@@ -369,7 +344,8 @@ namespace EpgTimer.Setting
             checkBox_cautionManyChange.IsChecked = Settings.Instance.CautionManyChange;
             textBox_cautionManyChange.Text = Settings.Instance.CautionManyNum.ToString();
             checkBox_keepTCPConnect.IsChecked = Settings.Instance.ChkSrvRegistTCP;
-            textBox_keepTCPConnect.Text = Settings.Instance.ChkSrvRegistInterval.ToString();
+            checkBox_upDateTaskText.IsChecked = Settings.Instance.UpdateTaskText;
+            textBox_chkTimerInterval.Text = Settings.Instance.ChkSrvRegistInterval.ToString();
 
             checkBox_wakeReconnect.IsChecked = Settings.Instance.WakeReconnectNW;
             checkBox_suspendClose.IsChecked = Settings.Instance.SuspendCloseNW;
@@ -401,6 +377,7 @@ namespace EpgTimer.Setting
             stationList = Settings.Instance.IEpgStationList;
             ReLoadStation();
         }
+
         private void SetAppView_tabItem7()
         {
             if (CommonManager.Instance.NWMode == true)
@@ -687,7 +664,8 @@ namespace EpgTimer.Setting
             Settings.Instance.SuspendCloseNW = (checkBox_suspendClose.IsChecked == true);
             Settings.Instance.NgAutoEpgLoadNW = (checkBox_ngAutoEpgLoad.IsChecked == true);
             Settings.Instance.ChkSrvRegistTCP = (checkBox_keepTCPConnect.IsChecked != false);
-            Settings.Instance.ChkSrvRegistInterval = mutil.MyToNumerical(textBox_keepTCPConnect, Convert.ToDouble, 1440 * 7, 1, Settings.Instance.ChkSrvRegistInterval);
+            Settings.Instance.UpdateTaskText = (checkBox_upDateTaskText.IsChecked == true);
+            Settings.Instance.ChkSrvRegistInterval = mutil.MyToNumerical(textBox_chkTimerInterval, Convert.ToDouble, 1440 * 7, 1, Settings.Instance.ChkSrvRegistInterval);
 
             Settings.Instance.DefSearchKey = defSearchKey.Clone();
         }

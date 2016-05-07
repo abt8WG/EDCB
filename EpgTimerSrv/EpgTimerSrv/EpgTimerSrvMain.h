@@ -54,8 +54,8 @@ private:
 	bool IsFindShareTSFile() const;
 	//抑制条件のプロセスが起動しているかどうか
 	bool IsFindNoSuspendExe() const;
-	bool AutoAddReserveEPG(const EPG_AUTO_ADD_DATA& data);
-	bool AutoAddReserveProgram(const MANUAL_AUTO_ADD_DATA& data);
+	bool AutoAddReserveEPG(const EPG_AUTO_ADD_DATA& data, const bool noReportNotify = false);
+	bool AutoAddReserveProgram(const MANUAL_AUTO_ADD_DATA& data, const bool noReportNotify = false);
 
 	//自動予約リストは関連付けの更新などがあるので専用関数を用意
 	vector<EPG_AUTO_ADD_DATA> GetAutoAddList();

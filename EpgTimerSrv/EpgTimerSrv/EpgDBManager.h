@@ -343,12 +343,12 @@ public:
 
 					//”Ô‘g’·‚Åi‚èž‚Ý
 					if (key->chkDurationMin != 0) {
-						if ((LONGLONG)key->chkDurationMin * 60 > itrEvent->second->durationSec) {
+						if( (LONGLONG)key->chkDurationMin * 60 > itrEvent->second->durationSec || itrEvent->second->DurationFlag == FALSE){
 							continue;
 						}
 					}
 					if (key->chkDurationMax != 0) {
-						if ((LONGLONG)key->chkDurationMax * 60 < itrEvent->second->durationSec) {
+						if( (LONGLONG)key->chkDurationMax * 60 < itrEvent->second->durationSec || itrEvent->second->DurationFlag == FALSE){
 							continue;
 						}
 					}

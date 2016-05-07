@@ -93,6 +93,7 @@
     </Compile>
     <Compile Include="Common\CallerInfo.cs" />
     <Compile Include="Common\BoxExchangeEditor.cs" />
+    <Compile Include="DefineClass\InfoWindowBase.cs" />
     <Compile Include="DefineClass\InfoWindowViewModel.cs" />
     <Compile Include="DefineClass\SerializableDictionary.cs" />
     <Compile Include="DefineClass\SerializableSecureString.cs" />

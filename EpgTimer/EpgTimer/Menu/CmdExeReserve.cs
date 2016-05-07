@@ -167,7 +167,6 @@ namespace EpgTimer
             {
                 param.ID = 0;//実際は設定するまでもなく、初期値0。
                 BlackoutWindow.NowJumpTable = true;
-                var mainWindow = Application.Current.MainWindow as MainWindow;
                 new BlackoutWindow(mainWindow).showWindow(mainWindow.tabItem_epg.Header.ToString());
 
                 EpgCmds.ViewChgMode.Execute(e.Parameter, (IInputElement)sender);
@@ -316,10 +315,6 @@ namespace EpgTimer
             else if (menu.Tag == EpgCmdsEx.ChgMenu)
             {
                 mcs_chgMenuOpening(menu);
-            }
-            else if (menu.Tag == EpgCmdsEx.ShowAutoAddDialogMenu)
-            {
-                mcs_chgAutoAddMenuOpening(menu, headData as ReserveData == null ? null : dataList[0].AutoAddInfo);
             }
             else if (menu.Tag == EpgCmds.JumpReserve || menu.Tag == EpgCmds.JumpTuner)
             {

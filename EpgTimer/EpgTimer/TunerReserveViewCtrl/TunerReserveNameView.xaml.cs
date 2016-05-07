@@ -42,6 +42,7 @@ namespace EpgTimer.TunerReserveViewCtrl
                 }
                 item.Width = info.Width - 4;
                 item.Margin = new Thickness(2, 2, 2, 2);
+                item.Padding = new Thickness(2, 2, 2, 2);
                 item.Background = Brushes.AliceBlue;
                 item.Foreground = Brushes.Black;
                 item.TextAlignment = TextAlignment.Center;

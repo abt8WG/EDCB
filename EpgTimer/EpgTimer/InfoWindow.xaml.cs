@@ -10,12 +10,14 @@ namespace EpgTimer
     /// <summary>
     /// InfoWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class InfoWindow : RestorableWindow
+    public partial class InfoWindow : InfoWindowBase
     {
         private NotifyIcon notifyIcon = new NotifyIcon();
         private bool trueClosing = false;
 
         private ListViewController<ReserveItem> lstCtrl;
+
+        private PropertyChangedEventHandler dataContextChanged;
 
         public InfoWindow(InfoWindowViewModel dataContext)
         {
@@ -26,12 +28,37 @@ namespace EpgTimer
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
             notifyIcon.Visible = true;
 
+            // notify icon用メニューの設定
             var menu = new System.Windows.Forms.ContextMenuStrip();
+
+            ToolStripMenuItem topmostMenu = new ToolStripMenuItem();
+            topmostMenu.Text = "最前面に表示";
+            topmostMenu.Checked = dataContext.IsTopMost;
+            topmostMenu.Click += (s, e) => { dataContext.IsTopMost = !dataContext.IsTopMost; };
+            menu.Items.Add(topmostMenu);
+
+            ToolStripMenuItem bottommostMenu = new ToolStripMenuItem();
+            bottommostMenu.Text = "最背面に表示";
+            bottommostMenu.Checked = dataContext.IsBottomMost;
+            bottommostMenu.Click += (s, e) => { dataContext.IsBottomMost = !dataContext.IsBottomMost; };
+            menu.Items.Add(bottommostMenu);
+
             ToolStripMenuItem closeMenu = new ToolStripMenuItem();
             closeMenu.Text = "消す";
             closeMenu.Click += (s, e) => TrueClose();
             menu.Items.Add(closeMenu);
             notifyIcon.ContextMenuStrip = menu;
+
+            // notify icon用メニュー内の checkbox 更新用イベントハンドラ追加
+            dataContextChanged = (object sender, PropertyChangedEventArgs e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case "IsTopMost": topmostMenu.Checked = dataContext.IsTopMost; break;
+                    case "IsBottomMost": bottommostMenu.Checked = dataContext.IsBottomMost; break;
+                }
+            };
+            dataContext.PropertyChanged += dataContextChanged;
 
             //リストビュー関連の設定
             var list_columns = Resources["ReserveItemViewColumns"] as GridViewColumnList;
@@ -96,6 +123,7 @@ namespace EpgTimer
             }
             else
             {
+                (DataContext as InfoWindowViewModel).PropertyChanged -= dataContextChanged;
                 notifyIcon.Dispose();
                 notifyIcon = null;
             }

@@ -3,17 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="プリセット名" Height="120" Width="450" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
-    <Grid>
-        <Label Content="プリセット名" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label1" VerticalAlignment="Top" />
-        <TextBox Height="24" Margin="100,14,12,0" Name="textBox_name" VerticalAlignment="Top">
-            <TextBox.Resources>
-                <Style TargetType="{x:Type TextBox}">
-                    <Setter Property="InputMethod.PreferredImeState" Value="Off" />
-                </Style>
-            </TextBox.Resources>
-        </TextBox>
-        <Button Content="追加" Height="23" HorizontalAlignment="Right" Margin="0,44,99,0" Name="button_add" VerticalAlignment="Top" Width="43" Click="button_add_Click" />
-        <Button Content="キャンセル" Height="23" HorizontalAlignment="Right" Margin="0,44,12,0" Name="button_cancel" VerticalAlignment="Top" Width="81" Click="button_cancel_Click" />
-        <Label Content="(※設定内容も同時に変更されます)" Height="28" HorizontalAlignment="Left" Margin="79,44,0,0" Name="label_chgMsg" VerticalAlignment="Top" Visibility="Hidden" />
-    </Grid>
+    <StackPanel>
+        <Grid Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Name="label1" Content="プリセット名" />
+            <TextBox Grid.Column="1" Name="textBox_name" />
+        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Label Name="label_chgMsg" Content="(※設定内容も同時に変更されます)" Margin="0,4" Visibility="Hidden" />
+            <Button Name="button_add" Content="追加" Margin="12,4,0,4" Click="button_add_Click" />
+            <Button Name="button_cancel" Content="キャンセル" Margin="12,4" Click="button_cancel_Click" />
+        </StackPanel>
+    </StackPanel>
 </Window>

@@ -51,6 +51,33 @@ namespace EpgTimer
                 if (this._IsTopMost != value)
                 {
                     this._IsTopMost = value;
+                    if (this._IsTopMost)
+                    {
+                        this.IsBottomMost = false;
+                    }
+                    this.RaisePropertyChanged();
+                }
+            }
+        }
+
+        #endregion
+
+        #region IsBottomMost 変更通知プロパティ
+
+        private bool _IsBottomMost = Settings.Instance.InfoWindowBottomMost;
+
+        public bool IsBottomMost
+        {
+            get { return this._IsBottomMost; }
+            set
+            {
+                if (this._IsBottomMost != value)
+                {
+                    this._IsBottomMost = value;
+                    if (this._IsBottomMost)
+                    {
+                        this.IsTopMost = false;
+                    }
                     this.RaisePropertyChanged();
                 }
             }

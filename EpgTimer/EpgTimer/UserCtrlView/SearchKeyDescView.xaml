@@ -5,122 +5,227 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="320" d:DesignWidth="750">
-    <UserControl.Resources>
-        <Style TargetType="{x:Type TextBox}">
-            <Setter Property="InputMethod.PreferredImeState" Value="Off" />
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="22" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <CheckBox Content="正規表現モード" Height="16" HorizontalAlignment="Left" Margin="45,2,0,0" Name="checkBox_regExp" VerticalAlignment="Top" Checked="checkBox_regExp_Checked" Unchecked="checkBox_regExp_Checked" />
-        <CheckBox Content="あいまい検索モード" Height="16" HorizontalAlignment="Left" Margin="168,2,0,0" Name="checkBox_aimai" VerticalAlignment="Top" ToolTip="正規表現モードでは無効" ToolTipService.ShowOnDisabled="True" />
-        <CheckBox Content="番組名のみ検索対象にする" Height="16" HorizontalAlignment="Left" Margin="307,2,0,0" Name="checkBox_titleOnly" VerticalAlignment="Top" />
-        <CheckBox Content="大小文字区別" Height="16" HorizontalAlignment="Left" Margin="485,2,0,0" Name="checkBox_case" VerticalAlignment="Top" />
-        <CheckBox Content="自動登録を無効にする" Height="16" HorizontalAlignment="Left" Margin="600,2,0,0" Name="checkBox_keyDisabled" VerticalAlignment="Top" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <CheckBox Name="checkBox_regExp" Content="正規表現モード" Margin="10,2" Checked="checkBox_regExp_Checked" Unchecked="checkBox_regExp_Checked" />
+            <CheckBox Name="checkBox_aimai" Content="あいまい検索モード" Margin="10,2" ToolTip="正規表現モードでは無効" ToolTipService.ShowOnDisabled="True" />
+            <CheckBox Name="checkBox_titleOnly" Content="番組名のみ検索対象にする" Margin="10,2" />
+            <CheckBox Name="checkBox_case" Content="大小文字区別" Margin="10,2" />
+            <CheckBox Name="checkBox_keyDisabled" Content="自動登録を無効にする" Margin="10,2,20,2" />
+        </StackPanel>
         <TabControl Grid.Row="1" Name="tabControl1" TabStripPlacement="Bottom">
             <TabItem Header="詳細1" Name="tabItem1">
                 <Grid>
-                    <Label Content="ジャンル絞り込み（未登録で全ジャンル対象）" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" Name="label1" VerticalAlignment="Top" />
-                    <ListBox HorizontalAlignment="Left" Margin="6,40,0,65" Name="listBox_content" Width="238" SelectionMode="Extended" DisplayMemberPath="ListBoxView"/>
-                    <CheckBox Content="NOT扱いとする" Height="16" HorizontalAlignment="Left" Margin="6,0,0,40" Name="checkBox_notContent" VerticalAlignment="Bottom" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" Margin="6,0,0,6" Name="comboBox_content" VerticalAlignment="Bottom" Width="176" ItemsSource="{Binding}" />
-                    <Button Content="追加" Height="23" HorizontalAlignment="Left" Margin="188,0,0,7" Name="button_content_add" VerticalAlignment="Bottom" Width="56" Click="button_content_add_Click" />
-                    <Button Content="削除" Height="23" HorizontalAlignment="Left" Margin="188,0,0,36" Name="button_content_del" VerticalAlignment="Bottom" Width="56" Click="button_content_del_Click" />
-                    <Button Content="全クリア" Height="23" HorizontalAlignment="Left" Margin="126,0,0,36" Name="button_content_clear" VerticalAlignment="Bottom" Width="56" Click="button_content_clear_Click" />
-                    <Label Content="サービス絞り込み" Height="28" HorizontalAlignment="Left" Margin="286,6,0,0" Name="label2" VerticalAlignment="Top" />
-                    <ListView HorizontalAlignment="Left" Margin="286,40,0,7" Name="listView_service" Width="252" SelectionMode="Single" ItemsSource="{Binding}" >
-                        <ListView.View>
-                            <GridView x:Name="gridView_service">
-                                <GridViewColumn>
-                                    <GridViewColumn.Header>
-                                        <GridViewColumnHeader Content=""/>
-                                    </GridViewColumn.Header>
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <CheckBox IsChecked="{Binding Path=IsSelected}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn DisplayMemberBinding="{Binding Path=NetworkName}" >
-                                    <GridViewColumn.Header>
-                                        <GridViewColumnHeader Content="ネットワーク" HorizontalContentAlignment="Left"/>
-                                    </GridViewColumn.Header>
-                                </GridViewColumn>
-                                <GridViewColumn DisplayMemberBinding="{Binding Path=ServiceName}" >
-                                    <GridViewColumn.Header>
-                                        <GridViewColumnHeader Content="サービス名" HorizontalContentAlignment="Left"/>
-                                    </GridViewColumn.Header>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                    <Button Content="全チェック" Height="23" Margin="548,11,0,0" Name="button_all_on" VerticalAlignment="Top" HorizontalAlignment="Left" Width="122" Click="button_all_on_Click" />
-                    <Button Content="映像サービスのみ" Height="23" Margin="548,40,0,0" Name="button_video_on" VerticalAlignment="Top" HorizontalAlignment="Left" Width="122" Click="button_video_on_Click" />
-                    <Button Content="BS映像のみ" Height="23" Margin="548,69,0,0" Name="button_bs_on" VerticalAlignment="Top" HorizontalAlignment="Left" Width="95" Click="button_bs_on_Click" />
-                    <Button Content="CS映像のみ" Height="23" Margin="548,98,0,0" Name="button_cs_on" VerticalAlignment="Top" HorizontalAlignment="Left" Width="95" Click="button_cs_on_Click" />
-                    <Button Content="地デジ映像のみ" Height="23" Margin="548,127,0,0" Name="button_dttv_on" VerticalAlignment="Top" HorizontalAlignment="Left" Width="95" Click="button_dttv_on_Click" />
-                    <Button Content="ワンセグのみ" Height="23" Margin="548,156,0,0" Name="button_1seg_on" VerticalAlignment="Top" HorizontalAlignment="Left" Width="95" Click="button_1seg_on_Click" />
-                    <Button Content="その他のみ" Height="23" HorizontalAlignment="Left" Margin="548,185,0,0" Name="button_other_on" VerticalAlignment="Top" Width="95" Click="button_other_on_Click" />
-                    <Button Content="全クリア" Height="23" Margin="548,214,0,0" Name="button_all_off" VerticalAlignment="Top" HorizontalAlignment="Left" Width="122" Click="button_all_off_Click" />
-                    <Button Content="BS映像" Height="23" HorizontalAlignment="Left" Margin="650,69,0,0" Name="button_bs_on2" VerticalAlignment="Top" Width="84" Click="button_bs_on2_Click" />
-                    <Button Content="CS映像" Height="23" HorizontalAlignment="Left" Margin="650,98,0,0" Name="button_cs_on2" VerticalAlignment="Top" Width="84" Click="button_cs_on2_Click" />
-                    <Button Content="地デジ映像" Height="23" HorizontalAlignment="Left" Margin="650,127,0,0" Name="button_dttv_on2" VerticalAlignment="Top" Width="84" Click="button_dttv_on2_Click" />
-                    <Button Content="ワンセグ" Height="23" HorizontalAlignment="Left" Margin="650,156,0,0" Name="button_1seg_on2" VerticalAlignment="Top" Width="84" Click="button_1seg_on2_Click" />
-                    <Button Content="その他" Height="23" HorizontalAlignment="Left" Margin="650,185,0,0" Name="button_other_on2" VerticalAlignment="Top" Width="84" Click="button_other_on2_Click" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0" Margin="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Row="0" Name="label1" Content="ジャンル絞り込み（未登録で全ジャンル対象）" />
+                            <ListBox Grid.Row="1" Name="listBox_content" Margin="4" SelectionMode="Extended" DisplayMemberPath="ListBoxView"/>
+                            <Grid Grid.Row="2" Margin="4,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <CheckBox Grid.Column="0" Grid.Row="0" Name="checkBox_notContent" Content="NOT扱いとする" Margin="0,4,10,0" />
+                                <Button Grid.Column="1" Grid.Row="0" Name="button_content_clear" Content="全クリア" Margin="0,4,10,0" Click="button_content_clear_Click" />
+                                <Button Grid.Column="2" Grid.Row="0" Name="button_content_del" Content="削除" Margin="0,4,0,0" Click="button_content_del_Click" />
+                                <ComboBox Grid.ColumnSpan="2" Grid.Row="1" Name="comboBox_content" Margin="0,4,10,0" ItemsSource="{Binding}" />
+                                <Button Grid.Column="2" Grid.Row="1" Name="button_content_add" Content="追加" Margin="0,4,0,0" Click="button_content_add_Click" />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="1" Margin="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Row="0" Name="label2" Content="サービス絞り込み" />
+                            <ListView Grid.Row="1" Name="listView_service" SelectionMode="Single" ItemsSource="{Binding}" >
+                                <ListView.View>
+                                    <GridView x:Name="gridView_service">
+                                        <GridViewColumn>
+                                            <GridViewColumn.Header>
+                                                <GridViewColumnHeader Content=""/>
+                                            </GridViewColumn.Header>
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox IsChecked="{Binding Path=IsSelected}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn DisplayMemberBinding="{Binding Path=NetworkName}" >
+                                            <GridViewColumn.Header>
+                                                <GridViewColumnHeader Content="ネットワーク" HorizontalContentAlignment="Left"/>
+                                            </GridViewColumn.Header>
+                                        </GridViewColumn>
+                                        <GridViewColumn DisplayMemberBinding="{Binding Path=ServiceName}" >
+                                            <GridViewColumn.Header>
+                                                <GridViewColumnHeader Content="サービス名" HorizontalContentAlignment="Left"/>
+                                            </GridViewColumn.Header>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Column="2" Margin="8,30,8,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.ColumnSpan="2" Grid.Row="0" Name="button_all_on" Content="全チェック" Margin="0,0,50,0" Click="button_all_on_Click" />
+                        <Button Grid.ColumnSpan="2" Grid.Row="1" Name="button_video_on" Content="映像サービスのみ" Margin="0,0,50,0" Click="button_video_on_Click" />
+                        <Button Grid.Column="0" Grid.Row="2" Name="button_bs_on" Content="BS映像のみ" Margin="0,0,10,0" Click="button_bs_on_Click" />
+                        <Button Grid.Column="1" Grid.Row="2" Name="button_bs_on2" Content="BS映像" Click="button_bs_on2_Click" />
+                        <Button Grid.Column="0" Grid.Row="3" Name="button_cs_on" Content="CS映像のみ" Margin="0,0,10,0" Click="button_cs_on_Click" />
+                        <Button Grid.Column="1" Grid.Row="3" Name="button_cs_on2" Content="CS映像" Click="button_cs_on2_Click" />
+                        <Button Grid.Column="0" Grid.Row="4" Name="button_dttv_on" Content="地デジ映像のみ" Margin="0,0,10,0" Click="button_dttv_on_Click" />
+                        <Button Grid.Column="1" Grid.Row="4" Name="button_dttv_on2" Content="地デジ映像" Click="button_dttv_on2_Click" />
+                        <Button Grid.Column="0" Grid.Row="5" Name="button_1seg_on" Content="ワンセグのみ" Margin="0,0,10,0" Click="button_1seg_on_Click" />
+                        <Button Grid.Column="1" Grid.Row="5" Name="button_1seg_on2" Content="ワンセグ" Click="button_1seg_on2_Click" />
+                        <Button Grid.Column="0" Grid.Row="6" Name="button_other_on" Content="その他のみ" Margin="0,0,10,0" Click="button_other_on_Click" />
+                        <Button Grid.Column="1" Grid.Row="6" Name="button_other_on2" Content="その他" Click="button_other_on2_Click" />
+                        <Button Grid.ColumnSpan="2" Grid.Row="7" Name="button_all_off" Content="全クリア" Margin="0,0,50,0" Click="button_all_off_Click" />
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="詳細2" Name="tabItem2">
                 <Grid>
-                    <Label Content="時間絞り込み（項目なしで全期間対象）" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" Name="label3" VerticalAlignment="Top" />
-                    <ListBox HorizontalAlignment="Left" Margin="6,40,0,65" Name="listBox_date" Width="164" SelectionMode="Extended" />
-                    <CheckBox Content="NOT扱いとする" Height="16" HorizontalAlignment="Left" Margin="6,0,0,40" Name="checkBox_notDate" VerticalAlignment="Bottom" />
-                    <Button Content="削除" Height="23" HorizontalAlignment="Left" Margin="114,0,0,7" Name="button_date_del" VerticalAlignment="Bottom" Width="56" Click="button_date_del_Click" />
-                    <Button Content="全クリア" Height="23" HorizontalAlignment="Left" Margin="47,0,0,7" Name="button_date_clear" VerticalAlignment="Bottom" Width="56" Click="button_date_clear_Click" />
-                    <Label Content="期間" Height="28" HorizontalAlignment="Left" Margin="176,40,0,0" Name="label4" VerticalAlignment="Top" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" Margin="192,74,0,0" Name="comboBox_time_sw" VerticalAlignment="Top" Width="44" ItemsSource="{Binding}" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" Margin="242,74,0,0" Name="comboBox_time_sh" VerticalAlignment="Top" Width="44" ItemsSource="{Binding}" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" Margin="289,74,0,0" Name="comboBox_time_sm" VerticalAlignment="Top" Width="44" ItemsSource="{Binding}" />
-                    <Label Content="～" Height="28" HorizontalAlignment="Left" Margin="192,108,0,0" Name="label6" VerticalAlignment="Top" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" Margin="223,108,0,0" Name="comboBox_time_ew" VerticalAlignment="Top" Width="44" ItemsSource="{Binding}" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" Margin="273,108,0,0" Name="comboBox_time_eh" VerticalAlignment="Top" Width="44" ItemsSource="{Binding}" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" Margin="320,108,0,0" Name="comboBox_time_em" VerticalAlignment="Top" Width="44" ItemsSource="{Binding}" />
-                    <Button Content="追加" Height="23" HorizontalAlignment="Left" Margin="375,108,0,0" Name="button_timeAdd" VerticalAlignment="Top" Width="56" Click="button_timeAdd_Click" />
-                    <Label Content="曜日毎" Height="28" HorizontalAlignment="Left" Margin="176,133,0,0" Name="label5" VerticalAlignment="Top" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" ItemsSource="{Binding}" Margin="192,179,0,0" Name="comboBox_week_sh" VerticalAlignment="Top" Width="44" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" ItemsSource="{Binding}" Margin="239,179,0,0" Name="comboBox_week_sm" VerticalAlignment="Top" Width="44" />
-                    <Label Content="～" Height="28" HorizontalAlignment="Left" Margin="288,175,0,0" Name="label7" VerticalAlignment="Top" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" ItemsSource="{Binding}" Margin="316,179,0,0" Name="comboBox_week_eh" VerticalAlignment="Top" Width="44" />
-                    <ComboBox Height="24" HorizontalAlignment="Left" ItemsSource="{Binding}" Margin="363,179,0,0" Name="comboBox_week_em" VerticalAlignment="Top" Width="44" />
-                    <CheckBox Content="月" Height="16" HorizontalAlignment="Left" Margin="192,157,0,0" Name="checkBox_mon" VerticalAlignment="Top" />
-                    <CheckBox Content="火" Height="16" HorizontalAlignment="Left" Margin="227,157,0,0" Name="checkBox_tue" VerticalAlignment="Top" />
-                    <CheckBox Content="水" Height="16" HorizontalAlignment="Left" Margin="262,157,0,0" Name="checkBox_wen" VerticalAlignment="Top" />
-                    <CheckBox Content="木" Height="16" HorizontalAlignment="Left" Margin="297,157,0,0" Name="checkBox_thu" VerticalAlignment="Top" />
-                    <CheckBox Content="金" Height="16" HorizontalAlignment="Left" Margin="332,157,0,0" Name="checkBox_fri" VerticalAlignment="Top" />
-                    <CheckBox Content="土" Height="16" HorizontalAlignment="Left" Margin="367,157,0,0" Name="checkBox_sat" VerticalAlignment="Top" />
-                    <CheckBox Content="日" Height="16" HorizontalAlignment="Left" Margin="402,157,0,0" Name="checkBox_sun" VerticalAlignment="Top" />
-                    <Button Content="追加" Height="23" HorizontalAlignment="Left" Margin="192,209,0,0" Name="button_weekAdd" VerticalAlignment="Top" Width="56" Click="button_weekAdd_Click" />
-                    <Label Content="スクランブル放送" Height="28" HorizontalAlignment="Left" Margin="444,6,0,0" Name="label8" VerticalAlignment="Top" />
-                    <RadioButton Content="無料、有料番組を対象とする" Height="16" HorizontalAlignment="Left" Margin="472,30,0,0" Name="radioButton_free_1" VerticalAlignment="Top" />
-                    <RadioButton Content="無料番組のみ対象とする" Height="16" HorizontalAlignment="Left" Margin="472,48,0,0" Name="radioButton_free_2" VerticalAlignment="Top" />
-                    <RadioButton Content="有料番組のみ対象とする" Height="16" HorizontalAlignment="Left" Margin="472,66,0,0" Name="radioButton_free_3" VerticalAlignment="Top" />
-                    <Label Content="番組長で絞り込み（それぞれ0で絞り込み無し）" Height="28" HorizontalAlignment="Left" Margin="444,88,0,0" Name="label13" VerticalAlignment="Top" />
-                    <TextBox Height="24" HorizontalAlignment="Left" Margin="468,112,0,0" Name="textBox_chkDurationMin" VerticalAlignment="Top" Width="48"/>
-                    <Label Content="分以上" Height="28" Margin="514,112,0,0" Name="label12" VerticalAlignment="Top" HorizontalAlignment="Left" Width="46" />
-                    <TextBox Height="24" HorizontalAlignment="Left" Margin="583,112,0,0" Name="textBox_chkDurationMax" VerticalAlignment="Top" Width="48"/>
-                    <Label Content="分以下" Height="28" Margin="629,112,0,0" Name="label14" VerticalAlignment="Top" HorizontalAlignment="Left" Width="46" />
-                    <GroupBox Header="キーワード自動予約登録専用" HorizontalAlignment="Left" Margin="448,146,0,0" Name="groupBox1" Width="290" Height="96" VerticalAlignment="Top">
-                        <Grid Height="77">
-                            <CheckBox Content="同一番組名の録画結果があれば無効で登録する" Height="16" HorizontalAlignment="Left" Margin="6,8,0,0" Name="checkBox_chkRecEnd" VerticalAlignment="Top" />
-                            <Label Content="録画済み確認対象期間" Height="28" HorizontalAlignment="Left" Margin="18,26,0,0" Name="label9" VerticalAlignment="Top" />
-                            <TextBox Height="24" HorizontalAlignment="Left" Margin="153,26,0,0" Name="textBox_chkRecDay" VerticalAlignment="Top" Width="40" />
-                            <Label Content="日前まで" Height="28" HorizontalAlignment="Left" Margin="200,26,0,0" Name="label10" VerticalAlignment="Top" />
-                            <RadioButton Content="同一サービスのみ無効" Height="16" HorizontalAlignment="Left" Margin="18,54,0,0" Name="radioButton_chkRecNoService1" VerticalAlignment="Top" Width="126" />
-                            <RadioButton Content="全てのサービスで無効" Height="16" Margin="150,54,0,0" Name="radioButton_chkRecNoService2" VerticalAlignment="Top" HorizontalAlignment="Left" Width="124" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Margin="4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Row="0" Name="label3" Content="時間絞り込み（項目なしで全期間対象）" Margin="0,0,-200,0" />
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="auto"/>
+                                </Grid.RowDefinitions>
+                                <ListBox Grid.Row="0" Name="listBox_date" SelectionMode="Extended" />
+                                <CheckBox Grid.Row="1" Name="checkBox_notDate" Content="NOT扱いとする" Margin="0,4"/>
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Name="button_date_clear" Content="全クリア" Margin="0,0,10,0"  Click="button_date_clear_Click" />
+                                    <Button Name="button_date_del" Content="削除" Click="button_date_del_Click" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Grid.Column="1">
+                                <Label x:Name="label4" Content="期間" />
+                                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                    <ComboBox x:Name="comboBox_time_sw" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_time_sh" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_time_sm" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                    <Label x:Name="label6" Content="～" />
+                                    <ComboBox x:Name="comboBox_time_ew" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_time_eh" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_time_em" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
+                                    <Button x:Name="button_timeAdd" Content="追加" Margin="5" Click="button_timeAdd_Click" Grid.ColumnSpan="2" Grid.Column="1" />
+                                </StackPanel>
+
+                                <Label x:Name="label5" Content="曜日毎" />
+                                <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
+                                    <CheckBox x:Name="checkBox_mon" Content="月" />
+                                    <CheckBox x:Name="checkBox_tue" Content="火" />
+                                    <CheckBox x:Name="checkBox_wen" Content="水" />
+                                    <CheckBox x:Name="checkBox_thu" Content="木" />
+                                    <CheckBox x:Name="checkBox_fri" Content="金" />
+                                    <CheckBox x:Name="checkBox_sat" Content="土" />
+                                    <CheckBox x:Name="checkBox_sun" Content="日" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                    <ComboBox x:Name="comboBox_week_sh" Margin="5" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_week_sm" Margin="5" ItemsSource="{Binding}" />
+                                    <Label x:Name="label7" Content="～" />
+                                    <ComboBox x:Name="comboBox_week_eh" Margin="5" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_week_em" Margin="5" ItemsSource="{Binding}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
+                                    <Button x:Name="button_weekAdd" Content="追加" Click="button_weekAdd_Click" />
+                                </StackPanel>
+                            </StackPanel>
                         </Grid>
-                    </GroupBox>
+                    </Grid>
+
+                    <StackPanel Grid.Column="2">
+                        <Label Name="label8" Content="スクランブル放送" />
+                        <RadioButton Name="radioButton_free_1" Content="無料、有料番組を対象とする" Margin="20,0,0,4" />
+                        <RadioButton Name="radioButton_free_2" Content="無料番組のみ対象とする" Margin="20,0,0,4" />
+                        <RadioButton Name="radioButton_free_3" Content="有料番組のみ対象とする" Margin="20,0,0,4" />
+
+                        <Label Name="label13" Content="番組長で絞り込み（それぞれ0で絞り込み無し）" />
+                        <WrapPanel Margin="20,0,0,0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
+                                <TextBox Name="textBox_chkDurationMin" Width="48"/>
+                                <Label Name="label12" Content="分以上" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox Name="textBox_chkDurationMax" Width="48"/>
+                                <Label Name="label14" Content="分以下" />
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <GroupBox Name="groupBox1" Header="キーワード自動予約登録専用" Margin="4">
+                            <StackPanel>
+                                <CheckBox Name="checkBox_chkRecEnd" Content="同一番組名の録画結果があれば無効で登録する" Margin="4" />
+                                <WrapPanel>
+                                    <Label Name="label9" Content="録画済み確認対象期間" />
+                                    <StackPanel Orientation="Horizontal" Margin="4,0">
+                                        <TextBox Name="textBox_chkRecDay" Width="40" />
+                                        <Label Name="label10" Content="日前まで" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel>
+                                    <RadioButton Name="radioButton_chkRecNoService1" Content="同一サービスのみ無効" Margin="4,0,10,0"/>
+                                    <RadioButton Name="radioButton_chkRecNoService2" Content="全てのサービスで無効" Margin="4,0"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
                 </Grid>
             </TabItem>
         </TabControl>

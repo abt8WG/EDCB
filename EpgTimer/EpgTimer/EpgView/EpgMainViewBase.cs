@@ -61,6 +61,9 @@ namespace EpgTimer.EpgView
             nowViewTimer.Tick += new EventHandler(WaitReDrawNowLine);
 
             button_now.Click += new RoutedEventHandler((sender, e) => MoveNowTime());
+
+            timeView.Margin = new Thickness(0, 0, 0, SystemParameters.HorizontalScrollBarHeight);
+            horizontalViewScroll.Margin = new Thickness(0, 0, SystemParameters.VerticalScrollBarWidth, 0);
         }
 
         /// <summary>保持情報のクリア</summary>

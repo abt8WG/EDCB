@@ -281,6 +281,17 @@ main {
     .main-content>div:not(.mdl-dialog__actions) {
       padding: 16px 16px 0; } }
 
+h4 .mdl-button--icon {
+  height: 24px;
+  min-width: 24px;
+  width: 24px; }
+  h4 .material-icons {
+    font-size: 18px; }
+  h4 .mdl-button--icon img.material-icons {
+    width: 20px;
+    -webkit-transform: translate(-10px,-10px);
+            transform: translate(-10px,-10px); }
+
 #detail>div {
   padding: 0 0 16px; }
 #detail>ul {
@@ -363,7 +374,7 @@ main {
 
 
 /* 番組表 */
-#tv-guide-container{
+#tv-guide-container {
   overflow-x: auto; }
 
 #tv-guide {
@@ -393,7 +404,7 @@ main {
     #tv-guide-header {
       padding-left: 16px; } }
 
-#tv-guide-main{
+#tv-guide-main {
   display: -webkit-inline-flex;
   display:     -ms-inline-flexbox;
   display:         inline-flex; }
@@ -994,3 +1005,7 @@ main {
     max-width: 100%;
     max-height: calc(90vh - 68px);
     min-width: 232px; }
+
+.mdl-badge.material-icons:after{
+  font-family: 'Material Icons';
+}

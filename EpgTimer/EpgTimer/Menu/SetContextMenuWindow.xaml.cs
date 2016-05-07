@@ -20,7 +20,7 @@ namespace EpgTimer
 
         private static ComboItem[] MenuCodeToTitle = new ComboItem[]{
             new ComboItem(CtxmCode.ReserveView, "予約一覧"),
-            new ComboItem(CtxmCode.TunerReserveView, "使用予定チューナ"),
+            new ComboItem(CtxmCode.TunerReserveView, "使用予定チューナー"),
             new ComboItem(CtxmCode.RecInfoView, "録画済み一覧"),
             new ComboItem(CtxmCode.EpgAutoAddView, "キーワード自動予約登録"),
             new ComboItem(CtxmCode.ManualAutoAddView, "プログラム自動予約登録"),
@@ -34,7 +34,6 @@ namespace EpgTimer
             new List<ICommand>{EpgCmds.Delete},
             new List<ICommand>{EpgCmds.Delete2},
             new List<ICommand>{EpgCmds.Delete3},
-            new List<ICommand>{EpgCmds.ShowAutoAddDialog, EpgCmdsEx.ShowAutoAddDialogMenu},
             new List<ICommand>{EpgCmds.AdjustReserve},
             new List<ICommand>{EpgCmds.ProtectChange},
             new List<ICommand>{EpgCmds.ShowAddDialog},
@@ -43,6 +42,7 @@ namespace EpgTimer
             new List<ICommand>{EpgCmds.JumpTuner},
             new List<ICommand>{EpgCmds.JumpTable},
             new List<ICommand>{EpgCmdsEx.ShowAutoAddDialogMenu},
+            new List<ICommand>{},//オプション用のダミー行
             new List<ICommand>{EpgCmds.ToAutoadd},
             new List<ICommand>{EpgCmds.ReSearch},
             new List<ICommand>{EpgCmds.ReSearch2},
@@ -71,46 +71,6 @@ namespace EpgTimer
             InitializeComponent();
             try
 	        {
-                //共通設定画面用の設定
-                Action<StackPanel> SetCheckBox = (trg) =>
-                {
-                    foreach (var item in trg.Children.OfType<CheckBox>())
-                    {
-                        item.Height = 15;
-                        item.Margin = new Thickness(6, 0, 0, 0);
-                    }
-                };
-                SetCheckBox(stackPanel_menu);
-                SetCheckBox(stackPanel_option);
-
-                Action<StackPanel, StackPanel> CopyStackItem = (src, trg) =>
-                {
-                    foreach (var item in src.Children.OfType<Control>())
-                    {
-                        Control newItem = null;
-                        if (item is Separator)
-                        {
-                            newItem = new Separator();
-                        }
-                        else if (item is CheckBox)
-                        {
-                            newItem = new CheckBox();
-                        }
-                        if (newItem != null)
-                        {
-                            newItem.Height = item.Height;
-                            newItem.Margin = item.Margin;
-                            trg.Children.Add(newItem);
-                        }
-                    }
-                };
-                CopyStackItem(stackPanel_menu, stackPanel_gesture);
-                CopyStackItem(stackPanel_menu, stackPanel_gesture2);
-                
-                stackItems_menu = stackPanel_menu.Children.OfType<CheckBox>().ToList();
-                stackItems_ges1 = stackPanel_gesture.Children.OfType<CheckBox>().ToList();
-                stackItems_ges2 = stackPanel_gesture2.Children.OfType<CheckBox>().ToList();
-
                 //個別設定画面用の設定
                 this.comboBoxViewSelect.DisplayMemberPath = "Value";
                 this.comboBoxViewSelect.SelectedValuePath = "Key";
@@ -137,6 +97,53 @@ namespace EpgTimer
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            //共通設定画面用の設定 - Control の ActualHeight が設定された後に、Height を再設定する
+            var menu = stackPanel_menu.Children.OfType<Control>().GetEnumerator();
+            var option = stackPanel_option.Children.OfType<Control>().GetEnumerator();
+            while (menu.MoveNext() && option.MoveNext())
+            {
+                menu.Current.Height = option.Current.Height = Math.Floor(Math.Max(menu.Current.ActualHeight, option.Current.ActualHeight));
+            }
+
+            Action<StackPanel, StackPanel> CopyStackItem = (src, trg) =>
+            {
+                var itr_src = src.Children.OfType<Control>().GetEnumerator();
+                var itr_trg = trg.Children.OfType<Control>().GetEnumerator();
+                while (itr_src.MoveNext())
+                {
+                    if (itr_trg.MoveNext())
+                    {
+                        itr_trg.Current.Height = itr_src.Current.Height;
+                        itr_trg.Current.Margin = itr_src.Current.Margin;
+                    }
+                    else
+                    {
+                        Control newItem = null;
+                        if (itr_src.Current is Separator)
+                        {
+                            newItem = new Separator();
+                        }
+                        else if (itr_src.Current is CheckBox)
+                        {
+                            newItem = new CheckBox();
+                            newItem.Visibility = Visibility.Hidden;
+                        }
+                        if (newItem != null)
+                        {
+                            newItem.Height = itr_src.Current.Height;
+                            newItem.Margin = itr_src.Current.Margin;
+                            trg.Children.Add(newItem);
+                        }
+                    }
+                }
+            };
+            CopyStackItem(stackPanel_menu, stackPanel_gesture);
+            CopyStackItem(stackPanel_menu, stackPanel_gesture2);
+
+            stackItems_menu = stackPanel_menu.Children.OfType<CheckBox>().ToList();
+            stackItems_ges1 = stackPanel_gesture.Children.OfType<CheckBox>().ToList();
+            stackItems_ges2 = stackPanel_gesture2.Children.OfType<CheckBox>().ToList();
+
             SetData();
         }
 
@@ -157,6 +164,7 @@ namespace EpgTimer
                 checkBox_NoMessageAdjustRes.IsChecked = info.NoMessageAdjustRes;
                 checkBox_CancelAutoAddOff.IsChecked = info.CancelAutoAddOff;
                 checkBox_AutoAddFazySerach.IsChecked = info.AutoAddFazySerach;
+                checkBox_AutoAddSerachToolTip.IsChecked = info.AutoAddSerachToolTip;
                 checkBox_EpgKeyword_Trim.IsChecked = info.Keyword_Trim;
                 checkBox_CopyTitle_Trim.IsChecked = info.CopyTitle_Trim;
                 checkBox_CopyContentBasic.IsChecked = info.CopyContentBasic;
@@ -170,6 +178,8 @@ namespace EpgTimer
 
                 for (int i = 0; i < SettingTable.Count; i++)
                 {
+                    if (SettingTable[i].Count == 0) continue;
+
                     MenuSettingData.CmdSaveData src = info.EasyMenuItems.Find(item => 
                         item.GetCommand() == SettingTable[i][0]);
 
@@ -188,7 +198,7 @@ namespace EpgTimer
                 this.listBox_Setting.ItemsSource = null;//初期化ボタンでSetData()使うとき用のリセット。
                 this.comboBoxViewSelect.ItemsSource = MenuCodeToTitle;
                 this.comboBoxViewSelect.SelectedIndex = -1; //初期化ボタンでSetData()使うとき用のリセット。
-                this.comboBoxViewSelect.SelectedIndex = 0; //これでSelectionChanged発生する
+                this.comboBoxViewSelect.SelectedIndex = 7; //これでSelectionChanged発生する
             }
             catch (Exception ex)
             {
@@ -224,6 +234,7 @@ namespace EpgTimer
                 info.NoMessageAdjustRes = (checkBox_NoMessageAdjustRes.IsChecked == true);
                 info.CancelAutoAddOff = (checkBox_CancelAutoAddOff.IsChecked == true);
                 info.AutoAddFazySerach = (checkBox_AutoAddFazySerach.IsChecked == true);
+                info.AutoAddSerachToolTip = (checkBox_AutoAddSerachToolTip.IsChecked == true);
                 info.ManualMenuItems = editMenu.Clone();
                 info.Keyword_Trim = (checkBox_EpgKeyword_Trim.IsChecked == true);
                 info.CopyTitle_Trim = (checkBox_CopyTitle_Trim.IsChecked == true);

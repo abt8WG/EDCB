@@ -1,4 +1,4 @@
-﻿<local:RestorableWindow x:Class="EpgTimer.InfoWindow"
+﻿<local:InfoWindowBase x:Class="EpgTimer.InfoWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,8 +6,9 @@
         xmlns:local="clr-namespace:EpgTimer"
         mc:Ignorable="d"
         Title="EpgTimer" Height="100" Width="370"
-        Topmost="{Binding Path=IsTopMost}" ShowInTaskbar="False" Closing="Window_Closing" WindowStyle="ToolWindow">
-    <local:RestorableWindow.Resources>
+        Topmost="{Binding Path=IsTopMost}" Bottommost="{Binding Path=IsBottomMost}"
+        ShowInTaskbar="False" Closing="Window_Closing" WindowStyle="ToolWindow">
+    <local:InfoWindowBase.Resources>
         <ResourceDictionary>
             <Style TargetType="{x:Type ListViewItem}">
                 <Setter Property="IsHitTestVisible" Value="False"/>
@@ -23,11 +24,12 @@
                 <ResourceDictionary Source="UserCtrlView\ReserveListViewStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </local:RestorableWindow.Resources>
+    </local:InfoWindowBase.Resources>
     <Grid>
         <Grid.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="最前面に表示" IsCheckable="True" IsChecked="{Binding Path=IsTopMost, Mode=TwoWay}"/>
+                <MenuItem Header="最背面に表示" IsCheckable="True" IsChecked="{Binding Path=IsBottomMost, Mode=TwoWay}"/>
                 <MenuItem Name="MenuItem_Header" Header="ヘッダーを表示" IsCheckable="True" Click="MenuItem_HeaderClick" />
                 <MenuItem Header="消す" Click="MenuItem_CloseClick"/>
             </ContextMenu>
@@ -38,4 +40,4 @@
             </ListView.View>
         </ListView>
     </Grid>
-</local:RestorableWindow>
+</local:InfoWindowBase>

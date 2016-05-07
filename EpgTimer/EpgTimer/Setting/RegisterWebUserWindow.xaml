@@ -25,15 +25,15 @@
             </ListView.View>
         </ListView>
         <StackPanel Grid.Column="1" >
-            <Label Content="ユーザー名" Margin="0,4,0,0" />
-            <TextBox Name="textBox_User" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" VerticalContentAlignment="Center" TextChanged="textBox_TextChanged" />
-            <Label Content="認証ドメイン" Margin="0,4,0,0" />
-            <TextBox Name="textBox_Domain" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsEnabled="false"/>
-            <Label Content="パスワード" Margin="0,4,0,0" />
-            <PasswordBox Name="passwordBox_Password" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" VerticalContentAlignment="Center" PasswordChanged="textBox_TextChanged" />
-            <Button Name="button_Add" Content="追加" Margin="40,4" Click="button_Add_Click"/>
-            <Button Name="button_Edit" Content="変更" Margin="40,4" Click="button_Edit_Click"/>
-            <Button Name="button_Del" Content="削除" Margin="40,4" Click="button_Del_Click"/>
+            <Label Content="ユーザー名" />
+            <TextBox Name="textBox_User" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" TextChanged="textBox_TextChanged" />
+            <Label Content="認証ドメイン" />
+            <TextBox Name="textBox_Domain" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" IsEnabled="false"/>
+            <Label Content="パスワード" />
+            <PasswordBox Name="passwordBox_Password" Margin="20,0,0,8" Width="150" HorizontalAlignment="Left" PasswordChanged="textBox_TextChanged" />
+            <Button Name="button_Add" Content="追加" Margin="40,2" Click="button_Add_Click"/>
+            <Button Name="button_Edit" Content="変更" Margin="40,2" Click="button_Edit_Click"/>
+            <Button Name="button_Del" Content="削除" Margin="40,2" Click="button_Del_Click"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              xmlns:local="clr-namespace:EpgTimer.UserCtrlView"
-             d:DesignHeight="300" d:DesignWidth="300" IsVisibleChanged="UserControl_IsVisibleChanged" FontSize="12">
+             d:DesignHeight="300" d:DesignWidth="300" IsVisibleChanged="UserControl_IsVisibleChanged">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -16,19 +16,19 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="130" />
+            <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <ListView Name="listView_reserve" Margin="10" Style="{StaticResource DataListViewStyle}" >
             <ListView.View>
                 <GridView x:Name="gridView_reserve" />
             </ListView.View>
         </ListView>
-        <StackPanel Grid.Column="1" Name="stackPanel_button">
-            <Button Content="予約←→無効" Height="23" Name="button_on_off" Margin="0,10,0,10" />
-            <Button Content="変更" Height="23" Name="button_change" Margin="0,10,0,10" />
-            <Button Content="削除" Height="23" Name="button_del" Margin="0,10,0,10" />
-            <Button Content="プログラム予約追加" Height="23" Name="button_add_manual" Margin="0,10,0,10" />
-            <Button Content="追っかけ再生" Height="23" Name="button_timeShiftPlay" Margin="0,10,0,10" />
+        <StackPanel Grid.Column="1" Name="stackPanel_button" Margin="0,0,10,0">
+            <Button Name="button_on_off" Content="予約←→無効" Margin="0,10" />
+            <Button Name="button_change" Content="変更" Margin="0,10" />
+            <Button Name="button_del" Content="削除" Margin="0,10" />
+            <Button Name="button_add_manual" Content="プログラム予約追加" Margin="0,10" />
+            <Button Name="button_timeShiftPlay" Content="追っかけ再生" Margin="0,10" />
         </StackPanel>
     </Grid>
 </local:DataViewBase>

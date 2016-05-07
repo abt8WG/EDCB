@@ -30,7 +30,7 @@ public:
 	//—\–ñî•ñ‚ğæ“¾‚·‚é
 	bool GetReserveData(DWORD id, RESERVE_DATA* reserveData, bool getRecFileName = false) const;
 	//—\–ñî•ñ‚ğ’Ç‰Á‚·‚é
-	bool AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false);
+	bool AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false, const bool noReportNotify = false);
 	//—\–ñî•ñ‚ğ•ÏX‚·‚é
 	bool ChgReserveData(const vector<RESERVE_DATA>& reserveList, bool setReserveStatus = false);
 	//—\–ñî•ñ‚ğíœ‚·‚é
@@ -100,7 +100,7 @@ public:
 	// ©“®—\–ñ‚Å”Ô‘g—\–ñ‚ğ’Ç‰Á
 	bool AutoAddReserveEPG(
 		const EPG_AUTO_ADD_DATA& data, int autoAddHour_, bool chkGroupEvent_,
-		vector<RESERVE_DATA>* reserveData);
+		vector<RESERVE_DATA>* reserveData, bool noReportNotify);
 
 private:
 	struct CHK_RESERVE_DATA {
@@ -151,7 +151,7 @@ private:
 	//ƒoƒbƒ`‚É“n‚·˜^‰æÏ‚İî•ñƒ}ƒNƒ‚ğ’Ç‰Á‚·‚é
 	static void AddRecInfoMacro(vector<pair<string, wstring>>& macroList, const REC_FILE_INFO& recInfo, const RESERVE_DATA& data);
 	//—\–ñî•ñ‚ğ’Ç‰Á‚·‚é
-	vector<const RESERVE_DATA*> AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false);
+	vector<const RESERVE_DATA*> AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false, const bool noReportNotify = false);
 	//˜^‰æƒtƒ@ƒCƒ‹‚ğŒŸõ
 	vector<REC_FILE_BASIC_INFO> SearchRecFile(const EPGDB_SEARCH_KEY_INFO& item, bool fromNew = false);
 

@@ -425,6 +425,7 @@ HttpAccessControlList[=+127.0.0.1]
   アクセス制御
   # Civetwebのaccess_control_listに相当(ただし"deny all accesses"からスタート)
   # 従来通りすべてのアクセスを許可する場合は+0.0.0.0/0とする
+  # ※+0.0.0.0/0は最終手段。キャリアの技術情報やプロキシを活用して接続元をできるだけ限定すべき
 HttpPort[=5510]
   ポート番号
   # Civetwebのlistening_portsに相当
@@ -839,6 +840,8 @@ I GetNotifyUpdateCount( 通知ID:I )
   freeCAFlag:I|nil=スクランブル放送(0=限定なし(省略時),1=無料のみ,2=有料のみ)
   chkRecEnd:B|nil=録画済かのチェックあり(省略時false)
   chkRecDay:I|nil=録画済かのチェック対象期間(省略時0)
+  chkDurationMin:I|nil=番組最小長(分)(省略時0)
+  chkDurationMax:I|nil=番組最大長(分)(省略時0)
   contentList:{
     content_nibble:I=大分類*256+中分類
   }のリスト=対象ジャンル

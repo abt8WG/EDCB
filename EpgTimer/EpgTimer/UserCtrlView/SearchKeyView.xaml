@@ -5,22 +5,28 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="700" xmlns:my="clr-namespace:EpgTimer">
-    <UserControl.Resources>
-        <Style TargetType="{x:Type TextBox}">
-            <Setter Property="InputMethod.PreferredImeState" Value="Off" />
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="80" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <Label Content="検索キーワード" Height="28" HorizontalAlignment="Left" Margin="13,10,0,0" Name="label1" VerticalAlignment="Top" />
-        <Label Content="NOTキーワード" Height="28" HorizontalAlignment="Left" Margin="12,44,0,0" Name="label2" VerticalAlignment="Top" />
-        <ComboBox Height="24" Margin="112,13,82,0" Name="ComboBox_andKey" VerticalAlignment="Top" IsEditable="True" IsTextSearchEnabled="False" TextBoxBase.TextChanged="ComboBox_TextChanged" />
-        <ComboBox Height="24" Margin="112,46,82,0" Name="ComboBox_notKey" VerticalAlignment="Top" IsEditable="True" IsTextSearchEnabled="False" TextBoxBase.TextChanged="ComboBox_TextChanged" />
-        <Button Content="改行入力" Height="23" Margin="0,12,12,0" Name="button_andIn" VerticalAlignment="Top" HorizontalAlignment="Right" Width="64" Click="button_andIn_Click" />
-        <Button Content="改行入力" Height="23" HorizontalAlignment="Right" Margin="0,46,12,0" Name="button_notIn" VerticalAlignment="Top" Width="64" Click="button_notIn_Click" />
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <Label Grid.Column="0" Name="label1" Content="検索キーワード" />
+            <ComboBox Grid.Column="1" Name="ComboBox_andKey" Margin="10,4" IsEditable="True" IsTextSearchEnabled="False" TextBoxBase.TextChanged="ComboBox_TextChanged" />
+            <Button Grid.Column="2" Name="button_andIn" Content="改行入力" Margin="10,4" Click="button_andIn_Click" />
+            <Label Grid.Column="0" Grid.Row="1" Name="label2" Content="NOTキーワード" />
+            <ComboBox Grid.Column="1" Grid.Row="1" Name="ComboBox_notKey" Margin="10,4" IsEditable="True" IsTextSearchEnabled="False" TextBoxBase.TextChanged="ComboBox_TextChanged" />
+            <Button Grid.Column="2" Grid.Row="1" Name="button_notIn" Content="改行入力" Margin="10,4" Click="button_notIn_Click" />
+        </Grid>
         <my:SearchKeyDescView Grid.Row="1" x:Name="searchKeyDescView" />
     </Grid>
 </UserControl>

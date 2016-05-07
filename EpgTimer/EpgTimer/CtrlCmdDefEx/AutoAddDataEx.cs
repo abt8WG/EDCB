@@ -15,6 +15,14 @@ namespace EpgTimer
         public abstract RecSettingData RecSettingInfo { get; }
         public virtual bool IsManual { get { return false; } }
 
+        /*
+        public bool CheckResHit(ReserveData data)
+        {
+            if (data == null) return false;
+            return this.GetReserveList().FirstOrDefault(info => info.ReserveID == data.ReserveID) != null;
+        }*/
+        public abstract bool CheckPgHit(IAutoAddTargetData data);
+
         public static AutoAddData AutoAddList(Type t, uint id)
         {
             if (t == typeof(EpgAutoAddData))
@@ -27,6 +35,8 @@ namespace EpgTimer
             }
             return null;
         }
+
+        public virtual object CloneObj() { return null; }
 
         //AppendData 関係。ID(元データ)に対して一意の情報なので、データ自体はDB側。
         protected virtual AutoAddDataAppend Append { get { return new AutoAddDataAppend(); } }
@@ -59,6 +69,14 @@ namespace EpgTimer
         public override bool IsEnabled { get { return searchInfo.keyDisabledFlag == 0; } set { searchInfo.keyDisabledFlag = (byte)(value == true ? 0 : 1); } }
         public override RecSettingData RecSettingInfo { get { return recSetting; } }
 
+        public override bool CheckPgHit(IAutoAddTargetData data)
+        {
+            if (data == null) return false;
+            return this.GetSearchList().FirstOrDefault(info => info.EventInfo.Create64PgKey() == data.Create64PgKey()) != null;
+        }
+
+        public override object CloneObj() { return EpgAutoAddDataEx.Clone(this); }
+
         //EpgAutoAddDataAppend 追加分
         protected override AutoAddDataAppend Append { get { return CommonManager.Instance.DB.GetEpgAutoAddDataAppend(this); } }
         public override uint SearchCount { get { return (uint)(Append as EpgAutoAddDataAppend).SearchItemList.Count; } }
@@ -75,7 +93,9 @@ namespace EpgTimer
             dest.addCount = src.addCount;
             dest.dataID = src.dataID;
             dest.recSetting = src.recSetting.Clone();       //RecSettingData
-            dest.searchInfo = src.searchInfo.Clone();       //EpgSearchKeyInfo
+            dest.searchInfo = src.searchInfo.Clone();       //EpgSearchKeyInfo
+            dest.recFileList = src.recFileList.ToList();    //List<RecFileBasicInfo>
+            dest.reserveList = src.reserveList.ToList();    //List<ReserveBasicData>
         }
 
         public static List<EpgSearchKeyInfo> RecSearchKeyList(this IEnumerable<EpgAutoAddData> list)
@@ -93,13 +113,18 @@ namespace EpgTimer
         {
             return CommonManager.Create64Key(originalNetworkID, transportStreamID, serviceID);
         }
+        public UInt64 Create64PgKey()
+        {
+            return CommonManager.Create64PgKey(originalNetworkID, transportStreamID, serviceID, 0xFFFF);
+        }
 
         public override uint DataID { get { return dataID; } set { dataID = value; } }
         public override bool IsEnabled { get { return keyDisabledFlag == 0; } set { keyDisabledFlag = (byte)(value == true ? 0 : 1); } }
         public override RecSettingData RecSettingInfo { get { return recSetting; } }
         public override bool IsManual { get { return true; } }
-        public bool CheckPgHit(IBasicPgInfo data)
+        public override bool CheckPgHit(IAutoAddTargetData data)
         {
+            if (data == null) return false;
             return Create64Key() == data.Create64Key()
                 && startTime == data.PgStartTime.Hour * 3600 + data.PgStartTime.Minute * 60 + data.PgStartTime.Second
                 && durationSecond == data.PgDurationSecond
@@ -126,7 +151,9 @@ namespace EpgTimer
                 return (byte)(0x3F & ((int)flg >> 1) | ((flg & 0x01) != 0 ? 0x40 : 0x00));
             }
         }
-        
+
+        public override object CloneObj() { return ManualAutoAddDataEx.Clone(this); }
+
         //AutoAddDataAppend
         protected override AutoAddDataAppend Append { get { return CommonManager.Instance.DB.GetManualAutoAddDataAppend(this); } }
         public override uint SearchCount { get { return (uint)CommonUtil.NumBits(dayOfWeekFlag); } }

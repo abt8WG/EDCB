@@ -3,25 +3,53 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="録画フォルダ、使用PlugIn設定" Height="225" Width="600" WindowStartupLocation="CenterOwner">
 
-    <Grid>
-        <Label Content="録画フォルダ" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label1" VerticalAlignment="Top" />
-        <TextBox Height="24" Margin="125,14,61,0" Name="textBox_recFolder" VerticalAlignment="Top">
-            <TextBox.Resources>
-                <Style TargetType="{x:Type TextBox}">
-                    <Setter Property="InputMethod.PreferredImeState" Value="Off" />
-                </Style>
-            </TextBox.Resources>
-        </TextBox>
-        <Button Content="開く" Height="23" Margin="0,14,12,0" Name="button_folder" VerticalAlignment="Top" HorizontalAlignment="Right" Width="43" Click="button_folder_Click" />
-        <Label Content="出力PlugIn" Height="28" HorizontalAlignment="Left" Margin="12,46,0,0" Name="label2" VerticalAlignment="Top" />
-        <ComboBox Height="24" HorizontalAlignment="Left" Margin="125,46,0,0" Name="comboBox_writePlugIn" VerticalAlignment="Top" Width="254" />
-        <Button Content="設定" Height="23" HorizontalAlignment="Left" Margin="385,48,0,0" Name="button_write" VerticalAlignment="Top" Width="43" Click="button_write_Click" />
-        <Label Content="ファイル名PlugIn" Height="28" HorizontalAlignment="Left" Margin="12,80,0,0" Name="label3" VerticalAlignment="Top" />
-        <ComboBox Height="24" HorizontalAlignment="Left" Margin="125,80,0,0" Name="comboBox_recNamePlugIn" VerticalAlignment="Top" Width="254" />
-        <Button Content="設定" Height="23" HorizontalAlignment="Left" Margin="385,82,0,0" Name="button_recName" VerticalAlignment="Top" Width="43" Click="button_recName_Click" />
-        <Label Content="ファイル名PlugInオプション" Height="28" HorizontalAlignment="Left" Margin="12,114,0,0" VerticalAlignment="Top" />
-        <TextBox Height="24" Margin="180,114,12,0" Name="textBox_recNameOption" VerticalAlignment="Top" />
-        <Button Content="追加" Height="23" HorizontalAlignment="Right" Margin="0,151,99,0" Name="button_ok" VerticalAlignment="Top" Width="75" Click="button_ok_Click" />
-        <Button Content="キャンセル" Height="23" HorizontalAlignment="Right" Margin="0,151,12,0" Name="button_cancel" VerticalAlignment="Top" Width="75" Click="button_cancel_Click" />
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Label Grid.Column="0" Grid.Row="0" Name="label1" Content="録画フォルダ" />
+        <Grid Grid.Column="1" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Grid.Row="0" Name="textBox_recFolder" Margin="20,0"/>
+            <Button Grid.Column="1" Grid.Row="0" Name="button_folder" Content="開く" Click="button_folder_Click" />
+        </Grid>
+
+        <Label Grid.Column="0" Grid.Row="1" Name="label2" Content="出力PlugIn" />
+        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
+            <ComboBox Name="comboBox_writePlugIn" Margin="20,5" Width="254" />
+            <Button Content="設定" Name="button_write" Click="button_write_Click" />
+        </StackPanel>
+        
+        <Label Grid.Column="0" Grid.Row="2" Name="label3" Content="ファイル名PlugIn" />
+        <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Horizontal">
+            <ComboBox Name="comboBox_recNamePlugIn" Margin="20,5" Width="254" />
+            <Button Name="button_recName" Content="設定" Click="button_recName_Click" />
+        </StackPanel>
+
+        <Grid Grid.ColumnSpan="3" Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="ファイル名PlugInオプション" />
+            <TextBox Grid.Column="1" Name="textBox_recNameOption" Margin="20,0,0,0"/>
+        </Grid>
+
+        <StackPanel Grid.ColumnSpan="3" Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Name="button_ok" Content="追加" Margin="0,0,20,0" Click="button_ok_Click" />
+            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" />
+        </StackPanel>
     </Grid>
 </Window>

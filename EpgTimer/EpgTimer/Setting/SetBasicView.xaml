@@ -5,11 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="780">
-    <UserControl.Resources>
-        <Style TargetType="{x:Type TextBox}">
-            <Setter Property="InputMethod.PreferredImeState" Value="Off" />
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <TabControl Name="tabControl1" >
             <TabItem Header="保存フォルダ" Name="tabItem1">
@@ -22,37 +17,37 @@
                     <StackPanel Grid.Row="0">
                         <Grid Margin="12,8,12,4">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="auto" MinWidth="140"/>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Name="label1" Content="設定関係保存フォルダ" />
-                            <TextBox Grid.Column="1" Name="textBox_setPath" VerticalContentAlignment="Center" />
-                            <Button Grid.Column="2" Name="button_setPath" Content="開く" Width="44" Margin="12,0,0,0" Click="button_setPath_Click" />
+                            <TextBox Grid.Column="1" Name="textBox_setPath" />
+                            <Button Grid.Column="2" Name="button_setPath" Content="開く" Margin="12,0,0,0" Click="button_setPath_Click" />
                         </Grid>
                         <Grid Margin="12,4">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="auto" MinWidth="140"/>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Name="label2" Content="録画用アプリのexe" />
-                            <TextBox Grid.Column="1" Name="textBox_exe" VerticalContentAlignment="Center" ToolTip="{Binding ElementName=textBox_exe, Path=Text}" />
-                            <Button Grid.Column="2" Name="button_exe" Content="開く" Margin="12,0,0,0" Width="44" Click="button_exe_Click" />
+                            <TextBox Grid.Column="1" Name="textBox_exe" ToolTip="{Binding ElementName=textBox_exe, Path=Text}" />
+                            <Button Grid.Column="2" Name="button_exe" Content="開く" Margin="12,0,0,0" Click="button_exe_Click" />
                         </Grid>
-                        <WrapPanel Margin="12,4">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Name="label_cmdBon" Content="コマンドライン引数" Width="140" Height="28" VerticalContentAlignment="Center" />
-                                <TextBox Name="textBox_cmdBon" Width="96" VerticalContentAlignment="Center" />
-                                <Label Content="{}{BonDriver}" IsEnabled="False" VerticalContentAlignment="Center" />
+                        <WrapPanel Margin="12,0,0,4">
+                            <StackPanel Orientation="Horizontal" Margin="0,2,-20,0">
+                                <Label Name="label_cmdBon" Content="コマンドライン引数" MinWidth="140" />
+                                <TextBox Name="textBox_cmdBon" Width="96" />
+                                <Label Content="{}{BonDriver}" IsEnabled="False" />
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="60,4,0,0">
-                                <Label Name="label_cmdMin" Content="最小化" Width="80" VerticalContentAlignment="Center" />
-                                <TextBox Name="textBox_cmdMin" Width="64" VerticalContentAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" Margin="60,2,-20,0">
+                                <Label Name="label_cmdMin" Content="最小化" MinWidth="80" />
+                                <TextBox Name="textBox_cmdMin" Width="64" />
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="60,4,0,0">
-                                <Label Name="label_cmdViewOff" Content="非視聴時" Width="80" VerticalContentAlignment="Center" />
-                                <TextBox Name="textBox_cmdViewOff" Width="64" VerticalContentAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" Margin="60,2,0,0">
+                                <Label Name="label_cmdViewOff" Content="非視聴時" MinWidth="80" />
+                                <TextBox Name="textBox_cmdViewOff" Width="64" />
                             </StackPanel>
                         </WrapPanel>
                         <Label Name="label3" Margin="12,4,0,0">
@@ -62,7 +57,7 @@
 
                     <Grid Grid.Row="1" Margin="45,0,12,4">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition />
                             <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -71,9 +66,9 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <ListBox Grid.RowSpan="3" Name="listBox_recFolder" HorizontalContentAlignment="Stretch" />
-                        <Button Grid.Column="1" Grid.Row="0" Name="button_rec_up" Content="↑" Margin="12,4,0,4" Width="44" Height="25" />
-                        <Button Grid.Column="1" Grid.Row="1" Name="button_rec_down" Content="↓" Margin="12,4,0,4" Width="44" Height="25" />
-                        <Button Grid.Column="1" Grid.Row="2" Name="button_rec_del" Content="削除" Margin="12,4,0,4" Width="44" Height="25" Click="button_rec_del_Click" VerticalAlignment="Bottom" />
+                        <Button Grid.Column="1" Grid.Row="0" Name="button_rec_up" Content="↑" Margin="12,0,0,4" />
+                        <Button Grid.Column="1" Grid.Row="1" Name="button_rec_down" Content="↓" Margin="12,0,0,4" />
+                        <Button Grid.Column="1" Grid.Row="2" Name="button_rec_del" Content="削除" Margin="12,0,0,0" Click="button_rec_del_Click" VerticalAlignment="Bottom" />
                     </Grid>
 
                     <StackPanel Grid.Row="2">
@@ -83,9 +78,9 @@
                                 <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" Name="textBox_recFolder" Height="25" VerticalContentAlignment="Center" />
-                            <Button Grid.Column="1" Name="button_rec_open" Content="開く" Margin="12,0,0,0" Width="44" Height="25" Click="button_rec_open_Click" HorizontalAlignment="Right" />
-                            <Button Grid.Column="2" Name="button_rec_add" Content="追加" Margin="12,0,0,0" Width="44" Height="25" Click="button_rec_add_Click" />
+                            <TextBox Grid.Column="0" Name="textBox_recFolder" />
+                            <Button Grid.Column="1" Name="button_rec_open" Content="開く" Margin="12,0,0,0" Click="button_rec_open_Click" HorizontalAlignment="Right" />
+                            <Button Grid.Column="2" Name="button_rec_add" Content="追加" Margin="12,0,0,0" Click="button_rec_add_Click" />
                         </Grid>
                         <Grid Margin="12,4">
                             <Grid.ColumnDefinitions>
@@ -94,16 +89,16 @@
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Content="録画情報保存フォルダ" ToolTip="未指定の場合は録画ファイルと同じ場所に保存されます。" ToolTipService.ShowOnDisabled="True" />
-                            <TextBox Grid.Column="1" Name="textBox_recInfoFolder" VerticalContentAlignment="Center" ToolTip="{Binding ElementName=textBox_recInfoFolder, Path=Text}" ToolTipService.ShowOnDisabled="True" />
-                            <Button Grid.Column="2" Name="button_recInfoFolder" Content="開く" Margin="12,0,0,0" Width="44" Click="button_recInfoFolder_Click" />
+                            <TextBox Grid.Column="1" Name="textBox_recInfoFolder" ToolTip="{Binding ElementName=textBox_recInfoFolder, Path=Text}" ToolTipService.ShowOnDisabled="True" />
+                            <Button Grid.Column="2" Name="button_recInfoFolder" Content="開く" Margin="12,0,0,0" Click="button_recInfoFolder_Click" />
                         </Grid>
-                        <Label Name="label4" Margin="12,8" Foreground="Red">
+                        <Label Name="label4" Margin="12,8" Foreground="Red">                    
                             <TextBlock TextWrapping="Wrap">※ 録画中やEPG取得中に設定を変更すると正常動作しなくなる可能性があります。</TextBlock>
                         </Label>
                         <WrapPanel Margin="0,0,0,10">
                             <Label Name="label5" Content="スタートアップにショートカットを作成する" Margin="12,0"/>
-                            <Button Name="button_shortCut" Content="EpgTimer.exe" Height="25" Width="160" Margin="12,0" Click="button_shortCut_Click" ToolTip="※ 削除時は手動で行ってください" />
-                            <Button Name="button_shortCutSrv" Content="EpgTimerSrv.exe" Height="25" Width="160" Margin="12,0" Click="button_shortCutSrv_Click" ToolTip="※ 削除時は手動で行ってください" />
+                            <Button Name="button_shortCut" Content="EpgTimer.exe" Margin="12,0" MinWidth="160" Click="button_shortCut_Click" ToolTip="※ 削除時は手動で行ってください" />
+                            <Button Name="button_shortCutSrv" Content="EpgTimerSrv.exe" Margin="12,0" MinWidth="160" Click="button_shortCutSrv_Click" ToolTip="※ 削除時は手動で行ってください" />
                         </WrapPanel>
                     </StackPanel>
                 </Grid>
@@ -128,16 +123,16 @@
                         <ListBox Grid.Column="0" Name="listBox_bon" Margin="40,0,0,0" SelectionChanged="listBox_bon_SelectionChanged" />
                         <WrapPanel Grid.Column="1" Margin="12,0">
                             <StackPanel Margin="0,0,20,0">
-                                <Button Name="button_bon_up" Content="↑" Margin="0,12" Width="50" Height="25" />
-                                <Button Name="button_bon_down" Content="↓" Margin="0,12" Width="50" Height="25" />
+                                <Button Name="button_bon_up" Content="↑" Margin="0,12" />
+                                <Button Name="button_bon_down" Content="↓" Margin="0,12" />
                             </StackPanel>
                             <StackPanel>
                                 <Grid Margin="0,12">
                                     <Label Name="label12" Content="チューナー数" />
-                                    <TextBox Name="textBox_bon_num" HorizontalAlignment="Right" Width="68" Height="25" Text="{Binding Path=TunerNum}" VerticalContentAlignment="Center" />
+                                    <TextBox Name="textBox_bon_num" HorizontalAlignment="Right" Width="68" Text="{Binding Path=TunerNum}" />
                                 </Grid>
                                 <CheckBox Name="checkBox_bon_epg" Content="EPGデータの取得に使用する" Margin="0,4" IsChecked="{Binding IsEpgCap}"/>
-                                <TextBox Name="textBox_bon_epgnum" HorizontalAlignment="Right" Width="68" Height="25" Text="{Binding Path=EPGNum}" VerticalContentAlignment="Center" 
+                                <TextBox Name="textBox_bon_epgnum" HorizontalAlignment="Right" Width="68" Text="{Binding Path=EPGNum}" 
                                      ToolTip="EPG取得に使用するチューナー数を指定します。０の場合は全チューナーを使用します。" />
                             </StackPanel>
                         </WrapPanel>
@@ -154,14 +149,14 @@
             <TabItem Header="EPG取得" Name="tabItem3">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition MinHeight="220"/>
-                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="1.5*" MinHeight="220" />
+                        <RowDefinition Height="*" MinHeight="120" />
                         <RowDefinition Height="auto" />
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
-                            <ColumnDefinition MinWidth="170" MaxWidth="420" />
+                            <ColumnDefinition MinWidth="170" MaxWidth="400" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
@@ -186,25 +181,23 @@
                                     </GridViewColumn>
                                     <GridViewColumn DisplayMemberBinding="{Binding Path=ServiceName}" >
                                         <GridViewColumn.Header>
-                                            <GridViewColumnHeader Content="サービス名" HorizontalContentAlignment="Left" Width="150" />
+                                            <GridViewColumnHeader Content="サービス名" HorizontalContentAlignment="Left" MinWidth="150" />
                                         </GridViewColumn.Header>
                                     </GridViewColumn>
                                 </GridView>
                             </ListView.View>
                         </ListView>
                         <StackPanel Grid.Column="1" Grid.Row="1" Margin="8,0,8,0">
-                            <Button Name="button_allChk" Content="全チェック" Margin="0,8,0,0" Width="150" Height="25" Click="button_allChk_Click" HorizontalAlignment="Left" />
-                            <Button Name="button_videoChk" Content="映像サービスのみチェック" Margin="0,8,0,0" Width="150" Height="25" Click="button_videoChk_Click" HorizontalAlignment="Left" />
-                            <Button Name="button_allClear" Content="全クリア" Margin="0,8,0,0" Width="150" Height="25" Click="button_allClear_Click" HorizontalAlignment="Left" />
-                            <Label Name="labe22" Content="基本情報のみ取得するネットワーク" Margin="0,8,0,0" />
+                            <Button Name="button_allChk" Content="全チェック" Margin="0,8,0,0" MinWidth="150" Click="button_allChk_Click" HorizontalAlignment="Left" />
+                            <Button Name="button_videoChk" Content="映像サービスのみチェック" Margin="0,8,0,0" MinWidth="150" Click="button_videoChk_Click" HorizontalAlignment="Left" />
+                            <Button Name="button_allClear" Content="全クリア" Margin="0,8,0,0" MinWidth="150" Click="button_allClear_Click" HorizontalAlignment="Left" />
+                            <TextBlock Name="labe22" Margin="0,15,0,0" TextWrapping="Wrap" Text="基本情報のみ取得するネットワーク" />
                             <WrapPanel Margin="40,0,0,0">
-                                <CheckBox Name="checkBox_bs" Content="BS" Width="70" />
-                                <CheckBox Name="checkBox_cs1" Content="CS1" Width="70" />
-                                <CheckBox Name="checkBox_cs2" Content="CS2" Width="70" />
+                                <CheckBox Name="checkBox_bs" Content="BS" MinWidth="50" Margin="0,0,10,0" />
+                                <CheckBox Name="checkBox_cs1" Content="CS1" MinWidth="50" Margin="0,0,10,0" />
+                                <CheckBox Name="checkBox_cs2" Content="CS2" MinWidth="50" Margin="0,0,10,0" />
                             </WrapPanel>
-                            <Label Name="label23" HorizontalAlignment="Left">
-                                <TextBlock TextWrapping="Wrap">※詳細情報は取得できないが、短時間で取得可能になります（地デジは対象外）</TextBlock>
-                            </Label>
+                            <TextBlock Name="label23" Margin="0,15,0,0" TextWrapping="Wrap" Text="※詳細情報は取得できないが、短時間で取得可能になります（地デジは対象外）" />
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1" Margin="0,8,0,0">
@@ -229,12 +222,12 @@
                                     </GridViewColumn>
                                     <GridViewColumn DisplayMemberBinding="{Binding Path=ViewTime}" >
                                         <GridViewColumn.Header>
-                                            <GridViewColumnHeader Content="開始時間" HorizontalContentAlignment="Left" Width="70" />
+                                            <GridViewColumnHeader Content="開始時間" HorizontalContentAlignment="Left" MinWidth="70" />
                                         </GridViewColumn.Header>
                                     </GridViewColumn>
                                     <GridViewColumn DisplayMemberBinding="{Binding Path=ViewBasicOnly}" >
                                         <GridViewColumn.Header>
-                                            <GridViewColumnHeader Content="種別(BS,CS1,CS2)" HorizontalContentAlignment="Left" Width="120" />
+                                            <GridViewColumnHeader Content="種別(BS,CS1,CS2)" HorizontalContentAlignment="Left" MinWidth="120" />
                                         </GridViewColumn.Header>
                                     </GridViewColumn>
                                 </GridView>
@@ -243,9 +236,9 @@
                         <Grid Grid.Column="1" Grid.Row="1" Margin="20,0,20,0">
                             <StackPanel>
                                 <WrapPanel Margin="0,4,0,8">
-                                    <Button Name="button_addTime" Content="追加" Margin="0,0,0,4" Width="75" Height="25" Click="button_addTime_Click" />
-                                    <WrapPanel>
-                                        <ComboBox Name="comboBox_wday" Margin="25,0,-15,4" Width="50" Height="25" SelectedIndex="0">
+                                    <Button Name="button_addTime" Content="追加" Margin="0,0,0,4" Click="button_addTime_Click" />
+                                    <WrapPanel Margin="25,0,0,0">
+                                        <ComboBox Name="comboBox_wday" Margin="0,0,10,4" MinWidth="50" SelectedIndex="0">
                                             <ComboBoxItem Content="　" />
                                             <ComboBoxItem Content="日" />
                                             <ComboBoxItem Content="月" />
@@ -256,35 +249,35 @@
                                             <ComboBoxItem Content="土" />
                                         </ComboBox>
                                         <WrapPanel>
-                                            <StackPanel Margin="25,0,0,4" Orientation="Horizontal">
-                                                <ComboBox Name="comboBox_HH" Width="50" Height="25" ItemsSource="{Binding}" />
-                                                <Label Name="label25" Content="：" Margin="0,0,-25,0" />
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <ComboBox Name="comboBox_HH" MinWidth="50" ItemsSource="{Binding}" />
+                                                <Label Name="label25" Content="：" />
                                             </StackPanel>
-                                            <ComboBox Name="comboBox_MM" Margin="25,0,0,4" Width="50" Height="25" ItemsSource="{Binding}" />
+                                            <ComboBox Name="comboBox_MM" Margin="0,0,0,4" MinWidth="50" ItemsSource="{Binding}" />
                                         </WrapPanel>
                                     </WrapPanel>
                                 </WrapPanel>
-                                <Button Name="button_delTime" Content="削除" Width="75" Height="25" Click="button_delTime_Click" HorizontalAlignment="Left" />
+                                <Button Name="button_delTime" Content="削除" Click="button_delTime_Click" HorizontalAlignment="Left" />
                             </StackPanel>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Row="2" Margin="0,8,0,0">
+                    <Grid Grid.Row="2" Margin="0,8,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="auto" />
-                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition />
                             <RowDefinition />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" Name="label26" Content="実行抑制条件" Margin="12,8,20,0" />
-                        <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_ngCapMin" Margin="0,8,0,0" Height="25" Width="49" VerticalContentAlignment="Center" />
+                        <Label Grid.Column="0" Grid.Row="0" Name="label26" Content="実行抑制条件" Margin="12,8,10,0" VerticalAlignment="Top" />
+                        <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_ngCapMin" Margin="0,8,0,0" Width="49" VerticalAlignment="Top" />
                         <Label Grid.Column="2" Grid.Row="0" Name="label27" Margin="0,8,0,0">
                             <TextBlock TextWrapping="Wrap">分以内に予約がある場合、実行しない　(0で録画時も実行)</TextBlock>
                         </Label>
-                        <Label Grid.Column="0" Grid.Row="1" Name="label28" Content="使用チューナー条件" Margin="12,8,20,8" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_ngTunerMin"  Margin="0,8,0,0" Height="25" Width="49" VerticalContentAlignment="Center" />
+                        <Label Grid.Column="0" Grid.Row="1" Name="label28" Content="使用チューナー条件" Margin="12,8,10,0" VerticalAlignment="Top" />
+                        <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_ngTunerMin"  Margin="0,8,0,0" Width="49" VerticalAlignment="Top" />
                         <Label Grid.Column="2" Grid.Row="1" Name="label29" Margin="0,8,0,0">
                             <TextBlock TextWrapping="Wrap">分以内に予約がある場合、使用しない</TextBlock>
                         </Label>
@@ -292,91 +285,94 @@
                 </Grid>
             </TabItem>
             <TabItem Header="HTTPサーバー" Name="tabItem4">
-                <StackPanel Margin="8">
-                    <WrapPanel Margin="0,4,0,0">
-                        <CheckBox Name="checkBox_httpServer" Content="WebUI を使用する" Margin="6,4,-20,0" Width="150" VerticalAlignment="Center" Click="checkBox_httpServer_Click" />
-                        <CheckBox Name="checkBox_httpLog" Content="ログを保存する" Margin="20,4,-20,0" Width="150" VerticalAlignment="Center" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" />
-                        <TextBlock Name="warn_http" Margin="20,4,0,4" Width="10000" TextWrapping="Wrap" Foreground="Red">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="8">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox Name="checkBox_httpServer" Content="WebUI を使用する" Margin="0,0,20,0" Click="checkBox_httpServer_Click" />
+                            <CheckBox Name="checkBox_httpLog" Content="ログを保存する" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" />
+                        </StackPanel>
+                        <TextBlock Name="warn_http" Margin="20,4,0,4" TextWrapping="Wrap" Foreground="Red">
                             WebUI を利用するには EpgTimerSrv.exe と同じフォルダに lua52.dll が必要です。<LineBreak/>
                             入手先：<Hyperlink Click="hyperLink_Click">https://sourceforge.net/projects/luabinaries/files/5.2.4/Windows%20Libraries/Dynamic/</Hyperlink>
                         </TextBlock>
-                    </WrapPanel>
-                    <WrapPanel Margin="0,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
-                        <StackPanel Margin="0,4,-20,0" Orientation="Horizontal">
-                            <Label Content="ポート" Margin="20,0,0,0" Padding="0" Width="100" VerticalContentAlignment="Center" ToolTip="'s' を付けると HTTPS のポート指定になります。&#13;&#10;'r'をつけると HTTPS にリダイレクトします。&#13;&#10;例: 80r,443s" />
-                            <TextBox Name="textBox_httpPort" Margin="0,0,30,0" Width="150" Height="25" VerticalContentAlignment="Center" TextChanged="textBox_httpPort_TextChanged" />
-                        </StackPanel>
-                        <TextBlock Name="warn_ssldll" Margin="20,4,0,4" Width="10000" TextWrapping="Wrap" Foreground="Red">
-                            HTTPS を利用するには EpgTimerSrv.exe と同じフォルダに ssleay32.dll と libeay32.dll が必要です。<LineBreak/>
-                            入手先例：<Hyperlink Click="hyperLink_Click">https://wiki.openssl.org/index.php/Binaries</Hyperlink> にある <Hyperlink NavigateUri="http://indy.fulgan.com/SSL?C=N;O=D" Click="hyperLink_Click">http://indy.fulgan.com/SSL</Hyperlink> など
-                        </TextBlock>
-                        <StackPanel Name="warn_sslcertpem">
-                            <TextBlock Margin="20,4,0,0" Width="10000" TextWrapping="Wrap" Foreground="Red">
-                                HTTPS を利用するには EpgTimerSrv.exe と同じフォルダに ssl_cert.pem（秘密鍵+自己署名証明書）が必要です。
-                            </TextBlock>
-                            <Grid Margin="20,4,12,8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="auto"/>
-                                    <ColumnDefinition Width="auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Label Grid.Column="0" Content="openssl の場所"/>
-                                <TextBox Grid.Column="1" Name="textBox_opensslPath" Height="25" VerticalContentAlignment="Center" TextChanged="textBox_opensslPath_TextChanged" />
-                                <Button Grid.Column="2" Name="button_opensslPath" Content="開く" Margin="20,0,0,0" Width="50" Height="25" Click="button_opensslPath_Click" />
-                                <Button Grid.Column="3" Name="button_generatePem" Content="秘密鍵+自己署名証明書を生成する" Margin="20,0,0,0" Width="220" Height="25" Click="button_generatePem_Click"/>
-                            </Grid>
-                        </StackPanel>
-                        <StackPanel Margin="0,4,-20,0" Orientation="Horizontal">
-                            <Label Content="アクセス制御" Margin="20,0,0,0" Padding="0" Width="100" VerticalContentAlignment="Center" />
-                            <TextBox Name="textBox_httpAcl" Margin="0,0,30,0" Width="200" Height="25" VerticalContentAlignment="Center" />
-                        </StackPanel>
-                        <StackPanel Margin="0,4,-20,0" Orientation="Horizontal">
-                            <Label Content="スレッド数" Margin="20,0,0,0" Padding="0" Width="100" VerticalContentAlignment="Center" />
-                            <TextBox Name="textBox_httpThreads" Margin="0,0,30,0" Width="50" Height="25" VerticalContentAlignment="Center" />
-                        </StackPanel>
-                        <StackPanel Margin="0,4,-20,0" Orientation="Horizontal">
-                            <Label Content="タイムアウト時間" Margin="20,0,0,0" Padding="0" Width="100" VerticalContentAlignment="Center" />
-                            <TextBox Name="textBox_httpTimeout" Margin="0,0,0,0" Width="50" Height="25" VerticalContentAlignment="Center" />
-                            <Label Content="秒" Margin="5,0,0,0" Padding="0" Width="25" VerticalContentAlignment="Center" />
-                        </StackPanel>
-                    </WrapPanel>
-                    <Grid Name="grid_paths" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <Label Grid.Row="0" Grid.Column="0" Content="公開フォルダ" Margin="20,4,0,0" Padding="0" VerticalContentAlignment="Center" />
-                        <TextBox Grid.Row="0" Grid.Column="1" Name="textBox_docrootPath" Margin="0,4,0,0" Height="25" VerticalContentAlignment="Center" />
-                        <Button Grid.Row="0" Grid.Column="2" Name="button_docrootPath" Content="開く" Margin="12,4,12,0" Width="44" Height="25" Click="button_docrootPath_Click" />
-                        <Label Grid.Row="1" Grid.Column="0" Content="ffmpeg の場所" Margin="20,4,0,0" Padding="0" VerticalContentAlignment="Center" />
-                        <TextBox Grid.Row="1" Grid.Column="1" Name="textBox_ffmpegPath" Height="25" Margin="0,4,0,0" VerticalContentAlignment="Center" />
-                        <Button Grid.Row="1" Grid.Column="2" Name="button_ffmpegPath" Content="開く" Margin="12,4,12,0"  Width="44" Height="25" Click="button_ffmpegPath_Click" />
-                        <Label Grid.Row="2" Grid.Column="0" Content="readex の場所" Margin="20,4,0,0" Padding="0" VerticalContentAlignment="Center" ToolTip="ini\HttpPublic\video\readtool.zip の中にあります。展開して保存した場所を指定してください。" />
-                        <TextBox Grid.Row="2" Grid.Column="1" Name="textBox_readexPath" Height="25" Margin="0,4,0,0" VerticalContentAlignment="Center" ToolTip="ini\HttpPublic\video\readtool.zip の中にあります。展開して保存した場所を指定してください。" />
-                        <Button Grid.Row="2" Grid.Column="2" Name="button_readexPath" Content="開く" Margin="12,4,12,0" Width="44" Height="25" Click="button_readexPath_Click" />
-                    </Grid>
-                    <WrapPanel Margin="0,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
-                        <CheckBox Name="checkBox_httpAuth" Content="認証を使用する" Margin="20,4,-20,0" Width="150" VerticalAlignment="Center" Click="checkBox_httpAuth_Click"/>
-                        <StackPanel Margin="0,4,-20,0" Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpAuth}">
-                            <Label Content="認証ドメイン" Margin="20,0,0,0" Padding="0" Width="100" VerticalContentAlignment="Center" />
-                            <TextBox Name="textBox_httpAuthDom" Margin="0,0,30,0" Width="200" Height="25" VerticalContentAlignment="Center" />
-                        </StackPanel>
-                        <Button Name="button_register" Content="ユーザー管理" Margin="20,4,30,0" Width="100" Height="25" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpAuth}" Click="button_register_Click"/>
-                    </WrapPanel>
-                    <WrapPanel Margin="0,4,0,0">
-                        <CheckBox Name="checkBox_dlnaServer" Content="DLNA の DMS ぽい機能を使用する" Margin="6,4,-20,0" Width="220" VerticalAlignment="Center" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" Click="checkBox_dlnaServer_Click" />
-                        <TextBlock Name="warn_dlna" Margin="20,4,0,8" Width="10000" TextWrapping="Wrap" Foreground="Red">
+                        <WrapPanel Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
+                            <StackPanel Margin="0,4,20,0" Orientation="Horizontal">
+                                <Label Content="ポート" MinWidth="100" ToolTip="'s' を付けると HTTPS のポート指定になります。&#13;&#10;'r'をつけると HTTPS にリダイレクトします。&#13;&#10;例: 80r,443s" />
+                                <TextBox Name="textBox_httpPort" Width="150" TextChanged="textBox_httpPort_TextChanged" />
+                            </StackPanel>
+                            <StackPanel Name="warn_ssl" Margin="20,4,0,8">
+                                <!-- 親のWrapPanelの呪縛から逃れるため --><Grid Width="{Binding ActualWidth, ElementName=tabControl1}" />
+                                <TextBlock Name="warn_ssldll" TextWrapping="Wrap" Foreground="Red">
+                                    HTTPS を利用するには EpgTimerSrv.exe と同じフォルダに ssleay32.dll と libeay32.dll が必要です。<LineBreak/>
+                                    入手先例：<Hyperlink Click="hyperLink_Click">https://wiki.openssl.org/index.php/Binaries</Hyperlink> にある <Hyperlink NavigateUri="http://indy.fulgan.com/SSL?C=N;O=D" Click="hyperLink_Click">http://indy.fulgan.com/SSL</Hyperlink> など
+                                </TextBlock>
+                                <StackPanel Name="warn_sslcertpem">
+                                    <TextBlock TextWrapping="Wrap" Foreground="Red">
+                                        HTTPS を利用するには EpgTimerSrv.exe と同じフォルダに ssl_cert.pem（秘密鍵+自己署名証明書）が必要です。
+                                    </TextBlock>
+                                    <WrapPanel Margin="100,0,0,0">
+                                        <StackPanel Orientation="Horizontal" Margin="-100,4,0,0">
+                                            <Label Content="openssl の場所" MinWidth="100" />
+                                            <TextBox Name="textBox_opensslPath" Width="200" Margin="0,0,10,0" TextChanged="textBox_opensslPath_TextChanged" />
+                                        </StackPanel>
+                                        <Button Name="button_opensslPath" Content="開く" Margin="0,4,10,0" Click="button_opensslPath_Click" />
+                                        <Button Name="button_generatePem" Content="秘密鍵+自己署名証明書を生成する" Margin="0,4,10,0" Click="button_generatePem_Click"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Margin="0,4,20,0" Orientation="Horizontal">
+                                <Label Content="アクセス制御" MinWidth="100" />
+                                <TextBox Name="textBox_httpAcl" Width="200" />
+                            </StackPanel>
+                            <StackPanel Margin="0,4,20,0" Orientation="Horizontal">
+                                <Label Content="スレッド数" MinWidth="100" />
+                                <TextBox Name="textBox_httpThreads" Width="50" />
+                            </StackPanel>
+                            <StackPanel Margin="0,4,20,0" Orientation="Horizontal">
+                                <Label Content="タイムアウト時間" MinWidth="100" />
+                                <TextBox Name="textBox_httpTimeout" Width="50" />
+                                <Label Content="秒" />
+                            </StackPanel>
+                            <StackPanel Name="label_httpSSLVersion"  Margin="0,4,20,0" Orientation="Horizontal" ToolTip="受け入れるSSL/TLSプロトコルのバージョン&#x0d;&#x0a;値が大きいほど安全。ガラケーなどでSSL3.0が必要な場合は1にする">
+                                <Label Content="SSL/TLSバージョン" MinWidth="100" />
+                                <TextBox Name="textBox_httpSSLVersion" Width="50" />
+                            </StackPanel>
+                        </WrapPanel>
+                        <Grid Name="grid_paths" Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" MinWidth="100"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Row="0" Grid.Column="0" Content="公開フォルダ" Margin="0,4,0,0" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Name="textBox_docrootPath" Margin="0,4,0,0" />
+                            <Button Grid.Row="0" Grid.Column="2" Name="button_docrootPath" Content="開く" Margin="10,4,0,0" Click="button_docrootPath_Click" />
+                            <Label Grid.Row="1" Grid.Column="0" Content="ffmpeg の場所" Margin="0,4,0,0" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Name="textBox_ffmpegPath" Margin="0,4,0,0" />
+                            <Button Grid.Row="1" Grid.Column="2" Name="button_ffmpegPath" Content="開く" Margin="10,4,0,0" Click="button_ffmpegPath_Click" />
+                            <Label Grid.Row="2" Grid.Column="0" Content="readex の場所" Margin="0,4,0,0" ToolTip="{Binding ToolTip, ElementName=textBox_readexPath}"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Name="textBox_readexPath" Margin="0,4,0,0" ToolTip="ini\HttpPublic\video\readtool.zip の中にあります。展開して保存した場所を指定してください。" />
+                            <Button Grid.Row="2" Grid.Column="2" Name="button_readexPath" Content="開く" Margin="10,4,0,0" Click="button_readexPath_Click" />
+                        </Grid>
+                        <WrapPanel Margin="20,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
+                            <CheckBox Name="checkBox_httpAuth" Content="認証を使用する" Margin="-20,0,20,0" Click="checkBox_httpAuth_Click"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpAuth}">
+                                <Label Content="認証ドメイン" />
+                                <TextBox Name="textBox_httpAuthDom" Width="200" />
+                            </StackPanel>
+                            <Button Name="button_register" Content="ユーザー管理" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpAuth}" Click="button_register_Click"/>
+                        </WrapPanel>
+                        <CheckBox Name="checkBox_dlnaServer" Content="DLNA の DMS ぽい機能を使用する" Margin="0,10,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" Click="checkBox_dlnaServer_Click" />
+                        <TextBlock Name="warn_dlna" Margin="20,4,0,4" TextWrapping="Wrap" Foreground="Red">
                             DLNA の DMS ぽい機能を利用するには ini\HttpPublic フォルダにある dlna 以下のフォルダを公開フォルダにコピーしてください。
                         </TextBlock>
-                    </WrapPanel>
-                </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </Grid>

@@ -749,6 +749,8 @@ namespace EpgTimer
                 default                     : return "";
             }
         }
+
+#if false
         public String ConvertReserveText(ReserveData reserveInfo)
         {
             String view = ConvertTimeText(reserveInfo.StartTime, reserveInfo.DurationSecond, false, false, false) + "\r\n";
@@ -873,6 +875,7 @@ namespace EpgTimer
 
             return view;
         }
+#endif
 
         public String ConvertProgramText(EpgEventInfo eventInfo, EventInfoTextMode textMode)
         {
@@ -1174,17 +1177,17 @@ namespace EpgTimer
 
         public String ConvertTunerText(uint tunerID)
         {
+            string tunerName = "";
             TunerReserveInfo info;
-            string retv = "";
-            if (tunerID == 0)
+            if (DB.TunerReserveList.TryGetValue(tunerID, out info))
             {
-                retv = "自動";
+                tunerName = info.tunerName;
             }
-            else if (DB.TunerReserveList.TryGetValue(tunerID, out info))
+            else if (tunerID != 0)
             {
-                retv = new TunerSelectInfo(info.tunerName, tunerID).ToString();
+                tunerName = "不明なチューナー";
             }
-            return retv;
+            return new TunerSelectInfo(tunerName, tunerID).ToString();
         }
 
         public String ConvertViewModeText(int viewMode)
@@ -1680,6 +1683,22 @@ namespace EpgTimer
                 }
             }
             return src;
+        }
+
+        public bool? AutoAddViewOrderCheckAndSave(AutoAddListView view, out Dictionary<uint, uint> changeIDTable)
+        {
+            changeIDTable = null;
+            try
+            {
+                if (view == null || view.IsVisible == false || view.dragMover.NotSaved == false) return false;
+                //
+                var cmdPrm = new EpgCmdParam(null);
+                EpgCmds.SaveOrder.Execute(cmdPrm, view);
+                changeIDTable = cmdPrm.Data as Dictionary<uint, uint>;
+                return true;
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
+            return null;
         }
 
     }

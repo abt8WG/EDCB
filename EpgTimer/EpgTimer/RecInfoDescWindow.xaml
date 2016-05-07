@@ -8,19 +8,25 @@
     </Window.Resources>
 -->
     <Grid>
-        <Button Content="再生" Height="23" HorizontalAlignment="Left" Margin="12,12,0,0" Name="button_play" VerticalAlignment="Top" Width="75" Click="button_play_Click" />
-        <TabControl Margin="0,41,0,0" Name="tabControl1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="30,10">
+            <Button Name="button_play" Content="再生" Click="button_play_Click" />
+        </StackPanel>
+        <TabControl Grid.Row="1" Name="tabControl1">
             <TabItem Header="番組情報" Name="tabItem_pgInfo">
                 <Grid>
                     <ScrollViewer Name="scrollViewer1">
-                        <TextBox Name="textBox_pgInfo" IsReadOnly="True" TextWrapping="Wrap" />
+                        <TextBox Name="textBox_pgInfo" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Stretch" VerticalContentAlignment="Top" />
                     </ScrollViewer>
                 </Grid>
             </TabItem>
             <TabItem Header="エラーログ" Name="tabItem_errLog">
                 <Grid>
                     <ScrollViewer Name="scrollViewer2">
-                        <TextBox Name="textBox_errLog" IsReadOnly="True" FontFamily="MS Gothic" />
+                        <TextBox Name="textBox_errLog" IsReadOnly="True" FontFamily="MS Gothic" VerticalAlignment="Stretch" VerticalContentAlignment="Top" />
                     </ScrollViewer>
                 </Grid>
             </TabItem>

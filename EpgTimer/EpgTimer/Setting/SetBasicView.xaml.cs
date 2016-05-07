@@ -1,20 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace EpgTimer.Setting
 {
@@ -302,6 +293,7 @@ namespace EpgTimer.Setting
                 textBox_httpAcl.Text = IniFileHandler.GetPrivateProfileString("SET", "HttpAccessControlList", "+127.0.0.1", SettingPath.TimerSrvIniPath);
                 textBox_httpThreads.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpNumThreads", 3, SettingPath.TimerSrvIniPath).ToString();
                 textBox_httpTimeout.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpRequestTimeoutSec", 120, SettingPath.TimerSrvIniPath).ToString();
+                textBox_httpSSLVersion.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpSslProtocolVersion", 2, SettingPath.TimerSrvIniPath).ToString();
 
                 string document_root = CommonManager.Instance.NWMode ? "" : TimerSrvFolder + "\\HttpPublic";
                 textBox_docrootPath.Text = IniFileHandler.GetPrivateProfileString("SET", "HttpPublicFolder", document_root, SettingPath.TimerSrvIniPath);
@@ -532,6 +524,10 @@ namespace EpgTimer.Setting
             if (textBox_httpTimeout.IsEnabled)
             {
                 IniFileHandler.WritePrivateProfileString("SET", "HttpRequestTimeoutSec", textBox_httpTimeout.Text, SettingPath.TimerSrvIniPath).ToString();
+            }
+            if (textBox_httpSSLVersion.IsEnabled)
+            {
+                IniFileHandler.WritePrivateProfileString("SET", "HttpSslProtocolVersion", textBox_httpSSLVersion.Text, SettingPath.TimerSrvIniPath).ToString();
             }
             if (textBox_httpAuthDom.IsEnabled)
             {
@@ -883,11 +879,13 @@ namespace EpgTimer.Setting
         {
             bool bFile = checkBox_httpServer.IsChecked == false || textBox_httpPort.Text.IndexOf("s") < 0;
             bool bPem = true;
+            label_httpSSLVersion.IsEnabled = !bFile;
             if (!bFile)
             {
                 bFile = File.Exists(TimerSrvFolder + "\\ssleay32.dll") && File.Exists(TimerSrvFolder + "\\libeay32.dll");
                 bPem = File.Exists(TimerSrvFolder + "\\ssl_cert.pem");
             }
+            warn_ssl.Visibility = bFile && bPem ? Visibility.Collapsed : Visibility.Visible;
             warn_ssldll.IsEnabled = bFile == false;
             warn_ssldll.Visibility = bFile? Visibility.Collapsed : Visibility.Visible;
             warn_sslcertpem.IsEnabled = bPem == false;

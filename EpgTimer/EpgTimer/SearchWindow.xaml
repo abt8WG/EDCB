@@ -12,9 +12,10 @@
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="437" />
-            <RowDefinition Height="35" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="410"/>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
         <TabControl Name="tabControl1" TabStripPlacement="Bottom" Margin="0,0,0,3">
             <TabItem Header="検索条件" Name="tabItem1" >
@@ -33,23 +34,23 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <GridSplitter Grid.Row="0" Height="2" HorizontalAlignment="Stretch" Name="gridSplitter1" VerticalAlignment="Bottom" BorderBrush="DarkGray" Background="DarkGray" />
-        <StackPanel Grid.Row="1" Name="stackPanel_button" Orientation="Horizontal">
-            <Button Content="検索" Height="23" Margin="10,0,0,0" Name="button_search" VerticalAlignment="Center" Width="48" />
-            <Button Content="予約" Height="23" Margin="20,0,0,0" Name="button_add_reserve" VerticalAlignment="Center" Width="48" />
-            <Button Content="予約全削除" Height="23" Margin="10,0,0,0" Name="button_delall_reserve" VerticalAlignment="Center" Width="71" />
-            <Button Content="自動予約登録を追加" Height="23" Margin="20,0,0,0" Name="button_add_epgAutoAdd" VerticalAlignment="Center" Width="113" />
-            <Button Content="自動予約登録を変更" Height="23" Margin="10,0,0,0" Name="button_chg_epgAutoAdd" VerticalAlignment="Center" Width="113" />
-            <Button Content="自動予約登録を削除" Height="23" Margin="10,0,0,0" Name="button_del_epgAutoAdd" VerticalAlignment="Center" Width="113" />
-            <Button Content="前へ" Height="23" Margin="20,0,0,0" Name="button_up_epgAutoAdd" VerticalAlignment="Center" Width="48" />
-            <Button Content="次へ" Height="23" Margin="10,0,0,0" Name="button_down_epgAutoAdd" VerticalAlignment="Center" Width="48" />
+        <GridSplitter Grid.Row="0" Name="gridSplitter1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" BorderBrush="DarkGray" Background="DarkGray" />
+        <StackPanel Grid.Row="1" Name="stackPanel_button" Orientation="Horizontal" Margin="0,3,0,0">
+            <Button Name="button_search" Content="検索" Margin="10,0,0,0" />
+            <Button Name="button_add_reserve" Content="予約" Margin="20,0,0,0" />
+            <Button Name="button_delall_reserve" Content="予約全削除" Margin="10,0,0,0" />
+            <Button Name="button_add_epgAutoAdd" Content="自動予約登録を追加" Margin="20,0,0,0" />
+            <Button Name="button_chg_epgAutoAdd" Content="自動予約登録を変更" Margin="10,0,0,0" />
+            <Button Name="button_del_epgAutoAdd" Content="自動予約登録を削除" Margin="10,0,0,0" />
+            <Button Name="button_up_epgAutoAdd" Content="前へ" Margin="20,0,0,0" />
+            <Button Name="button_down_epgAutoAdd" Content="次へ" Margin="10,0,0,0" />
         </StackPanel>
-        <ListView Grid.Row="2" Name="listView_result" Margin="10,10,10,28" Style="{StaticResource DataListViewStyle}" >
+        <ListView Grid.Row="2" Name="listView_result" Margin="10,10,10,5" Style="{StaticResource DataListViewStyle}" >
             <ListView.View>
                 <GridView x:Name="gridView_result" />
             </ListView.View>
         </ListView>
-        <TextBox Grid.Row="2" Name="text_result" Margin="10,0,10,5" Height="23" VerticalAlignment="Bottom" BorderThickness="0" IsReadOnlyCaretVisible="True" IsReadOnly="True" />
-        <CheckBox Grid.Row="2" Content="メインウィンドウの前面に表示" Height="16" Margin="10,0,10,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Name="checkBox_windowPinned" Checked="checkBox_windowPinned_Checked" Unchecked="checkBox_windowPinned_Checked" />
+        <TextBox Grid.Row="3" Name="text_result" Margin="10,0,10,5" BorderThickness="0" IsReadOnlyCaretVisible="True" IsReadOnly="True" />
+        <CheckBox Grid.Row="3" Name="checkBox_windowPinned" Content="メインウィンドウの前面に表示" Margin="10,0,10,5" HorizontalAlignment="Right" Checked="checkBox_windowPinned_Checked" Unchecked="checkBox_windowPinned_Checked" />
     </Grid>
 </Window>
