@@ -51,12 +51,14 @@ namespace EpgTimer
                 MessageBox.Show("不正な入力値によるエラーのため、一部設定のみ更新されました。");
             }
 
+            ServiceStop |= setAppView.ServiceStop;
             this.DialogResult = true;
         }
 
         private void button_cancel_Click(object sender, RoutedEventArgs e)
         {
             IniSetting.Instance.Clear();
+            setEpgView.UpdateStyle(Settings.Instance.NoStyle == 0 ? Settings.Instance.StyleXamlPath : "");
             ServiceStop |= setAppView.ServiceStop;
             this.DialogResult = false;
         }

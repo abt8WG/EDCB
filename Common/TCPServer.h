@@ -26,6 +26,7 @@ public:
 		void* pParam
 		);
 	void StopServer();
+	void NotifyUpdate();
 
 protected:
 	CRITICAL_SECTION m_lock;
@@ -36,6 +37,7 @@ protected:
 	wstring m_acl;
 	CCryptUtil m_hmac;
 
+	WSAEVENT m_hNotifyEvent;
 	BOOL m_stopFlag;
 	HANDLE m_hThread;
 

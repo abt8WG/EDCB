@@ -30,13 +30,13 @@
             </Grid>
             <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                 <Label Name="label3" Content="次の予約が" />
-                <TextBox Name="textBox_ng_min" Margin="10,0" MinWidth="51" />
+                <TextBox Name="textBox_ng_min" Margin="10,0" Style="{StaticResource NumberBox}" />
                 <Label Name="label4" Content="分以内に開始される場合" />
             </StackPanel>
 
             <CheckBox Name="checkBox_ng_usePC" Content="PCを使用中の場合" Margin="0,8,0,0" />
             <StackPanel Orientation="Horizontal" Margin="30,0,0,0">
-                <TextBox Name="textBox_ng_usePC_min" Margin="0,0,10,0" MinWidth="51" />
+                <TextBox Name="textBox_ng_usePC_min" Margin="0,0,10,0" Style="{StaticResource NumberBox}" />
                 <Label Name="label7" Content="分以内にユーザー操作があれば使用中とみなす" />
             </StackPanel>
             <CheckBox Name="checkBox_ng_fileStreaming" Content="追っかけ再生、ストリーミング再生を行っている場合" Margin="0,8,0,0" />

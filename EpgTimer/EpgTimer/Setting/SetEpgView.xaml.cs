@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,7 +27,7 @@ namespace EpgTimer.Setting
 
         private MenuSettingData ctxmSetInfo;
 
-        //Dictionary<string, ColorReferenceViewItem> colorReference;
+        private string styleFile;
 
         public SetEpgView()
         {
@@ -197,12 +198,39 @@ namespace EpgTimer.Setting
                 textBox_LaterTimeHour.Text = (Settings.Instance.LaterTimeHour + 24).ToString();
                 checkBox_displayPresetOnSearch.IsChecked = Settings.Instance.DisplayPresetOnSearch;
                 checkBox_nekopandaToolTip.IsChecked = Settings.Instance.RecItemToolTip;
+                checkBox_displayStatus.IsChecked = Settings.Instance.DisplayStatus;
+                checkBox_displayStatusNotify.IsChecked = Settings.Instance.DisplayStatusNotify;
+                InitializeStyleList();
                 // [予約一覧・共通] - [色]
                 setComboColor1(Settings.Instance.ListDefColor, cmb_ListDefFontColor);
                 setButtonColor1(Settings.Instance.ListDefCustColor, btn_ListDefFontColor);
                 setColors(groupReserveRecModeColors, Settings.Instance.RecModeFontColors, Settings.Instance.RecModeFontCustColors);
                 setColors(groupReserveBackColors, Settings.Instance.ResBackColors, Settings.Instance.ResBackCustColors);
                 setColors(groupStatColors, Settings.Instance.StatColors, Settings.Instance.StatCustColors);
+
+                // [予約簡易表示]
+                textBox_iw_refresh_interval.Text = Settings.Instance.InfoWindowRefreshInterval.ToString();
+                radioButton_iw_based_on_bcst.IsChecked = Settings.Instance.InfoWindowBasedOnBroadcast;
+                radioButton_iw_based_on_rec.IsChecked = !Settings.Instance.InfoWindowBasedOnBroadcast;
+                switch(Settings.Instance.InfoWindowItemFilterLevel)
+                {
+                    default: radioButton_All.IsChecked = true; break;
+                    case 1: radioButton_Level1.IsChecked = true; break;
+                    case 2: radioButton_Level2.IsChecked = true; break;
+                    case 3: radioButton_Level3.IsChecked = true; break;
+                    case int.MaxValue: radioButton_TopN.IsChecked = true; break;
+                }
+                switch (Settings.Instance.InfoWindowItemProgressBarType)
+                {
+                    default: radioButton_ProgressBarOff.IsChecked = true; break;
+                    case 1: radioButton_ProgressBarType1.IsChecked = true; break;
+                    case 2: radioButton_ProgressBarType2.IsChecked = true; break;
+                }
+                textBox_TopN.Text = Settings.Instance.InfoWindowItemTopN.ToString();
+                textBox_iw_item_level1.Text = (Settings.Instance.InfoWindowItemLevel1Seconds / 60.0).ToString();
+                textBox_iw_item_level2.Text = (Settings.Instance.InfoWindowItemLevel2Seconds / 60.0).ToString();
+                textBox_iw_item_level3.Text = (Settings.Instance.InfoWindowItemLevel3Seconds / 60.0).ToString();
+                setColors(groupInfoWinItemBgColors, Settings.Instance.InfoWindowItemBgColors, Settings.Instance.InfoWindowItemBgCustColors);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
@@ -231,7 +259,7 @@ namespace EpgTimer.Setting
                 Settings.Instance.TunerScrollSize = mutil.MyToNumerical(textBox_tuner_mouse_scroll, Convert.ToDouble, 240);
                 Settings.Instance.TunerWidth = mutil.MyToNumerical(textBox_tuner_width, Convert.ToDouble, double.MaxValue, 16, 150);//小さいと描画で落ちる
                 Settings.Instance.TunerMinHeight = mutil.MyToNumerical(textBox_tuner_minHeight, Convert.ToDouble, double.MaxValue, 0.1, 2);
-                Settings.Instance.TunerMinimumLine = mutil.MyToNumerical(textBox_tunerMinLineHeight, Convert.ToDouble, double.MaxValue,0,0);
+                Settings.Instance.TunerMinimumLine = mutil.MyToNumerical(textBox_tunerMinLineHeight, Convert.ToDouble, double.MaxValue, 0, 0);
                 Settings.Instance.TunerDragScroll = mutil.MyToNumerical(textBox_tunerDdragScroll, Convert.ToDouble, 1.5);
                 Settings.Instance.TunerMouseScrollAuto = (checkBox_tuner_scrollAuto.IsChecked == true);
                 Settings.Instance.TunerServiceNoWrap = (checkBox_tuner_service_nowrap.IsChecked == true);
@@ -407,24 +435,86 @@ namespace EpgTimer.Setting
                 Settings.Instance.LaterTimeHour = mutil.MyToNumerical(textBox_LaterTimeHour, Convert.ToInt32, 36, 24, 28) - 24;
                 Settings.Instance.DisplayPresetOnSearch = (checkBox_displayPresetOnSearch.IsChecked == true);
                 Settings.Instance.RecItemToolTip = (checkBox_nekopandaToolTip.IsChecked == true);
+                Settings.Instance.NoStyle = (checkBox_NotNoStyle.IsChecked == true ? 0 : 1);
+                if (Settings.Instance.NoStyle == 0)
+                {
+                    Settings.Instance.StyleXamlPath = (comboBox_Style.SelectedItem as ComboBoxItem).Tag as string;
+                }
+                Settings.Instance.DisplayStatus = (checkBox_displayStatus.IsChecked == true);
+                Settings.Instance.DisplayStatusNotify = (checkBox_displayStatusNotify.IsChecked == true);
                 // [予約一覧・共通] - [色]
                 Settings.Instance.ListDefColor = getComboColor1(cmb_ListDefFontColor);
                 Settings.Instance.ListDefCustColor = getButtonColor1(btn_ListDefFontColor);
                 getColors(groupReserveRecModeColors, Settings.Instance.RecModeFontColors, Settings.Instance.RecModeFontCustColors);
                 getColors(groupReserveBackColors, Settings.Instance.ResBackColors, Settings.Instance.ResBackCustColors);
                 getColors(groupStatColors, Settings.Instance.StatColors, Settings.Instance.StatCustColors);
+
+                // [予約簡易表示]
+                Settings.Instance.InfoWindowRefreshInterval = mutil.MyToNumerical(textBox_iw_refresh_interval, Convert.ToInt32, 60, 1, 10);
+                Settings.Instance.InfoWindowBasedOnBroadcast = (radioButton_iw_based_on_bcst.IsChecked == true);
+                string level = (string)new RadioButton[] {
+                    radioButton_Level1, radioButton_Level2, radioButton_Level3, radioButton_All, radioButton_TopN
+                }.Where(x => x.IsChecked == true).Select(x => x.Tag).FirstOrDefault();
+                Settings.Instance.InfoWindowItemFilterLevel = level != null ? int.Parse(level) : int.MaxValue;
+                string progbar = (string)new RadioButton[] {
+                    radioButton_ProgressBarOff, radioButton_ProgressBarType1, radioButton_ProgressBarType2,
+                }.Where(x => x.IsChecked == true).Select(x => x.Tag).FirstOrDefault();
+                Settings.Instance.InfoWindowItemProgressBarType = progbar != null ? int.Parse(progbar) : 0;
+                Settings.Instance.InfoWindowItemTopN = mutil.MyToNumerical(textBox_TopN, Convert.ToInt32, 10);
+                Settings.Instance.InfoWindowItemLevel1Seconds = mutil.MyToNumerical(textBox_iw_item_level1, Convert.ToInt32, 0) * 60;
+                Settings.Instance.InfoWindowItemLevel2Seconds = mutil.MyToNumerical(textBox_iw_item_level2, Convert.ToInt32, 15) * 60;
+                Settings.Instance.InfoWindowItemLevel3Seconds = mutil.MyToNumerical(textBox_iw_item_level3, Convert.ToInt32, 480) * 60;
+                getColors(groupInfoWinItemBgColors, Settings.Instance.InfoWindowItemBgColors, Settings.Instance.InfoWindowItemBgCustColors);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
+        }
+
+        private void InitializeStyleList()
+        {
+            var defaultStyle = System.Reflection.Assembly.GetEntryAssembly().Location + ".rd.xaml";
+            comboBox_Style.Items.Add(new ComboBoxItem
+            {
+                Content = File.Exists(defaultStyle) ? System.IO.Path.GetFileName(defaultStyle) : "",
+                Tag = defaultStyle
+            });
+            var resourceFolder = SettingPath.ModulePath + "\\Resources";
+            if (Directory.Exists(resourceFolder))
+            {
+                foreach (var file in Directory.EnumerateFiles(resourceFolder, "*.xaml").OrderBy(x => x))
+                {
+                    comboBox_Style.Items.Add(new ComboBoxItem
+                    {
+                        Content = System.IO.Path.GetFileNameWithoutExtension(file),
+                        Tag = file
+                    });
+                }
+            }
+            var style = System.IO.Path.GetFileNameWithoutExtension(Settings.Instance.StyleXamlPath);
+            if (comboBox_Style.Items
+                              .OfType<ComboBoxItem>()
+                              .Where(x => x.Content.Equals(style))
+                              .Select(x => comboBox_Style.SelectedItem = x)
+                              .GetEnumerator()
+                              .MoveNext() == false)
+            {
+                comboBox_Style.SelectedIndex = 0;
+            }
+            checkBox_NotNoStyle.ToolTip = string.Format("チェック時、テーマファイル「{0}」があればそれを、無ければ既定のテーマ(Aero)を適用します。", System.IO.Path.GetFileName(defaultStyle));
+            checkBox_NotNoStyle.IsChecked = Settings.Instance.NoStyle == 0;
+        }
+        public void UpdateStyle(string file)
+        {
+            if (!file.Equals(styleFile))
+            {
+                styleFile = file;
+                CommonUtil.ApplyStyle(file);
+            }
         }
 
         private void button_tab_add_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new EpgDataViewSettingWindow();
-            var topWindow = PresentationSource.FromVisual(this);
-            if (topWindow != null)
-            {
-                dlg.Owner = (Window)topWindow.RootVisual;
-            }
+            dlg.Owner = CommonUtil.GetTopWindow(this);
             if (dlg.ShowDialog() == true)
             {
                 var info = new CustomEpgTabInfo();
@@ -449,11 +539,7 @@ namespace EpgTimer.Setting
                 listBox_tab.UnselectAll();
                 listBox_tab.SelectedItem = setInfo;
                 var dlg = new EpgDataViewSettingWindow();
-                var topWindow = PresentationSource.FromVisual(this);
-                if (topWindow != null)
-                {
-                    dlg.Owner = (Window)topWindow.RootVisual;
-                }
+                dlg.Owner = CommonUtil.GetTopWindow(this);
                 dlg.SetDefSetting(setInfo);
                 if (dlg.ShowDialog() == true)
                 {
@@ -503,7 +589,7 @@ namespace EpgTimer.Setting
             var btn = sender as Button;
 
             var dlg = new ColorSetWindow();
-            dlg.Owner = (Window)PresentationSource.FromVisual(this).RootVisual;
+            dlg.Owner = CommonUtil.GetTopWindow(this);
             Color item = (btn.Background as SolidColorBrush).Color;
             dlg.SetColor(item);
             if (dlg.ShowDialog() == true)
@@ -531,15 +617,31 @@ namespace EpgTimer.Setting
 
         private void button_set_cm_Click(object sender, RoutedEventArgs e)
         {
-            SetContextMenuWindow dlg = new SetContextMenuWindow();
+            var dlg = new SetContextMenuWindow();
+            dlg.Owner = CommonUtil.GetTopWindow(this);
             dlg.info = this.ctxmSetInfo.Clone();
-            dlg.Owner = (Window)PresentationSource.FromVisual(this).RootVisual;
-
             if (dlg.ShowDialog() == true)
             {
                 this.ctxmSetInfo = dlg.info.Clone();
             }
         }
 
+        private void checkBox_NotNoStyle_Checked(object sender, RoutedEventArgs e)
+        {
+            if (comboBox_Style.SelectedIndex >= 0)
+            {
+                UpdateStyle((comboBox_Style.SelectedItem as ComboBoxItem).Tag as string);
+            }
+        }
+
+        private void checkBox_NotNoStyle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            UpdateStyle("");
+        }
+
+        private void comboBox_Style_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateStyle(checkBox_NotNoStyle.IsChecked == true ?(comboBox_Style.SelectedItem as ComboBoxItem).Tag as string : "");
+        }
     }
 }

@@ -14,5 +14,6 @@ EXPORTS
 	GetTimeDelayEP		@11
 	SearchEpgInfoEP		@12
 	EnumEpgInfoListEP	@13
-	DecodeARIBCharacters	@14
+	GetSectionStatusServiceEP	@14
+	DecodeARIBCharacters	@15
 

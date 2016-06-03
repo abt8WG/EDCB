@@ -268,6 +268,7 @@ namespace EpgTimer.Setting
                 checkBox_srvNoBalloonTip.IsEnabled = false; // バルーンチップでの動作通知を抑制する
 
                 checkBox_wakeReconnect.IsEnabled = true; // 起動時に前回接続サーバーに接続する
+                group_WoLWait.IsEnabled = true; // WoL設定
                 checkBox_suspendClose.IsEnabled = true; // 休止／スタンバイ移行時にEpgTimerNWを終了する
                 checkBox_ngAutoEpgLoad.IsEnabled = true; // EPGデータを自動的に読み込まない
                 checkBox_keepTCPConnect.IsEnabled = true; // EpgTimerSrvとの接続維持を試みる
@@ -278,7 +279,6 @@ namespace EpgTimer.Setting
             }
 
             checkBox_autoDelRecInfo.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画結果を自動的に削除する
-            checkBox_autoDelRecFile.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画ファイルも削除する
             checkBox_srvSaveNotifyLog.IsEnabled = IniFileHandler.CanUpdateInifile; // 情報通知ログをファイルに保存する
             checkBox_srvSaveDebugLog.IsEnabled = IniFileHandler.CanUpdateInifile; // デバッグ出力をファイルに保存する
             if (IniFileHandler.CanUpdateInifile == false)
@@ -339,15 +339,21 @@ namespace EpgTimer.Setting
             checkBox_applyMulti.IsChecked = Settings.Instance.ApplyMultiInstance;
             checkBox_noToolTips.IsChecked = Settings.Instance.NoToolTip;
             checkBox_noBallonTips.IsChecked = Settings.Instance.NoBallonTips;
+            textBox_ForceHideBalloonTipSec.Text = Settings.Instance.ForceHideBalloonTipSec.ToString();
+            checkBox_AutoSaveNotifyLog.IsChecked = Settings.Instance.AutoSaveNotifyLog == 1;
             checkBox_showTray.IsChecked = Settings.Instance.ShowTray;
             checkBox_minHide.IsChecked = Settings.Instance.MinHide;
             checkBox_cautionManyChange.IsChecked = Settings.Instance.CautionManyChange;
             textBox_cautionManyChange.Text = Settings.Instance.CautionManyNum.ToString();
+            checkBox_saveSearchKeyword.IsChecked = Settings.Instance.SaveSearchKeyword;
             checkBox_keepTCPConnect.IsChecked = Settings.Instance.ChkSrvRegistTCP;
             checkBox_upDateTaskText.IsChecked = Settings.Instance.UpdateTaskText;
             textBox_chkTimerInterval.Text = Settings.Instance.ChkSrvRegistInterval.ToString();
 
             checkBox_wakeReconnect.IsChecked = Settings.Instance.WakeReconnectNW;
+            checkBox_WoLWait.IsChecked = Settings.Instance.WoLWait;
+            checkBox_WoLWaitRecconect.IsChecked = Settings.Instance.WoLWaitRecconect;
+            textBox_WoLWaitSecond.Text = Settings.Instance.WoLWaitSecond.ToString();
             checkBox_suspendClose.IsChecked = Settings.Instance.SuspendCloseNW;
             checkBox_ngAutoEpgLoad.IsChecked = Settings.Instance.NgAutoEpgLoadNW;
 
@@ -363,6 +369,10 @@ namespace EpgTimer.Setting
             textBox_name2.Text = Settings.Instance.Cust2BtnName;
             textBox_exe2.Text = Settings.Instance.Cust2BtnCmd;
             textBox_opt2.Text = Settings.Instance.Cust2BtnCmdOpt;
+
+            textBox_name3.Text = Settings.Instance.Cust3BtnName;
+            textBox_exe3.Text = Settings.Instance.Cust3BtnCmd;
+            textBox_opt3.Text = Settings.Instance.Cust3BtnCmdOpt;
         }
 
         private void SetAppView_tabItem6()
@@ -658,9 +668,15 @@ namespace EpgTimer.Setting
 
             Settings.Instance.NoToolTip = (checkBox_noToolTips.IsChecked == true);
             Settings.Instance.NoBallonTips = (checkBox_noBallonTips.IsChecked == true);
+            Settings.Instance.ForceHideBalloonTipSec = mutil.MyToNumerical(textBox_ForceHideBalloonTipSec, Convert.ToInt32, 255, 0, Settings.Instance.ForceHideBalloonTipSec);
+            Settings.Instance.AutoSaveNotifyLog = (short)(checkBox_AutoSaveNotifyLog.IsChecked == true ? 1 : 0);
             Settings.Instance.CautionManyChange = (checkBox_cautionManyChange.IsChecked != false);
             Settings.Instance.CautionManyNum = mutil.MyToNumerical(textBox_cautionManyChange, Convert.ToInt32, Settings.Instance.CautionManyNum); 
+            Settings.Instance.SaveSearchKeyword = (checkBox_saveSearchKeyword.IsChecked != false);
             Settings.Instance.WakeReconnectNW = (checkBox_wakeReconnect.IsChecked == true);
+            Settings.Instance.WoLWait = (checkBox_WoLWait.IsChecked == true);
+            Settings.Instance.WoLWaitRecconect = (checkBox_WoLWaitRecconect.IsChecked == true);
+            Settings.Instance.WoLWaitSecond = mutil.MyToNumerical(textBox_WoLWaitSecond, Convert.ToDouble, 3600, 1, Settings.Instance.WoLWaitSecond);
             Settings.Instance.SuspendCloseNW = (checkBox_suspendClose.IsChecked == true);
             Settings.Instance.NgAutoEpgLoadNW = (checkBox_ngAutoEpgLoad.IsChecked == true);
             Settings.Instance.ChkSrvRegistTCP = (checkBox_keepTCPConnect.IsChecked != false);
@@ -679,6 +695,10 @@ namespace EpgTimer.Setting
             Settings.Instance.Cust2BtnName = textBox_name2.Text;
             Settings.Instance.Cust2BtnCmd = textBox_exe2.Text;
             Settings.Instance.Cust2BtnCmdOpt = textBox_opt2.Text;
+
+            Settings.Instance.Cust3BtnName = textBox_name3.Text;
+            Settings.Instance.Cust3BtnCmd = textBox_exe3.Text;
+            Settings.Instance.Cust3BtnCmdOpt = textBox_opt3.Text;
         }
 
         private void SaveSetting_tabItem6()
@@ -688,14 +708,14 @@ namespace EpgTimer.Setting
 
         private void button_standbyCtrl_Click(object sender, RoutedEventArgs e)
         {
-            SetAppCancelWindow dlg = new SetAppCancelWindow();
+            var dlg = new SetAppCancelWindow();
+            dlg.Owner = CommonUtil.GetTopWindow(this);
             dlg.processList = this.ngProcessList;
             dlg.ngMin = this.ngMin;
             dlg.ngUsePC = this.ngUsePC;
             dlg.ngUsePCMin = this.ngUsePCMin;
             dlg.ngFileStreaming = this.ngFileStreaming;
             dlg.ngShareFile = this.ngShareFile;
-            dlg.Owner = (Window)PresentationSource.FromVisual(this).RootVisual;
 
             if (dlg.ShowDialog() == true)
             {
@@ -710,10 +730,10 @@ namespace EpgTimer.Setting
 
         private void button_autoDel_Click(object sender, RoutedEventArgs e)
         {
-            SetApp2DelWindow dlg = new SetApp2DelWindow();
+            var dlg = new SetApp2DelWindow();
+            dlg.Owner = CommonUtil.GetTopWindow(this);
             dlg.extList = this.extList;
             dlg.delChkFolderList = this.delChkFolderList;
-            dlg.Owner = (Window)PresentationSource.FromVisual(this).RootVisual;
 
             if (dlg.ShowDialog() == true)
             {
@@ -748,6 +768,7 @@ namespace EpgTimer.Setting
             button_btnUp.Click += new RoutedEventHandler(bxb.button_up_Click);
             button_btnDown.Click += new RoutedEventHandler(bxb.button_down_Click);
             button_btnAdd.Click += new RoutedEventHandler((sender, e) => button_Add(bxb, buttonItem));
+            button_btnIns.Click += new RoutedEventHandler((sender, e) => button_Add(bxb, buttonItem, true));
             button_btnDel.Click += new RoutedEventHandler((sender, e) => button_Del(bxb, bxt, buttonItem));
             bxb.sourceBoxKeyEnable(listBox_itemBtn, (sender, e) => button_btnAdd.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
             bxb.targetBoxKeyEnable(listBox_viewBtn, (sender, e) => button_btnDel.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
@@ -761,51 +782,26 @@ namespace EpgTimer.Setting
             button_taskUp.Click += new RoutedEventHandler(bxt.button_up_Click);
             button_taskDown.Click += new RoutedEventHandler(bxt.button_down_Click);
             button_taskAdd.Click += new RoutedEventHandler((sender, e) => button_Add(bxt, taskItem));
+            button_taskIns.Click += new RoutedEventHandler((sender, e) => button_Add(bxt, taskItem, true));
             button_taskDel.Click += new RoutedEventHandler((sender, e) => button_Del(bxt, bxb, taskItem));
             bxt.sourceBoxKeyEnable(listBox_itemTask, (sender, e) => button_taskAdd.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
             bxt.targetBoxKeyEnable(listBox_viewTask, (sender, e) => button_taskDel.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
             bxt.doubleClickSetter(listBox_itemTask, (sender, e) => button_taskAdd.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
             bxt.doubleClickSetter(listBox_viewTask, (sender, e) => button_taskDel.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
 
-            buttonItem = new List<string>
-            {
-                "（空白）",
-                "設定",
-                "再接続",
-                "検索",
-                "スタンバイ",
-                "休止",
-                "EPG取得",
-                "EPG再読み込み",
-                "終了",
-                "カスタム１",
-                "カスタム２",
-                "NetworkTV終了",
-                "情報通知ログ",
-                "予約簡易表示"
-            };
             Settings.Instance.ViewButtonList.ForEach(str => listBox_viewBtn.Items.Add(str));
+            buttonItem = Settings.Instance.GetViewButtonAllItems();
             reLoadButtonItem(bxb, buttonItem);
 
-            taskItem = new List<string>
-            {
-                "（セパレータ）",
-                "設定",
-                "再接続",
-                "スタンバイ",
-                "休止",
-                "EPG取得",
-                "終了",
-                "予約簡易表示"
-            };
             Settings.Instance.TaskMenuList.ForEach(str => listBox_viewTask.Items.Add(str));
+            taskItem = Settings.Instance.GetTaskMenuAllItems();
             reLoadButtonItem(bxt, taskItem);
         }
 
-        private void button_Add(BoxExchangeEditor bx, List<string> src)
+        private void button_Add(BoxExchangeEditor bx, List<string> src, bool isInsert = false)
         {
             int pos = bx.SourceBox.SelectedIndex - bx.SourceBox.SelectedItems.Count;
-            bx.addItems(bx.SourceBox, bx.TargetBox);
+            bx.addItems(bx.SourceBox, bx.TargetBox, isInsert);
             reLoadButtonItem(bx, src);
             if (bx.SourceBox.Items.Count != 0)
             {
@@ -841,15 +837,15 @@ namespace EpgTimer.Setting
 
         private void button_recDef_Click(object sender, RoutedEventArgs e)
         {
-            SetDefRecSettingWindow dlg = new SetDefRecSettingWindow();
-            dlg.Owner = (Window)PresentationSource.FromVisual(this).RootVisual;
+            var dlg = new SetDefRecSettingWindow();
+            dlg.Owner = CommonUtil.GetTopWindow(this);
             dlg.ShowDialog();
         }
 
         private void button_searchDef_Click(object sender, RoutedEventArgs e)
         {
-            SetDefSearchSettingWindow dlg = new SetDefSearchSettingWindow();
-            dlg.Owner = (Window)PresentationSource.FromVisual(this).RootVisual;
+            var dlg = new SetDefSearchSettingWindow();
+            dlg.Owner = CommonUtil.GetTopWindow(this);
             dlg.SetDefSetting(defSearchKey);
 
             if (dlg.ShowDialog() == true)
@@ -858,22 +854,9 @@ namespace EpgTimer.Setting
             }
         }
 
-        private void button_exe1_Click(object sender, RoutedEventArgs e)
+        private void button_exe_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.Instance.GetFileNameByDialog(textBox_exe1.Text, "", ".exe");
-            if (path != null)
-            {
-                textBox_exe1.Text = path;
-            }
-        }
-
-        private void button_exe2_Click(object sender, RoutedEventArgs e)
-        {
-            string path = CommonManager.Instance.GetFileNameByDialog(textBox_exe2.Text, "", ".exe");
-            if (path != null)
-            {
-                textBox_exe2.Text = path;
-            }
+            CommonManager.GetFileNameByDialog((sender as Button).DataContext as TextBox, false, "", ".exe");
         }
 
         private void ReLoadStation()
@@ -928,6 +911,21 @@ namespace EpgTimer.Setting
         private void listBox_service_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ReLoadStation();
+        }
+
+        private void checkBox_WoLWaitRecconect_Checked(object sender, RoutedEventArgs e)
+        {
+            checkBox_WoLWait.IsChecked = false;
+        }
+        private void checkBox_WoLWait_Checked(object sender, RoutedEventArgs e)
+        {
+            checkBox_WoLWaitRecconect.IsChecked = false;
+        }
+
+        private void button_clearSerchKeywords(object sender, RoutedEventArgs e)
+        {
+            Settings.Instance.AndKeyList = new List<string>();
+            Settings.Instance.NotKeyList = new List<string>();
         }
 
         private void UpdateServiceBtn()
@@ -991,7 +989,7 @@ namespace EpgTimer.Setting
             {
                 MessageBox.Show("アンインストールに失敗しました。");
             }
-            else if (WaitToExit())
+            else if (started && WaitToExit())
             {
                 ServiceStop |= started;
             }
@@ -1024,10 +1022,7 @@ namespace EpgTimer.Setting
                     {
                         MessageBox.Show("サービスの開始に失敗しました。");
                     }
-                    else
-                    {
-                        ServiceStop = true; // 接続しなおす必要がある。
-                    }
+                    ServiceStop = true; // 接続しなおす必要がある。
                 }
             }
             UpdateServiceBtn();

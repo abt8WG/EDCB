@@ -18,8 +18,8 @@
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
-            <Label Grid.Row="0" Grid.Column="0" Name="label1" Content="録画曜日" Margin="12,12,10,0" MinWidth="80" />
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="0,12,0,0">
+            <Label Grid.Row="0" Grid.Column="0" Name="label1" Content="録画曜日" Margin="12,8,10,0" MinWidth="80" />
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="0,8,0,0">
                 <CheckBox Name="checkBox_week0" Content="日" Margin="0,0,10,0" />
                 <CheckBox Name="checkBox_week1" Content="月" Margin="0,0,10,0" />
                 <CheckBox Name="checkBox_week2" Content="火" Margin="0,0,10,0" />
@@ -30,26 +30,26 @@
                 <CheckBox Name="checkBox_keyDisabled" Content="自動登録を無効にする" Margin="20,0,0,0"/>
             </StackPanel>
 
-            <Label Grid.Row="1" Grid.Column="0" Name="label2" Content="録画時間" Margin="12,5,0,0" MinWidth="80" />
-            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,5,0,0">
-                <ComboBox Name="comboBox_startHH" MinWidth="40" ItemsSource="{Binding}" />
+            <Label Grid.Row="1" Grid.Column="0" Name="label2" Content="録画時間" Margin="12,2,0,0" MinWidth="80" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,2,0,0">
+                <ComboBox Name="comboBox_startHH" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                 <Label Name="label3" Content="：" />
-                <ComboBox Name="comboBox_startMM" MinWidth="40" ItemsSource="{Binding}" />
+                <ComboBox Name="comboBox_startMM" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                 <Label Name="label4" Content="：" />
-                <ComboBox Name="comboBox_startSS" MinWidth="40" ItemsSource="{Binding}" />
+                <ComboBox Name="comboBox_startSS" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                 <Label Name="label5" Content="～" />
-                <ComboBox Name="comboBox_endHH" MinWidth="40" ItemsSource="{Binding}" />
+                <ComboBox Name="comboBox_endHH" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                 <Label Name="label6" Content="：" />
-                <ComboBox Name="comboBox_endMM" MinWidth="40" ItemsSource="{Binding}" />
+                <ComboBox Name="comboBox_endMM" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                 <Label Name="label7" Content="：" />
-                <ComboBox Name="comboBox_endSS" MinWidth="40" ItemsSource="{Binding}" />
+                <ComboBox Name="comboBox_endSS" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
             </StackPanel>
 
-            <Label Grid.Row="2" Grid.Column="0" Name="label8" Content="番組名" Margin="12,5,0,0" MinWidth="80" />
-            <TextBox Grid.Row="2" Grid.Column="1" Name="textBox_title" Margin="0,5,20,0" />
+            <Label Grid.Row="2" Grid.Column="0" Name="label8" Content="番組名" Margin="12,2,0,0" MinWidth="80" />
+            <TextBox Grid.Row="2" Grid.Column="1" Name="textBox_title" Margin="0,2,20,0" />
 
-            <Label Grid.Row="3" Grid.Column="0" Name="label9" Content="サービス" Margin="12,5,0,0" MinWidth="80" />
-            <ComboBox Grid.Row="3" Grid.Column="1" Name="comboBox_service" Margin="0,5,0,0" MinWidth="200" HorizontalAlignment="Left" />
+            <Label Grid.Row="3" Grid.Column="0" Name="label9" Content="サービス" Margin="12,2,0,0" MinWidth="80" />
+            <ComboBox Grid.Row="3" Grid.Column="1" Name="comboBox_service" Margin="0,2,0,0" MinWidth="200" HorizontalAlignment="Left" />
 
             <my:RecSettingView Grid.Row="4" Grid.ColumnSpan="2" x:Name="recSettingView" />
 

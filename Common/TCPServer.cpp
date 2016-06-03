@@ -13,6 +13,7 @@ CTCPServer::CTCPServer(void)
 	m_pParam = NULL;
 	m_dwPort = 8081;
 
+	m_hNotifyEvent = WSA_INVALID_EVENT;
 	m_stopFlag = FALSE;
 	m_hThread = NULL;
 
@@ -69,13 +70,14 @@ BOOL CTCPServer::StartServer(DWORD dwPort, DWORD dwResponseTimeout, LPCWSTR acl,
 
 	setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&b, sizeof(b));
 
-	bind(m_sock, (struct sockaddr *)&addr, sizeof(addr));
-
-	listen(m_sock, 1);
-
 	m_stopFlag = FALSE;
-	m_hThread = (HANDLE)_beginthreadex(NULL, 0, ServerThread, (LPVOID)this, CREATE_SUSPENDED, NULL);
-	ResumeThread(m_hThread);
+	if( bind(m_sock, (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR ||
+	    listen(m_sock, 1) == SOCKET_ERROR ||
+	    (m_hNotifyEvent = WSACreateEvent()) == WSA_INVALID_EVENT ||
+	    (m_hThread = (HANDLE)_beginthreadex(NULL, 0, ServerThread, this, 0, NULL)) == NULL ){
+		StopServer();
+		return FALSE;
+	}
 
 	return TRUE;
 }
@@ -84,12 +86,17 @@ void CTCPServer::StopServer()
 {
 	if( m_hThread != NULL ){
 		m_stopFlag = TRUE;
+		WSASetEvent(m_hNotifyEvent);
 		// スレッド終了待ち
 		if ( ::WaitForSingleObject(m_hThread, 15000) == WAIT_TIMEOUT ){
 			::TerminateThread(m_hThread, 0xffffffff);
 		}
 		CloseHandle(m_hThread);
 		m_hThread = NULL;
+	}
+	if( m_hNotifyEvent != WSA_INVALID_EVENT ){
+		WSACloseEvent(m_hNotifyEvent);
+		m_hNotifyEvent = WSA_INVALID_EVENT;
 	}
 	
 	if( m_sock != INVALID_SOCKET ){
@@ -98,6 +105,13 @@ void CTCPServer::StopServer()
 	}
 
 	m_hmac.Close();
+}
+
+void CTCPServer::NotifyUpdate()
+{
+	if( m_hThread != NULL ){
+		WSASetEvent(m_hNotifyEvent);
+	}
 }
 
 static BOOL TestAcl(struct in_addr addr, wstring acl)
@@ -278,6 +292,10 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 		DWORD tick;
 	};
 	vector<WAIT_INFO> waitList;
+	vector<WSAEVENT> hEventList;
+	hEventList.push_back(pSys->m_hNotifyEvent);
+	hEventList.push_back(WSACreateEvent());
+	WSAEventSelect(pSys->m_sock, hEventList.back(), FD_ACCEPT);
 
 	struct ERR_COUNT {
 		DWORD dwCount;
@@ -287,28 +305,13 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 	std::map<ULONG, ERR_COUNT>::iterator itr_bl;
 
 	while( pSys->m_stopFlag == FALSE ){
-		fd_set ready;
-		struct timeval to;
-		if( waitList.empty() ){
-			//StopServer()が固まらない程度
-			to.tv_sec = 1;
-			to.tv_usec = 0;
-		}else{
-			//適度に迅速
-			to.tv_sec = 0;
-			to.tv_usec = 200000;
-		}
-		FD_ZERO(&ready);
-		FD_SET(pSys->m_sock, &ready);
-		for( size_t i = 0; i < waitList.size(); i++ ){
-			FD_SET(waitList[i].sock, &ready);
-		}
-
-		if( select(0, &ready, NULL, NULL, &to ) == SOCKET_ERROR ){
-			break;
-		}
-		for( size_t i = 0; i < waitList.size(); i++ ){
-			if( FD_ISSET(waitList[i].sock, &ready) == 0 ){
+		DWORD result = WSAWaitForMultipleEvents((DWORD)hEventList.size(), &hEventList[0], FALSE, waitList.empty() ? WSA_INFINITE : 2000, FALSE);
+		if( result == WSA_WAIT_EVENT_0 || result == WSA_WAIT_TIMEOUT ){
+			WSAResetEvent(hEventList[0]);
+			for( size_t i = 0; i < waitList.size(); i++ ){
+				if( waitList[i].cmd == NULL ){
+					continue;
+				}
 				CMD_STREAM stRes;
 				pSys->m_pCmdProc(pSys->m_pParam, waitList[i].cmd, &stRes);
 				if( stRes.param == CMD_NO_RES ){
@@ -317,26 +320,47 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 						continue;
 					}
 				}else{
+					//ブロッキングモードに変更
+					WSAEventSelect(waitList[i].sock, NULL, 0);
+					ULONG x = 0;
+					ioctlsocket(waitList[i].sock, FIONBIO, &x);
 					pSys->SendData(waitList[i].sock, stRes);
+					WSAEventSelect(waitList[i].sock, hEventList[2 + i], FD_READ | FD_CLOSE);
 				}
 				shutdown(waitList[i].sock, SD_BOTH);
+				//タイムアウトか応答済み(ここでは閉じない)
+				delete waitList[i].cmd;
+				waitList[i].cmd = NULL;
 			}
-			//応答待ちソケットは応答済みかタイムアウトか切断を含むなんらかの受信があれば閉じる
-			closesocket(waitList[i].sock);
-			delete waitList[i].cmd;
-			waitList.erase(waitList.begin() + i--);
-		}
-
-		if( FD_ISSET(pSys->m_sock, &ready) ){
-			CBlockLock lock(&pSys->m_lock); // for pSys->m_acl
+		}else if( WSA_WAIT_EVENT_0 + 2 <= result && result < WSA_WAIT_EVENT_0 + hEventList.size() ){
+			size_t i = result - WSA_WAIT_EVENT_0 - 2;
+			WSANETWORKEVENTS events;
+			if( WSAEnumNetworkEvents(waitList[i].sock, hEventList[2 + i], &events) != SOCKET_ERROR ){
+				if( events.lNetworkEvents & FD_CLOSE ){
+					//閉じる
+					closesocket(waitList[i].sock);
+					delete waitList[i].cmd;
+					waitList.erase(waitList.begin() + i);
+					WSACloseEvent(hEventList[2 + i]);
+					hEventList.erase(hEventList.begin() + 2 + i);
+				}else if( events.lNetworkEvents & FD_READ ){
+					//読み飛ばす
+					OutputDebugString(L"Unexpected FD_READ\r\n");
+					char buf[1024];
+					recv(waitList[i].sock, buf, sizeof(buf), 0);
+				}
+			}
+		}else if( result == WSA_WAIT_EVENT_0 + 1 ){
 			struct sockaddr_in client;
 			int len = sizeof(client);
-			SOCKET sock = accept(pSys->m_sock, (struct sockaddr *)&client, &len);
-			if( sock == INVALID_SOCKET ){
-				closesocket(pSys->m_sock);
-				pSys->m_sock = INVALID_SOCKET;
-				break;
-			}else if( TestAcl(client.sin_addr, pSys->m_acl) == FALSE ){
+			SOCKET sock = INVALID_SOCKET;
+			WSANETWORKEVENTS events;
+			if( WSAEnumNetworkEvents(pSys->m_sock, hEventList[1], &events) != SOCKET_ERROR ){
+				if( events.lNetworkEvents & FD_ACCEPT ){
+					sock = accept(pSys->m_sock, (struct sockaddr *)&client, &len);
+				}
+			}
+			if( sock != INVALID_SOCKET && TestAcl(client.sin_addr, pSys->m_acl) == FALSE ){
 				_OutputDebugString(L"Deny from IP:0x%08x\r\n", ntohl(client.sin_addr.s_addr));
 				closesocket(sock);
 				continue;
@@ -351,6 +375,10 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 				}
 			}
 
+			//ブロッキングモードに変更
+			WSAEventSelect(sock, NULL, 0);
+			ULONG x = 0;
+			ioctlsocket(sock, FIONBIO, &x);
 			for(;;){
 				AUTH_INFO auth;
 				CMD_STREAM stCmd;
@@ -381,7 +409,7 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 				if( stRes.param == CMD_NO_RES ){
 					if( stCmd.param == CMD2_EPG_SRV_GET_STATUS_NOTIFY2 ){
 						//保留可能なコマンドは応答待ちリストに移動
-						if( waitList.size() < FD_SETSIZE - 1 ){
+						if( hEventList.size() < WSA_MAXIMUM_WAIT_EVENTS ){
 							WAIT_INFO waitInfo;
 							waitInfo.sock = sock;
 							waitInfo.cmd = new CMD_STREAM;
@@ -390,6 +418,8 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 							waitInfo.cmd->data = stCmd.data;
 							waitInfo.tick = GetTickCount();
 							waitList.push_back(waitInfo);
+							hEventList.push_back(WSACreateEvent());
+							WSAEventSelect(sock, hEventList.back(), FD_READ | FD_CLOSE);
 							sock = INVALID_SOCKET;
 							stCmd.data = NULL;
 						}
@@ -410,6 +440,8 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 				shutdown(sock, SD_BOTH);
 				closesocket(sock);
 			}
+		}else{
+			break;
 		}
 	}
 
@@ -417,7 +449,11 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 		closesocket(waitList.back().sock);
 		delete waitList.back().cmd;
 		waitList.pop_back();
+		WSACloseEvent(hEventList.back());
+		hEventList.pop_back();
 	}
+	WSAEventSelect(pSys->m_sock, NULL, 0);
+	WSACloseEvent(hEventList.back());
 
 	return 0;
 }

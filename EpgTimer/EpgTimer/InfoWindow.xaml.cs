@@ -61,18 +61,13 @@ namespace EpgTimer
             dataContext.PropertyChanged += dataContextChanged;
 
             //リストビュー関連の設定
-            var list_columns = Resources["ReserveItemViewColumns"] as GridViewColumnList;
-            //list_columns.AddRange(Resources["RecSettingViewColumns"] as GridViewColumnList);
+            //var list_columns = Resources["ReserveItemViewColumns"] as GridViewColumnList;
+            ////list_columns.AddRange(Resources["RecSettingViewColumns"] as GridViewColumnList);
+            var progress_list_columns = Resources["ProgressStatusItemViewColumns"] as GridViewColumnList;
 
             lstCtrl = new ListViewController<ReserveItem>(this);
             lstCtrl.SetSavePath(CommonUtil.GetMemberName(() => Settings.Instance.InfoWindowListColumn));
-            lstCtrl.SetViewSetting(listView_InfoWindow, girdView_InfoWindow, false, false, list_columns, null, false);
-
-            var StartTime = list_columns.Find(item => (item.Header as GridViewColumnHeader).Uid == "StartTime");
-            if (StartTime != null)
-            {
-                StartTime.DisplayMemberBinding = new System.Windows.Data.Binding("StartTimeShort");
-            }
+            lstCtrl.SetViewSetting(listView_InfoWindow, girdView_InfoWindow, false, false, progress_list_columns, null, false);
 
             MouseLeftButtonDown += (s, e) => { DragMove(); };
             UpdateWindowState();

@@ -38,6 +38,8 @@ namespace EpgTimer.EpgView
             {
                 return;
             }
+            ItemFontNormal.PrepareCache();
+            ItemFontTitle.PrepareCache();
 
             try
             {

@@ -36,6 +36,9 @@ namespace EpgTimer
                     cmd.Execute(sender, listView_recinfo);
                 });
 
+                //ステータス変更の設定
+                lstCtrl.SetSelectionChangedEventHandler((sender, e) => this.UpdateStatus(1));
+
                 //最初にコマンド集の初期化
                 mc = new CmdExeRecinfo(this);
                 mc.SetFuncGetDataList(isAll => (isAll == true ? lstCtrl.dataList : lstCtrl.GetSelectedItemsList()).RecInfoList());
@@ -64,10 +67,7 @@ namespace EpgTimer
                 //メニューの作成、ショートカットの登録
                 RefreshMenu();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
         public void RefreshMenu()
         {
@@ -83,7 +83,7 @@ namespace EpgTimer
             return lstCtrl.ReloadInfoData(dataList =>
             {
                 ErrCode err = CommonManager.Instance.DB.ReloadrecFileInfo();
-                if (CommonManager.CmdErrMsgTypical(err, "録画情報の取得", this) == false) return false;
+                if (CommonManager.CmdErrMsgTypical(err, "録画情報の取得") == false) return false;
 
                 foreach (RecFileInfo info in CommonManager.Instance.DB.RecFileInfo.Values)
                 {
@@ -96,6 +96,13 @@ namespace EpgTimer
         {
             CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.RecInfo);
             ReloadInfoData();
+        }
+
+        protected override void UpdateStatusData(int mode = 0)
+        {
+            if (mode == 0) this.status[1] = vutil.ConvertRecinfoStatus(lstCtrl.dataList, "録画結果");
+            List<RecInfoItem> sList = lstCtrl.GetSelectedItemsList();
+            this.status[2] = sList.Count == 0 ? "" : vutil.ConvertRecinfoStatus(sList, "　選択中");
         }
     }
 }

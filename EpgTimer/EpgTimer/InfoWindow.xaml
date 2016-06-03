@@ -4,14 +4,33 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EpgTimer"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="EpgTimer" Height="100" Width="370"
         Topmost="{Binding Path=IsTopMost}" Bottommost="{Binding Path=IsBottomMost}"
         ShowInTaskbar="False" Closing="Window_Closing" WindowStyle="ToolWindow">
     <local:InfoWindowBase.Resources>
         <ResourceDictionary>
+            <sys:Double x:Key="ProgressBarHeight">4</sys:Double>
             <Style TargetType="{x:Type ListViewItem}">
-                <Setter Property="IsHitTestVisible" Value="False"/>
+                <Setter Property="IsHitTestVisible" Value="False" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="VerticalContentAlignment" Value="Top" />
+                <Setter Property="BorderThickness" Value="0,0,0,0" />
+                <Setter Property="Background" Value="{Binding Path=Background}" />
+                <Setter Property="Visibility" Value="{Binding Path=Visibility}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Grid Background="{Binding Background}">
+                                <ProgressBar Minimum="{Binding OnAirOrRecStart}" Maximum="{Binding OnAirOrRecEnd}" Value="{Binding OnAirOrRecProgress, Mode=OneWay}"
+                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderThickness="0" BorderBrush="Transparent"
+                                             Visibility="{Binding ProgressBar2Visibility}" />
+                                <GridViewRowPresenter Content="{TemplateBinding Property=ContentControl.Content}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
             <Style x:Key="VisibleHeader" TargetType="{x:Type GridViewColumnHeader}">
                 <Setter Property="Visibility" Value="Visible" />
@@ -20,17 +39,111 @@
             <Style x:Key="HiddenHeader" TargetType="{x:Type GridViewColumnHeader}">
                 <Setter Property="Visibility" Value="Collapsed" />
             </Style>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="UserCtrlView\ReserveListViewStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
+            <local:GridViewColumnList x:Key="ProgressStatusItemViewColumns">
+                <GridViewColumn Width="35">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="状態" Uid="Status" />
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Path=Status}" Foreground="{Binding Path=StatusColor}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn>
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="日時" Uid="StartTime" />
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Path=StartTimeShort}" />
+                                <ProgressBar Minimum="{Binding Path=OnAirOrRecStart}" Maximum="{Binding Path=OnAirOrRecEnd}" Value="{Binding Path=OnAirOrRecProgress, Mode=OneWay}"
+                                             Height="{StaticResource ProgressBarHeight}" Visibility="{Binding ProgressBar1Visibility}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn>
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="時間(長さ)" Uid="ProgramDuration" />
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Path=ProgramDuration}" HorizontalAlignment="Right"/>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path=NetworkName}">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="ネットワーク" Uid="NetworkName" />
+                    </GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path=ServiceName}">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="サービス名" Uid="ServiceName" />
+                    </GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path=EventName}">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="番組名" Uid="EventName" />
+                    </GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path=ProgramContent}">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="番組内容" Uid="ProgramContent" />
+                    </GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path=JyanruKey}">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="ジャンル" Uid="JyanruKey" />
+                    </GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn>
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="有効" Tag="有効/無効" Uid="IsEnabled" />
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <CheckBox IsChecked="{Binding Path=IsEnabled}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path=Comment}">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="予約状況" Uid="Comment" />
+                    </GridViewColumn.Header>
+                </GridViewColumn>
+                <GridViewColumn>
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="予定ファイル名" Uid="RecFileName" />
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <ComboBox ItemsSource="{Binding Path=RecFileName}" SelectedIndex="0" Padding="6,0,5,0" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn DisplayMemberBinding="{Binding Path=ReserveTuner}">
+                    <GridViewColumn.Header>
+                        <GridViewColumnHeader Content="使用予定チューナー" Uid="ReserveTuner" />
+                    </GridViewColumn.Header>
+                </GridViewColumn>
+            </local:GridViewColumnList>
         </ResourceDictionary>
     </local:InfoWindowBase.Resources>
     <Grid>
         <Grid.ContextMenu>
             <ContextMenu>
+                <MenuItem Name="MenuItem_Header" Header="ヘッダーを表示" IsCheckable="True" Click="MenuItem_HeaderClick"/>
+                <MenuItem Header="無効な予約を表示" IsCheckable="True" IsChecked="{Binding Path=IsDisabledReserveItemVisible, Mode=TwoWay}"/>
+                <Separator/>
                 <MenuItem Header="最前面に表示" IsCheckable="True" IsChecked="{Binding Path=IsTopMost, Mode=TwoWay}"/>
                 <MenuItem Header="最背面に表示" IsCheckable="True" IsChecked="{Binding Path=IsBottomMost, Mode=TwoWay}"/>
-                <MenuItem Name="MenuItem_Header" Header="ヘッダーを表示" IsCheckable="True" Click="MenuItem_HeaderClick" />
                 <MenuItem Header="消す" Click="MenuItem_CloseClick"/>
             </ContextMenu>
         </Grid.ContextMenu>

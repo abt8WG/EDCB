@@ -278,9 +278,9 @@ table.insert(ctt, '</div>\n'
 
   ..'<div id="tv-guide-main">\n'
 
-  ..'<div id="hour-container" class="mdl-color-text--white">\n'
-
   ..(NOW and '<div id="line"></div>\n' or '')
+
+  ..'<div id="hour-container" class="mdl-color-text--white">\n'
 )
 
 for i=baseHour,baseHour+interval-1 do
@@ -354,6 +354,7 @@ end
 ct.main=ct.main..table.concat(ctt)..'</div>\n</div>\n'
 
   ..'<form id="autoepg" method="POST" action="autoaddepginfo.html?week=&onid='..onid..'&tsid='..tsid..'&sid='..sid..'">\n'
+  ..'<input type="hidden" name="ctok" value="'..CsrfToken()..'">\n'
   ..'<input type="hidden" name="andKey">\n'
   ..'<input type="hidden" name="notKey">\n'
   ..'<input type="hidden" name="serviceList" value="'..onid..'-'..tsid..'-'..sid..'">\n'

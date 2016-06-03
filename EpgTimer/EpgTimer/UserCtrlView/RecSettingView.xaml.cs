@@ -84,7 +84,6 @@ namespace EpgTimer
 
             if (CommonManager.Instance.NWMode == false)
             {
-                CommonManager.Instance.CtrlCmd.SendNotifyProfileUpdate();
                 ((MainWindow)Application.Current.MainWindow).RefreshAllViewsReserveInfo(MainWindow.UpdateViewMode.ReserveInfoNoTuner);
             }
         }
@@ -426,11 +425,7 @@ namespace EpgTimer
 
         private void button_bat_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.Instance.GetFileNameByDialog(textBox_bat.Text, "", ".bat");
-            if (path != null)
-            {
-                textBox_bat.Text = path;
-            }
+            CommonManager.GetFileNameByDialog(textBox_bat, false, "", ".bat");
         }
 
         private void button_recFolderAdd_Click(object sender, RoutedEventArgs e)
@@ -450,11 +445,7 @@ namespace EpgTimer
             if (listView_recFolder.SelectedItem != null)
             {
                 var setting = new RecFolderWindow();
-                PresentationSource topWindow = PresentationSource.FromVisual(this);
-                if (topWindow != null)
-                {
-                    setting.Owner = (Window)topWindow.RootVisual;
-                }
+                setting.Owner = CommonUtil.GetTopWindow(this);
                 var selectInfo = ((RecFileSetInfoView)listView_recFolder.SelectedItem).Info;
                 setting.SetDefSetting(selectInfo);
                 setting.SetPartialMode(((RecFileSetInfoView)listView_recFolder.SelectedItem).PartialRec);
@@ -486,12 +477,8 @@ namespace EpgTimer
         private void recFolderAdd(bool partialRec)
         {
             var setting = new RecFolderWindow();
+            setting.Owner = CommonUtil.GetTopWindow(this);
             setting.SetPartialMode(partialRec);
-            PresentationSource topWindow = PresentationSource.FromVisual(this);
-            if (topWindow != null)
-            {
-                setting.Owner = (Window)topWindow.RootVisual;
-            }
             if (setting.ShowDialog() == true)
             {
                 var setInfo = new RecFileSetInfo();
@@ -553,11 +540,7 @@ namespace EpgTimer
             try
             {
                 var setting = new AddPresetWindow();
-                PresentationSource topWindow = PresentationSource.FromVisual(this);
-                if (topWindow != null)
-                {
-                    setting.Owner = (Window)topWindow.RootVisual;
-                }
+                setting.Owner = CommonUtil.GetTopWindow(this);
                 if (setting.ShowDialog() == true)
                 {
                     RecPresetItem preCust = FindPresetItem(RecPresetItem.CustomID);
@@ -589,11 +572,7 @@ namespace EpgTimer
                     }
 
                     var setting = new AddPresetWindow();
-                    PresentationSource topWindow = PresentationSource.FromVisual(this);
-                    if (topWindow != null)
-                    {
-                        setting.Owner = (Window)topWindow.RootVisual;
-                    }
+                    setting.Owner = CommonUtil.GetTopWindow(this);
                     setting.SetMode(true);
                     setting.SetName(item.DisplayName);
                     if (setting.ShowDialog() == true)

@@ -200,7 +200,9 @@ namespace EpgTimer
                     }
                     set
                     {
-                        if (!_items.ContainsKey(key) || _items[key] != value)
+                        string old = null;
+                        _items.TryGetValue(key, out old);
+                        if (old != value)
                         {
                             _updates[key] = value;
                         }
@@ -376,7 +378,7 @@ namespace EpgTimer
             {
                 if (_files == null)
                 {
-                    var o = this["Common.Ini"];
+                    var o = this[SettingPath.CommonIniPath];
                 }
                 return canRead;
             }
@@ -392,7 +394,7 @@ namespace EpgTimer
             {
                 if (_files == null)
                 {
-                    var o = this["Common.Ini"];
+                    var o = this[SettingPath.CommonIniPath];
                 }
                 return canUpdate;
             }
@@ -470,6 +472,7 @@ namespace EpgTimer
 
     class SettingPath
     {
+        internal static bool IniPathExceptionSkip = false;
         private static string IniPath
         {
             // サーバー側のINIファイルの直接参照をしなくなったので、IniPath が必要になるのは
@@ -477,7 +480,7 @@ namespace EpgTimer
             // ローカル接続する EpgTimer.exe と EpgTimerSrv.exe のバージョンは揃えるべきだとは思う。
             get
             {
-                if (CommonManager.Instance.NWMode == false)
+                if (CommonManager.Instance.NWMode == false && IniPathExceptionSkip == false)
                 {
                     try
                     {
@@ -491,6 +494,7 @@ namespace EpgTimer
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                        IniPathExceptionSkip = true;
                     }
                 }
                 return ModulePath;
@@ -541,6 +545,15 @@ namespace EpgTimer
                     return "";
                 }
             }
+            set
+            {
+                string path = value.Trim();
+                bool isDefaultPath = string.Compare(path.TrimEnd('\\'), SettingPath.DefSettingFolderPath.TrimEnd('\\'), true) == 0;
+                if (IniFileHandler.CanUpdateInifile == true)
+                {
+                    IniFileHandler.WritePrivateProfileString("SET", "DataSavePath", isDefaultPath == true ? null : path, SettingPath.CommonIniPath);
+                }
+            }
         }
         public static string ModulePath
         {
@@ -565,135 +578,219 @@ namespace EpgTimer
         private string tunerFontName;
         private double tunerFontSize;
 
+        /// <summary>番組表のタイトル名以外に使うフォント名</summary>
         public string FontName
         {
             get { return fontName; }
             set { fontName = value; CommonManager.Instance.VUtil.ItemFontNormal = null; }
         }
+        /// <summary>番組表のタイトル名以外に使うフォントサイズ</summary>
         public double FontSize
         {
             get { return fontSize; }
             set { fontSize = value; CommonManager.Instance.VUtil.ItemFontNormal = null; }
         }
+        /// <summary>番組表のタイトル名に使うフォント名</summary>
         public string FontNameTitle
         {
             get { return fontNameTitle; }
             set { fontNameTitle = value; CommonManager.Instance.VUtil.ItemFontTitle = null; }
         }
+        /// <summary>番組表のタイトル名に使うフォントサイズ</summary>
         public double FontSizeTitle
         {
             get { return fontSizeTitle; }
             set { fontSizeTitle = value; CommonManager.Instance.VUtil.ItemFontTitle = null; }
         }
+        /// <summary>番組表のタイトル名に太字を使う</summary>
         public bool FontBoldTitle
         {
             get { return fontBoldTitle; }
             set { fontBoldTitle = value; CommonManager.Instance.VUtil.ItemFontTitle = null; }
         }
+        /// <summary>使用予定チューナーのサービス名に使うフォント名</summary>
         public string TunerFontNameService
         {
             get { return tunerFontNameService; }
             set { tunerFontNameService = value; CommonManager.Instance.VUtil.ItemFontTunerService = null; }
         }
+        /// <summary>使用予定チューナーのサービス名に使うフォントサイズ</summary>
         public double TunerFontSizeService
         {
             get { return tunerFontSizeService; }
             set { tunerFontSizeService = value; CommonManager.Instance.VUtil.ItemFontTunerService = null; }
         }
+        /// <summary>使用予定チューナーのサービス名に太字を使う</summary>
         public bool TunerFontBoldService
         {
             get { return tunerFontBoldService; }
             set { tunerFontBoldService = value; CommonManager.Instance.VUtil.ItemFontTunerService = null; }
         }
+        /// <summary>使用予定チューナーのサービス名以外に使うフォント名</summary>
         public string TunerFontName
         {
             get { return tunerFontName; }
             set { tunerFontName = value; CommonManager.Instance.VUtil.ItemFontTunerNormal = null; }
         }
+        /// <summary>使用予定チューナーのサービス名以外に使うフォントサイズ</summary>
         public double TunerFontSize
         {
             get { return tunerFontSize; }
             set { tunerFontSize = value; CommonManager.Instance.VUtil.ItemFontTunerNormal = null; }
         }
 
+        /// <summary>番組表でカスタマイズ表示を行う</summary>
         public bool UseCustomEpgView { get; set; }
+        /// <summary>番組表のカスタマイズ表示用の情報</summary>
         public List<CustomEpgTabInfo> CustomEpgTabList { get; set; }
+        /// <summary>番組表の1分当たりの高さ</summary>
         public double MinHeight { get; set; }
+        /// <summary>番組表の最低表示行数</summary>
         public double MinimumHeight { get; set; }
+        /// <summary>番組表のサービス１つの幅</summary>
         public double ServiceWidth { get; set; }
+        /// <summary>番組表のマウススクロールサイズ</summary>
         public double ScrollSize { get; set; }
         //public string FontName { get; set; }
         //public double FontSize { get; set; }
         //public string FontNameTitle { get; set; }
         //public double FontSizeTitle { get; set; }
         //public bool FontBoldTitle { get; set; }
+        /// <summary>ツールチップの表示を抑制する</summary>
         public bool NoToolTip { get; set; }
+        /// <summary>バルーンチップでの動作通知を抑制する</summary>
         public bool NoBallonTips { get; set; }
+        /// <summary>指定タイムアウトでバルーンチップを強制的に閉じる[秒]</summary>
         public int ForceHideBalloonTipSec { get; set; }
+        /// <summary>録画済み一覧のダブルクリックで再生を行う</summary>
         public bool PlayDClick { get; set; }
+        /// <summary>エラー・警告表示にドロップ(映像・音声)、スクランブル未解除(映像・音声)を使う</summary>
         public bool RecinfoErrCriticalDrops { get; set; }
+        /// <summary>番組表のドラッグスクロール倍率</summary>
         public double DragScroll { get; set; }
+        /// <summary>ジャンル別背景色</summary>
         public List<string> ContentColorList { get; set; }
+        /// <summary>ジャンル別背景色・予約枠の色 (カスタム用)</summary>
         public List<UInt32> ContentCustColorList { get; set; }
+        /// <summary>時刻表示背景色・サービス背景色</summary>
         public List<string> EpgEtcColors { get; set; }
+        /// <summary>時刻表示背景色・サービス背景色 (カスタム用)</summary>
         public List<UInt32> EpgEtcCustColors { get; set; }
+        /// <summary>通常の予約枠の色</summary>
         public string ReserveRectColorNormal { get; set; }
+        /// <summary>無効の予約枠の色</summary>
         public string ReserveRectColorNo { get; set; }
+        /// <summary>チューナー不足の予約枠の色</summary>
         public string ReserveRectColorNoTuner { get; set; }
+        /// <summary>一部実行の予約枠の色</summary>
         public string ReserveRectColorWarning { get; set; }
+        /// <summary>自動予約登録不明の予約枠の色</summary>
         public string ReserveRectColorAutoAddMissing { get; set; }
+        /// <summary>予約枠を塗りつぶしで表示</summary>
         public bool ReserveRectBackground { get; set; }
+        /// <summary>番組表のタイトル名に使う色</summary>
         public string TitleColor1 { get; set; }
+        /// <summary>番組表のタイトル名以外に使う使う色</summary>
         public string TitleColor2 { get; set; }
+        /// <summary>番組表のタイトル名に使う色 (カスタム用)</summary>
         public UInt32 TitleCustColor1 { get; set; }
+        /// <summary>番組表のタイトル名以外に使う使う色 (カスタム用)</summary>
         public UInt32 TitleCustColor2 { get; set; }
         //public string TunerFontNameService { get; set; }
         //public double TunerFontSizeService { get; set; }
         //public bool TunerFontBoldService { get; set; }
         //public string TunerFontName { get; set; }
         //public double TunerFontSize { get; set; }
+        /// <summary>使用予定チューナーで使う色</summary>
         public List<string> TunerServiceColors { get; set; }
+        /// <summary>使用予定チューナーで使う色 (カスタム用)</summary>
         public List<UInt32> TunerServiceCustColors { get; set; }
+        /// <summary>使用予定チューナーの1分当たりの高さ</summary>
         public double TunerMinHeight { get; set; }
+        /// <summary>使用予定チューナーの最低表示行数</summary>
         public double TunerMinimumLine { get; set; }
+        /// <summary>使用予定チューナーのドラッグスクロール倍率</summary>
         public double TunerDragScroll { get; set; }
+        /// <summary>使用予定チューナーのマウススクロールサイズ</summary>
         public double TunerScrollSize { get; set; }
+        /// <summary>使用予定チューナーのマウススクロールサイズを自動で決める</summary>
         public bool TunerMouseScrollAuto { get; set; }
+        /// <summary>使用予定チューナーのサービス１つの幅</summary>
         public double TunerWidth { get; set; }
+        /// <summary>使用予定チューナーのサービス名を改行しない</summary>
         public bool TunerServiceNoWrap { get; set; }
+        /// <summary>使用予定チューナーのサービス名と番組名の表示位置をあわせる</summary>
         public bool TunerTitleIndent { get; set; }
+        /// <summary>使用予定チューナーの予約をポップアップ表示する</summary>
         public bool TunerPopup { get; set; }
+        /// <summary>使用予定チューナーのポップアップに優先度と録画モードを表示する</summary>
         public bool TunerPopupRecinfo { get; set; }
+        /// <summary>使用予定チューナーのシングルクリックで予約ダイアログを開く</summary>
         public bool TunerInfoSingleClick { get; set; }
+        /// <summary>使用予定チューナーのサービスのフォント色を優先度で変える</summary>
         public bool TunerColorModeUse { get; set; }
+        /// <summary>使用予定チューナーで無効の予約も表示する</summary>
         public bool TunerDisplayOffReserve { get; set; }
+        /// <summary>番組表の番組名と番組内容の表示位置をあわせる</summary>
         public bool EpgTitleIndent { get; set; }
+        /// <summary>番組表の番組内容をポップアップ表示する</summary>
         public bool EpgPopup { get; set; }
+        /// <summary>番組表の予約のある番組のみポップアップする</summary>
         public bool EpgPopupResOnly { get; set; }
+        /// <summary>番組表の番組内容をグラデーション表示する</summary>
         public bool EpgGradation { get; set; }
+        /// <summary>番組表のサービス・時刻軸をグラデーション表示する</summary>
         public bool EpgGradationHeader { get; set; }
+        /// <summary>番組表の並べ替えする列のヘッダー名</summary>
         public string ResColumnHead { get; set; }
+        /// <summary>番組表の並べ替え操作の方向</summary>
         public ListSortDirection ResSortDirection { get; set; }
+        /// <summary>メインウィンドウの状態</summary>
         public WindowState LastWindowState { get; set; }
+        /// <summary>メインウィンドウの左端の位置</summary>
         public double MainWndLeft { get; set; }
+        /// <summary>メインウィンドウの上端の位置</summary>
         public double MainWndTop { get; set; }
+        /// <summary>メインウィンドウの幅</summary>
         public double MainWndWidth { get; set; }
+        /// <summary>メインウィンドウの高さ</summary>
         public double MainWndHeight { get; set; }
+        /// <summary>×ボタンで最小化する</summary>
         public bool CloseMin { get; set; }
+        /// <summary>最小化で起動する</summary>
         public bool WakeMin { get; set; }
+        /// <summary>上部表示ボタンをタブの位置に表示</summary>
         public bool ViewButtonShowAsTab { get; set; }
+        /// <summary>上部表示ボタンの表示項目</summary>
         public List<string> ViewButtonList { get; set; }
+        /// <summary>タスクアイコンの右クリック表示項目</summary>
         public List<string> TaskMenuList { get; set; }
+        /// <summary>カスタム1ボタンの表示名</summary>
         public string Cust1BtnName { get; set; }
+        /// <summary>カスタム1ボタンの実行exe</summary>
         public string Cust1BtnCmd { get; set; }
+        /// <summary>カスタム1ボタンのコマンドラインオプション</summary>
         public string Cust1BtnCmdOpt { get; set; }
+        /// <summary>カスタム2ボタンの表示名</summary>
         public string Cust2BtnName { get; set; }
+        /// <summary>カスタム2ボタンの実行exe</summary>
         public string Cust2BtnCmd { get; set; }
+        /// <summary>カスタム2ボタンのコマンドラインオプション</summary>
         public string Cust2BtnCmdOpt { get; set; }
+        /// <summary>カスタム3ボタンの表示名</summary>
+        public string Cust3BtnName { get; set; }
+        /// <summary>カスタム3ボタンの実行exe</summary>
+        public string Cust3BtnCmd { get; set; }
+        /// <summary>カスタム3ボタンのコマンドラインオプション</summary>
+        public string Cust3BtnCmdOpt { get; set; }
+        /// <summary>検索用検索キーワードの履歴</summary>
         public List<string> AndKeyList { get; set; }
+        /// <summary>検索用NOTキーワードの履歴</summary>
         public List<string> NotKeyList { get; set; }
+        /// <summary>検索のデフォルト設定</summary>
         public EpgSearchKeyInfo DefSearchKey { get; set; }
         private List<RecPresetItem> recPresetList = null;
+        /// <summary>録画プリセット情報</summary>
         [System.Xml.Serialization.XmlIgnore]
         public List<RecPresetItem> RecPresetList
         {
@@ -719,110 +816,244 @@ namespace EpgTimer
             }
             set { recPresetList = value; }
         }
+        /// <summary>録画済み一覧の並べ替えする列のヘッダー名</summary>
         public string RecInfoColumnHead { get; set; }
+        /// <summary>録画済み一覧の並べ替え操作の方向</summary>
         public ListSortDirection RecInfoSortDirection { get; set; }
+        /// <summary>ドロップをエラー扱いしない閾値</summary>
         public long RecInfoDropErrIgnore { get; set; }
+        /// <summary>ドロップを警告扱いしない閾値</summary>
         public long RecInfoDropWrnIgnore { get; set; }
+        /// <summary>スクランブル未解除を警告扱いしない閾値</summary>
         public long RecInfoScrambleIgnore { get; set; }
+        /// <summary>エラーカウントに含めないドロップ・スクランブル未解除に含めない項目のリスト</summary>
         public List<string> RecInfoDropExclude { get; set; }
+        /// <summary>録画済み一覧のリスト表示で'年'の表示を省略する</summary>
         public bool RecInfoNoYear { get; set; }
+        /// <summary>録画済み一覧のリスト表示で'秒'の表示を省略する</summary>
         public bool RecInfoNoSecond { get; set; }
+        /// <summary>録画済み一覧のリスト表示で長さの'秒'の表示を省略する</summary>
         public bool RecInfoNoDurSecond { get; set; }
+        /// <summary>録画済み一覧以外のリスト表示で'年'の表示を省略する</summary>
         public bool ResInfoNoYear { get; set; }
+        /// <summary>録画済み一覧以外のリスト表示で'秒'の表示を省略する</summary>
         public bool ResInfoNoSecond { get; set; }
+        /// <summary>録画済み一覧以外のリスト表示で長さの'秒'の表示を省略する</summary>
         public bool ResInfoNoDurSecond { get; set; }
+        /// <summary>TvTest.exeのパス</summary>
         public string TvTestExe { get; set; }
+        /// <summary>TvTest.exeのコマンドライン引数</summary>
         public string TvTestCmd { get; set; }
+        /// <summary>NetworkTVモード(録画用アプリやEpgTimerSrvからのUDP、TCP送信)で視聴する</summary>
         public bool NwTvMode { get; set; }
+        /// <summary>NetworkTVモードでUDPを使う</summary>
         public bool NwTvModeUDP { get; set; }
+        /// <summary>NetworkTVモードでTCPを使う</summary>
         public bool NwTvModeTCP { get; set; }
+        /// <summary>再生アプリのexeのパス</summary>
         public string FilePlayExe { get; set; }
+        /// <summary>再生アプリのexeのコマンドライン引数</summary>
         public string FilePlayCmd { get; set; }
+        /// <summary>再生アプリを追っかけ再生にも使用する</summary>
         public bool FilePlayOnAirWithExe { get; set; }
+        /// <summary>フォルダー選択に OpenFileDialog を使う (設定画面無し)</summary>
         public bool OpenFolderWithFileDialog { get; set; }
+        /// <summary>iEPG放送局の項目のリスト</summary>
         public List<IEPGStationInfo> IEpgStationList { get; set; }
+        /// <summary>メニューの設定情報</summary>
         public MenuSettingData MenuSet { get; set; }
+        /// <summary>リモート接続をする</summary>
         public bool NWMode { get; set; }
+        /// <summary>リモート接続先の IP アドレス</summary>
         public string NWServerIP { get; set; }
+        /// <summary>リモート接続先のポート番号</summary>
         public UInt32 NWServerPort { get; set; }
+        /// <summary>リモート接続時の待ち受けポート (0で待ち受けしない)</summary>
         public UInt32 NWWaitPort { get; set; }
+        /// <summary>リモート接続先の Wake on LAN 用 MAC アドレス</summary>
         public string NWMacAdd { get; set; }
+        /// <summary>リモート接続時の認証用パスワード</summary>
         public SerializableSecureString NWPassword { get; set; }
+        /// <summary>旧接続先プリセット</summary>
         public List<NWPresetItem> NWPerset { get; set; }            // obsolete because of typo of 'NWPreset'
+        /// <summary>接続先プリセットのリスト</summary>
         public List<NWPresetItem> NWPreset { get; set; }
+        /// <summary>起動時に前回接続サーバーに接続する</summary>
         public bool WakeReconnectNW { get; set; }
+        /// <summary>Wake on LAN してから接続する</summary>
+        public bool WoLWait { get; set; }
+        /// <summary>接続失敗時に Wake on LAN で再接続を試みる</summary>
+        public bool WoLWaitRecconect { get; set; }
+        /// <summary>Wake on LAN 待機時間[秒]</summary>
+        public double WoLWaitSecond { get; set; }
+        /// <summary>休止／スタンバイ移行時にEpgTimerNWを終了する</summary>
         public bool SuspendCloseNW { get; set; }
+        /// <summary>EPGデータを自動的に読み込まない</summary>
         public bool NgAutoEpgLoadNW { get; set; }
+        /// <summary>EpgTimerSrvとの接続維持を試みる</summary>
         public bool ChkSrvRegistTCP { get; set; }
+        /// <summary>EpgTimerSrvとの接続維持を試みる時間間隔[分]</summary>
         public double ChkSrvRegistInterval { get; set; }
+        /// <summary>TvTestの起動を待つ時間[ミリ秒]</summary>
         public Int32 TvTestOpenWait { get; set; }
+        /// <summary>BonDriverの切り替えを待つ時間[ミリ秒]</summary>
         public Int32 TvTestChgBonWait { get; set; }
-        public List<string> RecEndColors { get; set; }                //録画済リストの背景色
-        public List<uint> RecEndCustColors { get; set; }              //録画済リストのカスタム背景色
-        public string ListDefColor { get; set; }                      //各画面のリストのデフォルト文字色
-        public UInt32 ListDefCustColor { get; set; }                  //各画面のリストのデフォルトカスタム文字色
-        public List<string> RecModeFontColors { get; set; }           //予約リストなどの録画モードごとの文字色
-        public List<uint> RecModeFontCustColors { get; set; }         //予約リストなどの録画モードごとのカスタム文字色
-        public List<string> ResBackColors { get; set; }               //予約リストなどの背景色
-        public List<uint> ResBackCustColors { get; set; }             //予約リストなどのカスタム背景色
-        public List<string> StatColors { get; set; }                  //予約リストなどの「状態」列の予約色
-        public List<uint> StatCustColors { get; set; }                //予約リストなどの「状態」列のカスタム予約色
+        /// <summary>録画済一覧の背景色</summary>
+        public List<string> RecEndColors { get; set; }
+        /// <summary>録画済一覧の背景色 (カスタム用)</summary>
+        public List<uint> RecEndCustColors { get; set; }
+        /// <summary>各画面のリストのデフォルト文字色</summary>
+        public string ListDefColor { get; set; }
+        /// <summary>各画面のリストのデフォルト文字色 (カスタム用)</summary>
+        public UInt32 ListDefCustColor { get; set; }
+        /// <summary>予約リストなどの録画モードごとの文字色</summary>
+        public List<string> RecModeFontColors { get; set; }
+        /// <summary>予約リストなどの録画モードごとの文字色 (カスタム用)</summary>
+        public List<uint> RecModeFontCustColors { get; set; }
+        /// <summary>予約リストなどの背景色</summary>
+        public List<string> ResBackColors { get; set; }
+        /// <summary>予約リストなどの背景色 (カスタム用)</summary>
+        public List<uint> ResBackCustColors { get; set; }
+        /// <summary>予約リストなどの「状態」列の予約色</summary>
+        public List<string> StatColors { get; set; }
+        /// <summary>予約リストなどの「状態」列の予約色 (カスタム用)</summary>
+        public List<uint> StatCustColors { get; set; }
+        /// <summary>番組表のシングルクリックで予約ダイアログを開く</summary>
         public bool EpgInfoSingleClick { get; set; }
+        /// <summary>番組表の番組詳細タブを選択した状態で予約ダイアログを開く</summary>
         public byte EpgInfoOpenMode { get; set; }
+        /// <summary>BATファイルの起動方法 (0:最小化, 1:非表示) (設定画面無し)</summary>
         public UInt32 ExecBat { get; set; }
+        /// <summary>スタンバイ、休止ボタンでもカウントダウンを表示</summary>
         public UInt32 SuspendChk { get; set; }
+        /// <summary>スタンバイ、休止ボタンでもカウントダウンを表示する時間[秒]</summary>
         public UInt32 SuspendChkTime { get; set; }
+        /// <summary>予約一覧で表示する列項目のリスト</summary>
         public List<ListColumnInfo> ReserveListColumn { get; set; }
+        /// <summary>録画済み一覧で表示する列項目のリスト</summary>
         public List<ListColumnInfo> RecInfoListColumn { get; set; }
+        /// <summary>キーワード予約で表示する列項目のリスト</summary>
         public List<ListColumnInfo> AutoAddEpgColumn { get; set; }
+        /// <summary>プログラム予約で表示する列項目のリスト</summary>
         public List<ListColumnInfo> AutoAddManualColumn { get; set; }
+        /// <summary>番組表のリスト表示で表示する列項目のリスト</summary>
         public List<ListColumnInfo> EpgListColumn { get; set; }
+        /// <summary>番組表のリスト表示の並べ替えする列のヘッダー名</summary>
         public string EpgListColumnHead { get; set; }
+        /// <summary>番組表のリスト表示の並べ替え操作の方向</summary>
         public ListSortDirection EpgListSortDirection { get; set; }
+        /// <summary>検索で表示する列項目のリスト</summary>
         public List<ListColumnInfo> SearchWndColumn { get; set; }
+        /// <summary>検索の並べ替えする列のヘッダー名</summary>
         public string SearchColumnHead { get; set; }
+        /// <summary>検索の並べ替え操作の方向</summary>
         public ListSortDirection SearchSortDirection { get; set; }
+        /// <summary>検索ウィンドウの左端の位置</summary>
         public double SearchWndLeft { get; set; }
+        /// <summary>検索ウィンドウの上端の位置</summary>
         public double SearchWndTop { get; set; }
+        /// <summary>検索ウィンドウの幅</summary>
         public double SearchWndWidth { get; set; }
+        /// <summary>検索ウィンドウの高さ</summary>
         public double SearchWndHeight { get; set; }
+        /// <summary>検索ウィンドウをメインウィンドウの前面に表示する</summary>
         public bool SearchWndPinned { get; set; }
+        /// <summary>検索/キーワード予約ダイアログで検索語を保存する</summary>
+        public bool SaveSearchKeyword { get; set; }
+        /// <summary>情報通知をファイルに記録する</summary>
         public short AutoSaveNotifyLog { get; set; }
+        /// <summary>タスクトレイアイコンを表示する</summary>
         public bool ShowTray { get; set; }
+        /// <summary>最小化時にタスクトレイに格納する</summary>
         public bool MinHide { get; set; }
+        /// <summary>番組表のマウススクロールサイズを自動で決める</summary>
         public bool MouseScrollAuto { get; set; }
+        /// <summary>テーマを適用しない</summary>
         public int NoStyle { get; set; }
+        /// <summary>適用するテーマファイルのパス</summary>
+        public string StyleXamlPath { get; set; }
+        /// <summary>多数の項目を処理するとき警告する</summary>
         public bool CautionManyChange { get; set; }
+        /// <summary>処理を警告する時の項目数</summary>
         public int CautionManyNum { get; set; }
+        /// <summary>録画中または開始直前の予約を変更・削除するとき警告する</summary>
         public bool CautionOnRecChange { get; set; }
+        /// <summary>予約を変更・削除するとき警告するまでの時間[分]</summary>
         public int CautionOnRecMarginMin { get; set; }
+        /// <summary>自動予約登録の変更時に合わせて予約を変更する</summary>
         public bool SyncResAutoAddChange { get; set; }
+        /// <summary>自動予約登録の変更時、予約を一度削除してから再登録する (無効の予約を除く)</summary>
         public bool SyncResAutoAddChgNewRes { get; set; }
+        /// <summary>自動予約登録の削除時に合わせて予約を削除する</summary>
         public bool SyncResAutoAddDelete { get; set; }
+        /// <summary>予約削除時の確認時に表示する項目数 (設定画面無し)</summary>
         public int KeyDeleteDisplayItemNum { get; set; }
+        /// <summary>番組表の切り替え時にも強調表示をする</summary>
         public bool DisplayNotifyEpgChange { get; set; }
+        /// <summary>番組表などへジャンプしたときの強調表示の継続時間[秒]</summary>
         public double DisplayNotifyJumpTime { get; set; }
+        /// <summary>自動予約登録(キーワード予約、プログラム予約)を見失った予約を強調表示する</summary>
         public bool DisplayReserveAutoAddMissing { get; set; }
+        /// <summary>番組表を一時的に変更する</summary>
         public bool TryEpgSetting { get; set; }
+        /// <summary>深夜時間表示をする</summary>
         public bool LaterTimeUse { get; set; }
+        /// <summary>深夜時間とする最終時刻[時]</summary>
         public int LaterTimeHour { get; set; }
+        /// <summary>検索/キーワード予約ダイアログの録画設定タブにプリセットを表示する</summary>
         public bool DisplayPresetOnSearch { get; set; }
+        /// <summary>番組情報・エラーログをキャッシュする</summary>
         public bool RecInfoExtraDataCache { get; set; }
+        /// <summary>番組情報・エラーログのキャッシュ時、不要データを削除する</summary>
         public bool RecInfoExtraDataCacheOptimize { get; set; }
+        /// <summary>番組情報・エラーログのキャッシュ時、再接続時も保持する</summary>
         public bool RecInfoExtraDataCacheKeepConnect { get; set; }
+        /// <summary>タスクトレイアイコンのツールチップを更新する</summary>
         public bool UpdateTaskText { get; set; }
+        /// <summary>ステータス表示をする</summary>
+        public bool DisplayStatus { get; set; }
+        /// <summary>主要操作の操作結果を表示をする</summary>
+        public bool DisplayStatusNotify { get; set; }
 
+        /// <summary>多重起動を許す</summary>
         public bool ApplyMultiInstance { get; set; }
-        public double ReserveMinHeight { get; set; }
-        public bool ReservePopup { get; set; }
-        public bool AlwaysSaveEpgSetting { get; set; }
+        /// <summary>ウィンドウのサイズや位置、状態などを保存するリスト</summary>
         public SerializableDictionary<string, WINDOWPLACEMENT> Placement { get; set; }
+        /// <summary>予約簡易表示で表示する列項目のリスト</summary>
         public List<ListColumnInfo> InfoWindowListColumn { get; set; }
+        /// <summary>予約簡易表示のウィンドウタイトルを表示する</summary>
         public bool InfoWindowTitleIsVisible { get; set; }
+        /// <summary>予約簡易表示のリストのヘッダーを表示する</summary>
         public bool InfoWindowHeaderIsVisible { get; set; }
+        /// <summary>予約簡易表示を最前面に表示する</summary>
         public bool InfoWindowTopMost { get; set; }
+        /// <summary>予約簡易表示を最背面に表示する</summary>
         public bool InfoWindowBottomMost { get; set; }
+        /// <summary>予約簡易表示で無効予約を表示する</summary>
+        public bool InfoWindowDisabledReserveItemVisible { get; set; }
+        /// <summary>予約簡易表示を起動時に表示する</summary>
         public bool InfoWindowEnabled { get; set; }
+        /// <summary>予約簡易表示のプログレスバーの更新間隔[秒]</summary>
+        public int InfoWindowRefreshInterval { get; set; }
+        /// <summary>予約簡易表示の進行状況の表示基準を放送時間とする(⇔録画マージンを考慮する)</summary>
+        public bool InfoWindowBasedOnBroadcast { get; set; }
+        /// <summary>予約簡易表示の表示範囲の選択</summary>
+        public int InfoWindowItemFilterLevel { get; set; }
+        /// <summary>予約簡易表示のプログレスバーの選択</summary>
+        public int InfoWindowItemProgressBarType { get; set; }
+        /// <summary>予約簡易表示の表示制限件数</summary>
+        public int InfoWindowItemTopN { get; set; }
+        /// <summary>予約簡易表示の表示範囲1[秒]</summary>
+        public int InfoWindowItemLevel1Seconds { get; set; }
+        /// <summary>予約簡易表示の表示範囲2[秒]</summary>
+        public int InfoWindowItemLevel2Seconds { get; set; }
+        /// <summary>予約簡易表示の表示範囲3[秒]</summary>
+        public int InfoWindowItemLevel3Seconds { get; set; }
+        /// <summary>予約簡易表示の背景色</summary>
+        public List<string> InfoWindowItemBgColors { get; set; }
+        /// <summary>予約簡易表示の背景色 (カスタム用)</summary>
+        public List<UInt32> InfoWindowItemBgCustColors { get; set; }
+        /// <summary>自動予約登録画面で録画予約項目をツールチップ表示する</summary>
         public bool RecItemToolTip { get; set; }
 
         public Settings()
@@ -901,6 +1132,9 @@ namespace EpgTimer
             Cust2BtnName = "";
             Cust2BtnCmd = "";
             Cust2BtnCmdOpt = "";
+            Cust3BtnName = "";
+            Cust3BtnCmd = "";
+            Cust3BtnCmdOpt = "";
             AndKeyList = new List<string>();
             NotKeyList = new List<string>();
             DefSearchKey = new EpgSearchKeyInfo();
@@ -929,12 +1163,15 @@ namespace EpgTimer
             MenuSet = new MenuSettingData();
             NWServerIP = "";
             NWServerPort = 4510;
-            NWWaitPort = 4520;
+            NWWaitPort = 0;
             NWMacAdd = "";
             NWPassword = new SerializableSecureString();
             NWPerset = new List<NWPresetItem>();
             NWPreset = new List<NWPresetItem>();
             WakeReconnectNW = false;
+            WoLWaitRecconect = false;
+            WoLWaitSecond= 30;
+            WoLWait = false;
             SuspendCloseNW = false;
             NgAutoEpgLoadNW = false;
             ChkSrvRegistTCP = false;
@@ -971,11 +1208,13 @@ namespace EpgTimer
             SearchWndWidth = -100;
             SearchWndHeight = -100;
             SearchWndPinned = false;
+            SaveSearchKeyword = true;
             AutoSaveNotifyLog = 0;
             ShowTray = true;
             MinHide = true;
             MouseScrollAuto = false;
             NoStyle = 0;
+            StyleXamlPath = Assembly.GetEntryAssembly().Location + ".rd.xaml";
             CautionManyChange = true;
             CautionManyNum = 10;
             CautionOnRecChange = true;
@@ -997,18 +1236,30 @@ namespace EpgTimer
 
             recPresetList = null;
             ApplyMultiInstance = false;
-            ReserveMinHeight = 2;
-            ReservePopup = false;
-            AlwaysSaveEpgSetting = false;
             Placement = new SerializableDictionary<string, WINDOWPLACEMENT>();
+
             InfoWindowListColumn = new List<ListColumnInfo>();
             InfoWindowTitleIsVisible = true;
             InfoWindowHeaderIsVisible = true;
             InfoWindowTopMost = true;
             InfoWindowBottomMost = false;
+            InfoWindowDisabledReserveItemVisible = false;
             InfoWindowEnabled = false;
+            InfoWindowRefreshInterval = 10;
+            InfoWindowBasedOnBroadcast = true;
+            InfoWindowItemFilterLevel = 10;
+            InfoWindowItemProgressBarType = 1;
+            InfoWindowItemTopN = 10;
+            InfoWindowItemLevel1Seconds = 0;
+            InfoWindowItemLevel2Seconds = 15 * 60;
+            InfoWindowItemLevel3Seconds = 8 * 60 * 60;
+            InfoWindowItemBgColors = new List<string>();
+            InfoWindowItemBgCustColors = new List<UInt32>();
+
             RecItemToolTip = false;
             UpdateTaskText = false;
+            DisplayStatus = false;
+            DisplayStatusNotify = false;
         }
 
         [NonSerialized()]
@@ -1187,6 +1438,21 @@ namespace EpgTimer
                 }
                 _FillList(Instance.StatCustColors, 0xFFFFFFFF, num);
 
+                //予約状態列文字色
+                num = 5;
+                if (Instance.InfoWindowItemBgColors.Count < num)
+                {
+                    defColors = new List<string>{
+                        "OrangeRed",    // ReserveItemLevel1
+                        "DarkOrange",   // ReserveItemLevel2
+                        "LightCyan",    // ReserveItemLevel3
+                        "LightGray",    // ReserveItemDisabled
+                        "LightPink",    // ReserveItemError
+                    };
+                    _FillList(Instance.InfoWindowItemBgColors, defColors);
+                }
+                _FillList(Instance.InfoWindowItemBgCustColors, 0xFFFFFFFF, num);
+
                 if (Instance.ViewButtonList.Count == 0)
                 {
                     Instance.ViewButtonList.Add("設定");
@@ -1297,8 +1563,6 @@ namespace EpgTimer
                     Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
                     Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), 80));
                     Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), 300));
-                    Instance.ResColumnHead = CommonUtil.GetMemberName(() => obj.StartTime);
-                    Instance.ResSortDirection = ListSortDirection.Ascending;
                 }
                 if (Instance.RecInfoDropExclude.Count == 0)
                 {
@@ -1444,6 +1708,35 @@ namespace EpgTimer
         public double TunerFontHeightService
         {
             get { return tunerFontSizeService * CommonManager.Instance.VUtil.ItemFontTunerService.GlyphType.Height; }
+        }
+
+        public List<string> GetViewButtonAllItems()
+        {
+            return new List<string>
+            {
+                "（空白）",
+                "設定",
+                "再接続",
+                "再接続(前回)",
+                "検索",
+                "スタンバイ",
+                "休止",
+                "終了",
+                "EPG取得",
+                "EPG再読み込み",
+                "NetworkTV終了",
+                "情報通知ログ",
+                "予約簡易表示",
+                "カスタム１",
+                "カスタム２",
+                "カスタム３"
+            };
+        }
+        public List<string> GetTaskMenuAllItems()
+        {
+            var taskItem = new List<string> { "（セパレータ）" };
+            taskItem.AddRange(GetViewButtonAllItems().Skip(1));
+            return taskItem;
         }
     }
 }

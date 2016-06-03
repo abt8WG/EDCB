@@ -20,6 +20,8 @@ namespace EpgTimer.Setting
     /// </summary>
     public partial class SetOtherAppView : UserControl
     {
+        private MenuUtil mutil = CommonManager.Instance.MUtil;
+
         public SetOtherAppView()
         {
             InitializeComponent();
@@ -60,6 +62,8 @@ namespace EpgTimer.Setting
                 checkBox_nwTvMode.IsChecked = Settings.Instance.NwTvMode;
                 checkBox_nwUDP.IsChecked = Settings.Instance.NwTvModeUDP;
                 checkBox_nwTCP.IsChecked = Settings.Instance.NwTvModeTCP;
+                textBox_TvTestOpenWait.Text = Settings.Instance.TvTestOpenWait.ToString();
+                textBox_TvTestChgBonWait.Text = Settings.Instance.TvTestChgBonWait.ToString();
 
                 // tabItem_play - ファイル再生
                 textBox_playExe.Text = Settings.Instance.FilePlayExe;
@@ -76,31 +80,11 @@ namespace EpgTimer.Setting
         {
             Settings.Instance.TvTestExe = textBox_exe.Text;
             Settings.Instance.TvTestCmd = textBox_cmd.Text;
-            if (checkBox_nwTvMode.IsChecked == true)
-            {
-                Settings.Instance.NwTvMode = true;
-            }
-            else
-            {
-                Settings.Instance.NwTvMode = false;
-            }
-            if (checkBox_nwUDP.IsChecked == true)
-            {
-                Settings.Instance.NwTvModeUDP = true;
-            }
-            else
-            {
-                Settings.Instance.NwTvModeUDP = false;
-            }
-
-            if (checkBox_nwTCP.IsChecked == true)
-            {
-                Settings.Instance.NwTvModeTCP = true;
-            }
-            else
-            {
-                Settings.Instance.NwTvModeTCP = false;
-            }
+            Settings.Instance.NwTvMode = (checkBox_nwTvMode.IsChecked == true);
+            Settings.Instance.NwTvModeUDP = (checkBox_nwUDP.IsChecked == true);
+            Settings.Instance.NwTvModeTCP = (checkBox_nwTCP.IsChecked == true);
+            Settings.Instance.TvTestOpenWait = mutil.MyToNumerical(textBox_TvTestOpenWait, Convert.ToInt32, 120000, 0, Settings.Instance.TvTestOpenWait);
+            Settings.Instance.TvTestChgBonWait = mutil.MyToNumerical(textBox_TvTestChgBonWait, Convert.ToInt32, 120000, 0, Settings.Instance.TvTestChgBonWait);
 
             if (listBox_bon.IsEnabled)
             {
@@ -119,11 +103,7 @@ namespace EpgTimer.Setting
 
         private void button_exe_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.Instance.GetFileNameByDialog(textBox_exe.Text, "", ".exe");
-            if (path != null)
-            {
-                textBox_exe.Text = path;
-            }
+            CommonManager.GetFileNameByDialog(textBox_exe, false, "", ".exe");
         }
 
         private void button_del_Click(object sender, RoutedEventArgs e)
@@ -152,11 +132,7 @@ namespace EpgTimer.Setting
 
         private void button_playExe_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.Instance.GetFileNameByDialog(textBox_playExe.Text, "", ".exe");
-            if (path != null)
-            {
-                textBox_playExe.Text = path;
-            }
+            CommonManager.GetFileNameByDialog(textBox_playExe, false, "", ".exe");
         }
     }
 }

@@ -42,7 +42,7 @@
             <EventSetter Event="Click" Handler="button_Color_Click"/>
         </Style>
         <!-- 例えば<Grid Resources="{StaticResource cusColorSetPanel}">などとして使えるがデザイン時に反映されないので保留
-        <ResourceDictionary x:Key="cusColorSetPanel" >
+        <ResourceDictionary x:Key="cusColorSetPanel">
             <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource colorCombo}" />
             <Style TargetType="{x:Type Button}" BasedOn="{StaticResource colorButton}" />
         </ResourceDictionary>
@@ -65,14 +65,14 @@
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Label Grid.Column="0" Grid.Row="0" Content="タイトル" Margin="4" VerticalAlignment="Top" />
-                                    <WrapPanel Grid.Column="1" Grid.Row="0" >
+                                    <WrapPanel Grid.Column="1" Grid.Row="0">
                                         <StackPanel Margin="4" Orientation="Horizontal">
                                             <Label Content="フォント" MinWidth="70" />
                                             <ComboBox Name="comboBox_fontTitle" Width="180" />
                                         </StackPanel>
                                         <StackPanel Name="labelFontSize_MaxWidth" Margin="4,4,-70,4" Orientation="Horizontal">
                                             <Label Content="サイズ" MinWidth="70" />
-                                            <TextBox Name="textBox_fontSizeTitle" Width="40" />
+                                            <TextBox Name="textBox_fontSizeTitle" Style="{StaticResource NumberBox}" />
                                             <CheckBox Name="checkBox_fontBoldTitle" Content="太字" Margin="8,0" />
                                         </StackPanel>
                                         <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
@@ -81,14 +81,14 @@
                                         </StackPanel>
                                     </WrapPanel>
                                     <Label Grid.Column="0" Grid.Row="1" Content="タイトル以外" Margin="4" VerticalAlignment="Top" />
-                                    <WrapPanel Grid.Column="1" Grid.Row="1" >
+                                    <WrapPanel Grid.Column="1" Grid.Row="1">
                                         <StackPanel Margin="4" Orientation="Horizontal">
                                             <Label Content="フォント" MinWidth="70" />
                                             <ComboBox Name="comboBox_font" Width="180" />
                                         </StackPanel>
                                         <StackPanel Margin="4,4,-70,4" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
                                             <Label Content="サイズ" MinWidth="70" />
-                                            <TextBox Name="textBox_fontSize" Width="40"/>
+                                            <TextBox Name="textBox_fontSize" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
                                         <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
                                             <ComboBox Name="comboBox_colorTitle2" Style="{StaticResource colorCombo}" Tag="1" />
@@ -107,30 +107,30 @@
                                         <WrapPanel>
                                             <StackPanel Margin="4,4,-110,4" Orientation="Horizontal">
                                                 <Label Content="マウススクロールサイズ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_mouse_scroll" Width="55" />
+                                                <TextBox Name="textBox_mouse_scroll" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                             <CheckBox Name="checkBox_scrollAuto" Content="自動" Margin="120,4,0,4" />
                                         </WrapPanel>
                                         <StackPanel Margin="4" Orientation="Horizontal">
                                             <Label Content="サービス１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                            <TextBox Name="textBox_service_width" Width="55" />
+                                            <TextBox Name="textBox_service_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-                                        <CheckBox Name="checkBox_epg_popup" Margin="9,4" Click="checkBox_epg_popup_Click" >
+                                        <CheckBox Name="checkBox_epg_popup" Margin="9,4" Click="checkBox_epg_popup_Click">
                                             <TextBlock Text="番組内容をポップアップ表示する" TextWrapping="Wrap"/>
                                         </CheckBox>
                                         <CheckBox Name="checkBox_epg_popup_resOnly" Margin="25,0,0,4" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup}">
                                             <TextBlock Text="予約のある番組のみポップアップする" TextWrapping="Wrap"/>
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_singleOpen" Margin="9,4" >
+                                        <CheckBox Name="checkBox_singleOpen" Margin="9,4">
                                             <TextBlock Text="シングルクリックで予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_openInfo" Margin="9,4" >
+                                        <CheckBox Name="checkBox_openInfo" Margin="9,4">
                                             <TextBlock Text="番組詳細タブを選択した状態で予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_title_indent" Margin="9,4" >
+                                        <CheckBox Name="checkBox_title_indent" Margin="9,4">
                                             <TextBlock Text="番組名と番組内容の表示位置をあわせる" TextWrapping="Wrap" />
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_displayNotifyChange" Margin="9,4" >
+                                        <CheckBox Name="checkBox_displayNotifyChange" Margin="9,4">
                                             <TextBlock Text="番組表の切り替え時にも強調表示をする" TextWrapping="Wrap" />
                                         </CheckBox>
                                     </StackPanel>
@@ -138,21 +138,21 @@
                                         <WrapPanel>
                                             <StackPanel Margin="4" Orientation="Horizontal">
                                                 <Label Content="1分あたりの高さ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_minHeight" Width="55" />
+                                                <TextBox Name="textBox_minHeight" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                             <StackPanel Margin="4" Orientation="Horizontal">
                                                 <Label Content="最低表示行数" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_minimumHeight" Width="55" />
+                                                <TextBox Name="textBox_minimumHeight" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                             <StackPanel Margin="4" Orientation="Horizontal">
                                                 <Label Content="ドラッグスクロール倍率" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_dragScroll" Width="55" />
+                                                <TextBox Name="textBox_dragScroll" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                         </WrapPanel>
                                         <WrapPanel Margin="4,4,0,0">
                                             <Label Name="label_MaxWidth" Content="グラデーション表示を行う" Margin="0,0,-130,4"/>
                                             <CheckBox Name="checkBox_gradation" Content="番組" Margin="130,0,-100,4" />
-                                            <CheckBox Name="checkBox_gradationHeader" Margin="130,0,0,4" >
+                                            <CheckBox Name="checkBox_gradationHeader" Margin="130,0,0,4">
                                                 <TextBlock Text="サービス・時刻軸" TextWrapping="Wrap" />
                                             </CheckBox>
                                         </WrapPanel>
@@ -249,7 +249,7 @@
                                     </WrapPanel>
                                 </StackPanel>
                             </GroupBox>
-                            <GroupBox Header="予約枠" Margin="6,6,6,0" >
+                            <GroupBox Header="予約枠" Margin="6,6,6,0">
                                 <StackPanel x:Name="groupEpgColorsReserve">
                                     <WrapPanel>
                                         <StackPanel Orientation="Horizontal" Margin="20,2,0,2">
@@ -385,7 +385,7 @@
                 <TabItem Header="基本">
                     <ScrollViewer>
                         <StackPanel>
-                            <GroupBox Header="フォント" Margin="6,6,6,0" >
+                            <GroupBox Header="フォント" Margin="6,6,6,0">
                                 <Grid Name="groupTunerFontColor">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto" MinWidth="70" />
@@ -403,7 +403,7 @@
                                         </StackPanel>
                                         <StackPanel Margin="4,4,-70,4" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
                                             <Label Content="サイズ" MinWidth="70" />
-                                            <TextBox Name="textBox_fontTunerSizeService" Width="40" />
+                                            <TextBox Name="textBox_fontTunerSizeService" Style="{StaticResource NumberBox}" />
                                             <CheckBox Name="checkBox_fontTunerBoldService" Content="太字" Margin="8,0" />
                                         </StackPanel>
                                         <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
@@ -419,7 +419,7 @@
                                         </StackPanel>
                                         <StackPanel Margin="4,4,-70,4" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
                                             <Label Content="サイズ" MinWidth="70" />
-                                            <TextBox Name="textBox_fontTunerSize" Width="40" />
+                                            <TextBox Name="textBox_fontTunerSize" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
                                         <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
                                             <ComboBox Style="{StaticResource colorCombo}" Tag="1"/>
@@ -436,15 +436,15 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                         <WrapPanel>
-                                            <StackPanel Margin="4,4,-110,4" Orientation="Horizontal" >
+                                            <StackPanel Margin="4,4,-110,4" Orientation="Horizontal">
                                                 <Label Content="マウススクロールサイズ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_tuner_mouse_scroll" Width="55" />
+                                                <TextBox Name="textBox_tuner_mouse_scroll" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                             <CheckBox Name="checkBox_tuner_scrollAuto" Content="自動" Margin="120,4,0,4" />
                                         </WrapPanel>
                                         <StackPanel Margin="4" Orientation="Horizontal">
                                             <Label Content="チューナ１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                            <TextBox Name="textBox_tuner_width" Width="55" />
+                                            <TextBox Name="textBox_tuner_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
                                         <CheckBox Name="checkBox_tuner_popup" Margin="9,4" Click="checkBox_tuner_popup_Click">
                                             <TextBlock Text="予約をポップアップ表示する" TextWrapping="Wrap"></TextBlock>
@@ -452,13 +452,13 @@
                                         <CheckBox Name="checkBox_tuner_popup_recInfo" Margin="25,0,0,4">
                                             <TextBlock Text="ポップアップに優先度と録画モードを表示する" TextWrapping="Wrap" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup}"/>
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_tunerSingleOpen" Margin="9,4" >
+                                        <CheckBox Name="checkBox_tunerSingleOpen" Margin="9,4">
                                             <TextBlock Text="シングルクリックで予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tunerColorModeUse" Margin="9,4" ToolTip="チェックされていない場合はこの画面の設定色が使われます。" Click="checkBox_tunerColorModeUse_Click">
                                             <TextBlock Text="サービスのフォント色を優先度で変える('色'タブの設定)" TextWrapping="Wrap" />
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_tuner_title_indent" Margin="9,4" >
+                                        <CheckBox Name="checkBox_tuner_title_indent" Margin="9,4">
                                             <TextBlock Text="サービス名と番組名の表示位置をあわせる" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tuner_service_nowrap" Content="サービス名を改行しない" Margin="9,4" />
@@ -467,15 +467,15 @@
                                         <WrapPanel>
                                             <StackPanel Margin="4" Orientation="Horizontal">
                                                 <Label Content="1分あたりの高さ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_tuner_minHeight" Width="55" />
+                                                <TextBox Name="textBox_tuner_minHeight" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                             <StackPanel Margin="4" Orientation="Horizontal">
                                                 <Label Content="最低表示行数" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_tunerMinLineHeight" Width="55" />
+                                                <TextBox Name="textBox_tunerMinLineHeight" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                             <StackPanel Margin="4" Orientation="Horizontal">
                                                 <Label Content="ドラッグスクロール倍率" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_tunerDdragScroll" Width="55" />
+                                                <TextBox Name="textBox_tunerDdragScroll" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                         </WrapPanel>
                                         <CheckBox Name="checkBox_tuner_display_offres" Content="無効の予約も表示する" Margin="8,4" />
@@ -491,14 +491,14 @@
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource colorButton}" />
                     </TabItem.Resources>
                     <ScrollViewer>
-                        <GroupBox Header="優先度別サービス色設定" Margin="6,6,6,0" VerticalAlignment="Top" >
+                        <GroupBox Header="優先度別サービス色設定" Margin="6,6,6,0" VerticalAlignment="Top">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto"/>
                                     <ColumnDefinition Width="auto"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" x:Name="groupTunerColors" >
+                                <StackPanel Grid.Column="0" x:Name="groupTunerColors">
                                     <StackPanel Orientation="Horizontal" Margin="20,0,-120,0">
                                         <Label Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                         <Label Content="カスタム色" Width="308" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
@@ -559,22 +559,22 @@
                                     <CheckBox Name="checkBox_CacheOptimize" Content="不要データを削除する" Margin="5,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_ChacheOn, UpdateSourceTrigger=PropertyChanged}"/>
                                     <CheckBox Name="checkBox_CacheKeepConnect" Content="再接続時も保持する" Margin="5,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_ChacheOn, UpdateSourceTrigger=PropertyChanged}"/>
                                     <Label Content="）" />
-                                </StackPanel >
+                                </StackPanel>
                             </WrapPanel>
                             <GroupBox Header="ドロップ・スクランブル未解除" Margin="4,2">
                                 <WrapPanel>
                                     <StackPanel>
                                         <StackPanel Margin="4,2" Orientation="Horizontal">
                                             <Label Content="ドロップをエラー扱いしない閾値" Width="{Binding ActualWidth, ElementName=labelDrops_MaxWidth}" />
-                                            <TextBox Name="textBox_dropErrIgnore" Width="60" />
+                                            <TextBox Name="textBox_dropErrIgnore" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
                                         <StackPanel Margin="4,2" Orientation="Horizontal">
                                             <Label Content="ドロップを警告扱いしない閾値" Width="{Binding ActualWidth, ElementName=labelDrops_MaxWidth}" />
-                                            <TextBox Name="textBox_dropWrnIgnore" Width="60" />
+                                            <TextBox Name="textBox_dropWrnIgnore" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
                                         <StackPanel Margin="4,2" Orientation="Horizontal">
                                             <Label Name="labelDrops_MaxWidth" Content="スクランブル未解除を警告扱いしない閾値 " />
-                                            <TextBox Name="textBox_scrambleIgnore" Width="60" />
+                                            <TextBox Name="textBox_scrambleIgnore" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
                                         <Label Content="※それぞれ-1指定で、ドロップなどを全て無視。" Margin="4,2" />
                                     </StackPanel>
@@ -615,45 +615,57 @@
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
-        <TabItem Header="予約一覧・共通" >
+        <TabItem Header="予約一覧・共通">
             <TabControl>
-                <TabItem Header="基本" >
+                <TabItem Header="基本">
                     <ScrollViewer>
-                        <GroupBox Header="各種設定" Margin="6,6,6,0" VerticalAlignment="Top" >
+                        <GroupBox Header="各種設定" Margin="6,6,6,0" VerticalAlignment="Top">
                             <StackPanel>
                                 <Button Name="button_set_cm" Content="右クリックメニューの設定" Margin="8" HorizontalAlignment="Left" Click="button_set_cm_Click" />
                                 <CheckBox Name="checkBox_displayAutoAddMissing" Margin="8,4" ToolTip="自動予約登録を削除・変更した場合や、EPGのタイトルが変わった場合などに発生する場合があります">
                                     <TextBlock TextWrapping="Wrap">自動予約登録(キーワード予約、プログラム予約)を見失った予約を強調表示する<LineBreak/>※EpgTimerNWでは若干もたつく感じがあるかもしれません</TextBlock>
                                 </CheckBox>
-                                <WrapPanel Margin="10,4">
+                                <WrapPanel Margin="4">
                                     <Label Content="番組表などへジャンプしたときの強調表示の継続時間" />
-                                    <StackPanel Margin="30,0" Orientation="Horizontal">
-                                        <TextBox Name="textBox_DisplayJumpTime" Width="55" />
+                                    <StackPanel Margin="14,0" Orientation="Horizontal">
+                                        <TextBox Name="textBox_DisplayJumpTime" Style="{StaticResource NumberBox}" />
                                         <Label Content="秒" />
                                     </StackPanel>
                                 </WrapPanel>
-                                <StackPanel Orientation="Horizontal" Margin="10,4">
+                                <WrapPanel Margin="4">
                                     <Label Content="リスト表示で省略する(録画済み一覧以外)" />
-                                    <CheckBox Name="checkBox_resNoYear" Content="'年'" Margin="4,0" />
-                                    <CheckBox Name="checkBox_resNoSecond" Content="'秒'" Margin="4,0" ToolTip="たまに'秒'単位の番組も存在します。" />
-                                    <CheckBox Name="checkBox_resNoDurSecond" Content="長さの'秒'" Margin="4,0" ToolTip="たまに'秒'単位の番組も存在します。" />
-                                </StackPanel>
-                                <StackPanel Margin="8,0" Orientation="Horizontal" >
+                                    <StackPanel Margin="14,0" Orientation="Horizontal">
+                                        <CheckBox Name="checkBox_resNoYear" Content="'年'" Margin="4,0" />
+                                        <CheckBox Name="checkBox_resNoSecond" Content="'秒'" Margin="4,0" ToolTip="たまに'秒'単位の番組も存在します。" />
+                                        <CheckBox Name="checkBox_resNoDurSecond" Content="長さの'秒'" Margin="4,0" ToolTip="たまに'秒'単位の番組も存在します。" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel Margin="8,0">
                                     <CheckBox Name="checkBox_LaterTimeUse" Content="深夜時間表示をする" />
-                                    <TextBox Name="textBox_LaterTimeHour" Width="55" Margin="12,0,0,0" />
-                                    <Label Content="時まで" />
-                                </StackPanel>
-                                <CheckBox Name="checkBox_displayPresetOnSearch" Margin="8,4" >
+                                    <StackPanel Margin="14,0" Orientation="Horizontal">
+                                        <TextBox Name="textBox_LaterTimeHour" Style="{StaticResource NumberBox}" />
+                                        <Label Content="時まで" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <CheckBox Name="checkBox_displayPresetOnSearch" Margin="8,4">
                                     <TextBlock TextWrapping="Wrap">検索/キーワード予約ダイアログの録画設定タブにプリセットを表示する</TextBlock>
                                 </CheckBox>
-                                <CheckBox Name="checkBox_nekopandaToolTip" Margin="8,4" >
+                                <CheckBox Name="checkBox_nekopandaToolTip" Margin="8,4">
                                     <TextBlock TextWrapping="Wrap">自動予約登録画面で録画予約項目をツールチップ表示する</TextBlock>
                                 </CheckBox>
+                                <WrapPanel Margin="8,4">
+                                    <CheckBox Name="checkBox_NotNoStyle" Content="テーマを適用する" Checked="checkBox_NotNoStyle_Checked" Unchecked="checkBox_NotNoStyle_Unchecked"/>
+                                    <ComboBox Name="comboBox_Style" Margin="20,0" Width="200" IsEnabled="{Binding IsChecked, ElementName=checkBox_NotNoStyle}" SelectionChanged="comboBox_Style_SelectionChanged" />
+                                </WrapPanel>
+                                <StackPanel Margin="8,4">
+                                    <CheckBox Name="checkBox_displayStatus" Content="ステータス表示をする" />
+                                    <CheckBox Name="checkBox_displayStatusNotify" Content="主要操作の操作結果を表示をする" Margin="14,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_displayStatus, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
                             </StackPanel>
                         </GroupBox>
                     </ScrollViewer>
                 </TabItem>
-                <TabItem Header="色" >
+                <TabItem Header="色">
                     <TabItem.Resources>
                         <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource colorCombo}" />
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource colorButton}" />
@@ -765,6 +777,98 @@
                     </ScrollViewer>
                 </TabItem>
             </TabControl>
+        </TabItem>
+        <TabItem Header="予約簡易表示">
+            <TabItem.Resources>
+                <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource colorCombo}" />
+                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource colorButton}" />
+            </TabItem.Resources>
+            <StackPanel Margin="0,8">
+                <GroupBox Header="進行状況の表示基準" Margin="6,6,6,0">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Name="radioButton_iw_based_on_bcst" Content="放送" Margin="8,4"/>
+                        <RadioButton Name="radioButton_iw_based_on_rec" Content="録画" Margin="8,4" ToolTip="録画マージンを含めた時間を基準にします。"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="表示範囲の選択" Margin="6,6,6,0">
+                    <WrapPanel Margin="8,0">
+                        <RadioButton Name="radioButton_Level1" Content="レベル1のみ" Tag="1" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                        <RadioButton Name="radioButton_Level2" Content="レベル2まで" Tag="2" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                        <RadioButton Name="radioButton_Level3" Content="レベル3まで" Tag="3" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                        <RadioButton Name="radioButton_All"    Content="全て"        Tag="4" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Name="radioButton_TopN" GroupName="groupDisplayLevel" />
+                            <StackPanel Orientation="Horizontal" Margin="10,0,0,0" IsEnabled="{Binding IsChecked, ElementName=radioButton_TopN}">
+                                <TextBox Name="textBox_TopN" Style="{StaticResource NumberBox}" />
+                                <Label Content="件まで" />
+                            </StackPanel>
+                        </StackPanel>
+                    </WrapPanel>
+                </GroupBox>
+                <GroupBox Header="プログレスバーの選択" Margin="6,6,6,0">
+                    <WrapPanel Margin="8,0">
+                        <RadioButton Name="radioButton_ProgressBarOff"   Content="表示しない"           Tag="0" Margin="0,0,20,0" />
+                        <RadioButton Name="radioButton_ProgressBarType1" Content="日時の下に表示"       Tag="1" Margin="0,0,20,0" />
+                        <RadioButton Name="radioButton_ProgressBarType2" Content="録画項目の背景に表示" Tag="2" Margin="0,0,20,0" />
+                        <StackPanel Orientation="Horizontal" ToolTip="プログレスバーを更新する間隔(1～60秒)。">
+                            <Label Content="プログレスバーの更新間隔" />
+                            <TextBox x:Name="textBox_iw_refresh_interval" Style="{StaticResource NumberBox}" />
+                            <Label Content="秒" />
+                        </StackPanel>
+                    </WrapPanel>
+                </GroupBox>
+                <GroupBox Header="背景色" x:Name="groupInfoWinItemBgColors" Margin="6,6,6,0">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                            <Label Content="開始までの時間" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
+                            <Label Content="カスタム色" Width="308" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                            <Grid Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
+                                <Label Content="レベル1" Margin="-10,0,0,0" />
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0" HorizontalAlignment="Right">
+                                    <TextBox x:Name="textBox_iw_item_level1" Style="{StaticResource NumberBox}" />
+                                    <Label Content="分" />
+                                </StackPanel>
+                            </Grid>
+                            <ComboBox Tag="0" />
+                            <Button   Tag="0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                            <Grid Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
+                                <Label Content="レベル2" Margin="-10,0,0,0" />
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0" HorizontalAlignment="Right">
+                                    <TextBox x:Name="textBox_iw_item_level2" Style="{StaticResource NumberBox}" />
+                                    <Label Content="分" />
+                                </StackPanel>
+                            </Grid>
+                            <ComboBox Tag="1" />
+                            <Button   Tag="1" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                            <Grid Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
+                                <Label Content="レベル3" Margin="-10,0,0,0" />
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0" HorizontalAlignment="Right">
+                                    <TextBox x:Name="textBox_iw_item_level3" Style="{StaticResource NumberBox}" />
+                                    <Label Content="分" />
+                                </StackPanel>
+                            </Grid>
+                            <ComboBox Tag="2" />
+                            <Button   Tag="2" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20,10,0,1">
+                            <Label Content="無効な予約" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" Margin="-10,0,10,0" HorizontalContentAlignment="Right" ToolTip="無効な予約" />
+                            <ComboBox Tag="3" />
+                            <Button   Tag="3" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                            <Label Content="不完全な予約" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" Margin="-10,0,10,0" HorizontalContentAlignment="Right" ToolTip="チューナー不足、一部実行、自動予約登録不明な予約" />
+                            <ComboBox Tag="4" />
+                            <Button   Tag="4" />
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
         </TabItem>
     </TabControl>
 </UserControl>

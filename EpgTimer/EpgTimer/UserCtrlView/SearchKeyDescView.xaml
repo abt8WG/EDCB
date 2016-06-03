@@ -32,7 +32,7 @@
                                 <RowDefinition/>
                                 <RowDefinition Height="auto"/>
                             </Grid.RowDefinitions>
-                            <Label Grid.Row="0" Name="label1" Content="ジャンル絞り込み（未登録で全ジャンル対象）" />
+                            <Label Grid.Row="0" Content="ジャンル絞り込み（未登録で全ジャンル対象）" />
                             <ListBox Grid.Row="1" Name="listBox_content" Margin="4" SelectionMode="Extended" DisplayMemberPath="ListBoxView"/>
                             <Grid Grid.Row="2" Margin="4,0">
                                 <Grid.ColumnDefinitions>
@@ -58,7 +58,7 @@
                                 <RowDefinition Height="auto"/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <Label Grid.Row="0" Name="label2" Content="サービス絞り込み" />
+                            <Label Grid.Row="0" Content="サービス絞り込み" />
                             <ListView Grid.Row="1" Name="listView_service" SelectionMode="Single" ItemsSource="{Binding}" >
                                 <ListView.View>
                                     <GridView x:Name="gridView_service">
@@ -102,19 +102,19 @@
                             <RowDefinition/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <Button Grid.ColumnSpan="2" Grid.Row="0" Name="button_all_on" Content="全チェック" Margin="0,0,50,0" Click="button_all_on_Click" />
-                        <Button Grid.ColumnSpan="2" Grid.Row="1" Name="button_video_on" Content="映像サービスのみ" Margin="0,0,50,0" Click="button_video_on_Click" />
-                        <Button Grid.Column="0" Grid.Row="2" Name="button_bs_on" Content="BS映像のみ" Margin="0,0,10,0" Click="button_bs_on_Click" />
-                        <Button Grid.Column="1" Grid.Row="2" Name="button_bs_on2" Content="BS映像" Click="button_bs_on2_Click" />
-                        <Button Grid.Column="0" Grid.Row="3" Name="button_cs_on" Content="CS映像のみ" Margin="0,0,10,0" Click="button_cs_on_Click" />
-                        <Button Grid.Column="1" Grid.Row="3" Name="button_cs_on2" Content="CS映像" Click="button_cs_on2_Click" />
-                        <Button Grid.Column="0" Grid.Row="4" Name="button_dttv_on" Content="地デジ映像のみ" Margin="0,0,10,0" Click="button_dttv_on_Click" />
-                        <Button Grid.Column="1" Grid.Row="4" Name="button_dttv_on2" Content="地デジ映像" Click="button_dttv_on2_Click" />
-                        <Button Grid.Column="0" Grid.Row="5" Name="button_1seg_on" Content="ワンセグのみ" Margin="0,0,10,0" Click="button_1seg_on_Click" />
-                        <Button Grid.Column="1" Grid.Row="5" Name="button_1seg_on2" Content="ワンセグ" Click="button_1seg_on2_Click" />
-                        <Button Grid.Column="0" Grid.Row="6" Name="button_other_on" Content="その他のみ" Margin="0,0,10,0" Click="button_other_on_Click" />
-                        <Button Grid.Column="1" Grid.Row="6" Name="button_other_on2" Content="その他" Click="button_other_on2_Click" />
-                        <Button Grid.ColumnSpan="2" Grid.Row="7" Name="button_all_off" Content="全クリア" Margin="0,0,50,0" Click="button_all_off_Click" />
+                        <Button Grid.ColumnSpan="2" Grid.Row="0" Content="全チェック"       Margin="0,0,50,0" Click="button_all_on_Click" />
+                        <Button Grid.ColumnSpan="2" Grid.Row="1" Content="映像サービスのみ" Margin="0,0,50,0" Click="button_video_on_Click" />
+                        <Button Grid.Column="0"     Grid.Row="2" Content="BS映像のみ"       Margin="0,0,10,0" Click="button_bs_on_Click" />
+                        <Button Grid.Column="1"     Grid.Row="2" Content="BS映像"                             Click="button_bs_on2_Click" />
+                        <Button Grid.Column="0"     Grid.Row="3" Content="CS映像のみ"       Margin="0,0,10,0" Click="button_cs_on_Click" />
+                        <Button Grid.Column="1"     Grid.Row="3" Content="CS映像"                             Click="button_cs_on2_Click" />
+                        <Button Grid.Column="0"     Grid.Row="4" Content="地デジ映像のみ"   Margin="0,0,10,0" Click="button_dttv_on_Click" />
+                        <Button Grid.Column="1"     Grid.Row="4" Content="地デジ映像"                         Click="button_dttv_on2_Click" />
+                        <Button Grid.Column="0"     Grid.Row="5" Content="ワンセグのみ"     Margin="0,0,10,0" Click="button_1seg_on_Click" />
+                        <Button Grid.Column="1"     Grid.Row="5" Content="ワンセグ"                           Click="button_1seg_on2_Click" />
+                        <Button Grid.Column="0"     Grid.Row="6" Content="その他のみ"       Margin="0,0,10,0" Click="button_other_on_Click" />
+                        <Button Grid.Column="1"     Grid.Row="6" Content="その他"                             Click="button_other_on2_Click" />
+                        <Button Grid.ColumnSpan="2" Grid.Row="7" Content="全クリア"         Margin="0,0,50,0" Click="button_all_off_Click" />
                     </Grid>
                 </Grid>
             </TabItem>
@@ -130,7 +130,7 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition />
                         </Grid.RowDefinitions>
-                        <Label Grid.Row="0" Name="label3" Content="時間絞り込み（項目なしで全期間対象）" Margin="0,0,-200,0" />
+                        <Label Grid.Row="0" Content="時間絞り込み（項目なしで全期間対象）" Margin="0,0,-200,0" />
 
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
@@ -153,59 +153,63 @@
                             </Grid>
 
                             <StackPanel Grid.Column="1">
-                                <Label x:Name="label4" Content="期間" />
+                                <Label Content="期間" />
                                 <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                                    <ComboBox x:Name="comboBox_time_sw" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
-                                    <ComboBox x:Name="comboBox_time_sh" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
-                                    <ComboBox x:Name="comboBox_time_sm" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_time_sw" Margin="5" MinWidth="45" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_time_sh" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
+                                    <Label Content=":" />
+                                    <ComboBox x:Name="comboBox_time_sm" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                                    <Label x:Name="label6" Content="～" />
-                                    <ComboBox x:Name="comboBox_time_ew" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
-                                    <ComboBox x:Name="comboBox_time_eh" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
-                                    <ComboBox x:Name="comboBox_time_em" Margin="5" MinWidth="44" ItemsSource="{Binding}" />
-                                    <Button x:Name="button_timeAdd" Content="追加" Margin="5" Click="button_timeAdd_Click" Grid.ColumnSpan="2" Grid.Column="1" />
+                                    <Label Content="～" Margin="5" />
+                                    <ComboBox x:Name="comboBox_time_ew" Margin="5" MinWidth="45" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_time_eh" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
+                                    <Label Content=":" />
+                                    <ComboBox x:Name="comboBox_time_em" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
+                                    <Button x:Name="button_timeAdd" Content="追加" Margin="5" Click="button_timeAdd_Click" />
                                 </StackPanel>
 
-                                <Label x:Name="label5" Content="曜日毎" />
-                                <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
-                                    <CheckBox x:Name="checkBox_mon" Content="月" />
-                                    <CheckBox x:Name="checkBox_tue" Content="火" />
-                                    <CheckBox x:Name="checkBox_wen" Content="水" />
-                                    <CheckBox x:Name="checkBox_thu" Content="木" />
-                                    <CheckBox x:Name="checkBox_fri" Content="金" />
-                                    <CheckBox x:Name="checkBox_sat" Content="土" />
+                                <Label Content="曜日毎" />
+                                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                    <CheckBox x:Name="checkBox_mon" Content="月" Margin="0,0,3,0" />
+                                    <CheckBox x:Name="checkBox_tue" Content="火" Margin="0,0,3,0" />
+                                    <CheckBox x:Name="checkBox_wen" Content="水" Margin="0,0,3,0" />
+                                    <CheckBox x:Name="checkBox_thu" Content="木" Margin="0,0,3,0" />
+                                    <CheckBox x:Name="checkBox_fri" Content="金" Margin="0,0,3,0" />
+                                    <CheckBox x:Name="checkBox_sat" Content="土" Margin="0,0,3,0" />
                                     <CheckBox x:Name="checkBox_sun" Content="日" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                                    <ComboBox x:Name="comboBox_week_sh" Margin="5" ItemsSource="{Binding}" />
-                                    <ComboBox x:Name="comboBox_week_sm" Margin="5" ItemsSource="{Binding}" />
-                                    <Label x:Name="label7" Content="～" />
-                                    <ComboBox x:Name="comboBox_week_eh" Margin="5" ItemsSource="{Binding}" />
-                                    <ComboBox x:Name="comboBox_week_em" Margin="5" ItemsSource="{Binding}" />
+                                    <ComboBox x:Name="comboBox_week_sh" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
+                                    <Label Content=":" />
+                                    <ComboBox x:Name="comboBox_week_sm" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
+                                    <Label Content="～" Margin="5" />
+                                    <ComboBox x:Name="comboBox_week_eh" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
+                                    <Label Content=":" />
+                                    <ComboBox x:Name="comboBox_week_em" Margin="0,5" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
                                     <Button x:Name="button_weekAdd" Content="追加" Click="button_weekAdd_Click" />
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
                     </Grid>
 
-                    <StackPanel Grid.Column="2">
-                        <Label Name="label8" Content="スクランブル放送" />
+                    <StackPanel Grid.Column="1" Margin="0,4">
+                        <Label Content="スクランブル放送" />
                         <RadioButton Name="radioButton_free_1" Content="無料、有料番組を対象とする" Margin="20,0,0,4" />
                         <RadioButton Name="radioButton_free_2" Content="無料番組のみ対象とする" Margin="20,0,0,4" />
                         <RadioButton Name="radioButton_free_3" Content="有料番組のみ対象とする" Margin="20,0,0,4" />
 
-                        <Label Name="label13" Content="番組長で絞り込み（それぞれ0で絞り込み無し）" />
+                        <Label Content="番組長で絞り込み（それぞれ0で絞り込み無し）" />
                         <WrapPanel Margin="20,0,0,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
-                                <TextBox Name="textBox_chkDurationMin" Width="48"/>
-                                <Label Name="label12" Content="分以上" />
+                                <TextBox Name="textBox_chkDurationMin" Style="{StaticResource NumberBox}" />
+                                <Label Content="分以上" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBox Name="textBox_chkDurationMax" Width="48"/>
-                                <Label Name="label14" Content="分以下" />
+                                <TextBox Name="textBox_chkDurationMax" Style="{StaticResource NumberBox}" />
+                                <Label Content="分以下" />
                             </StackPanel>
                         </WrapPanel>
 
@@ -213,10 +217,10 @@
                             <StackPanel>
                                 <CheckBox Name="checkBox_chkRecEnd" Content="同一番組名の録画結果があれば無効で登録する" Margin="4" />
                                 <WrapPanel>
-                                    <Label Name="label9" Content="録画済み確認対象期間" />
+                                    <Label Content="録画済み確認対象期間" />
                                     <StackPanel Orientation="Horizontal" Margin="4,0">
-                                        <TextBox Name="textBox_chkRecDay" Width="40" />
-                                        <Label Name="label10" Content="日前まで" />
+                                        <TextBox Name="textBox_chkRecDay" Style="{StaticResource NumberBox}" />
+                                        <Label Content="日前まで" />
                                     </StackPanel>
                                 </WrapPanel>
                                 <WrapPanel>

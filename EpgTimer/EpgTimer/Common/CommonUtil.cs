@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Windows;
+using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using System.Linq.Expressions;
+using System.Windows.Media;
 
 namespace EpgTimer
 {
@@ -64,5 +66,57 @@ namespace EpgTimer
         {
             return new List<T> { item };
         }
+
+        /// <summary>非同期のメッセージボックスを表示</summary>
+        public static void DispatcherMsgBoxShow(string message, string caption = "", MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
+        {
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => MessageBox.Show(message, caption, button, icon)));
+        }
+
+        /// <summary>ウィンドウがあれば取得する</summary>
+        public static Window GetTopWindow(Visual obj)
+        {
+            if (obj == null) return null;
+            var topWindow = PresentationSource.FromVisual(obj);
+            return topWindow == null ? null : topWindow.RootVisual as Window;
+        }
+
+        /// <summary>テーマを設定する</summary>
+        public static void ApplyStyle(string themeFile)
+        {
+            // デザイン用スタイルをテーマをマージする前に削除しておく
+            App.Current.Resources.MergedDictionaries.Clear();
+
+            if (!string.IsNullOrEmpty(themeFile))
+            {
+                ResourceDictionary rd = null;
+                if (System.IO.File.Exists(themeFile))
+                {
+                    try
+                    {
+                        // ResourceDictionaryを定義したファイルがあるのでロードする
+                        rd = System.Windows.Markup.XamlReader.Load(System.Xml.XmlReader.Create(themeFile)) as ResourceDictionary;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString());
+                    }
+                }
+                else
+                {
+                    // 既定のテーマ(Aero)をロードする
+                    rd = Application.LoadComponent(new Uri("/PresentationFramework.Aero, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;component/themes/aero.normalcolor.xaml", UriKind.Relative)) as ResourceDictionary;
+                }
+                if (rd != null)
+                {
+                    // ロードしたテーマをマージする
+                    App.Current.Resources.MergedDictionaries.Add(rd);
+                }
+            }
+
+            // レイアウト用のスタイルをマージする
+            App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/UserCtrlView/UiLayoutStyles.xaml") });
+        }
+
     }
 }

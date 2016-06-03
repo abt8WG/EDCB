@@ -17,7 +17,7 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <ComboBox Grid.Column="0" Name="comboBox_service" Margin="50,10,10,10" SelectionChanged="comboBox_service_SelectionChanged" />
-            <Button Grid.Column="1" Name="button_go_Main" Content="標準モード" Margin="10" />
+            <Button   Grid.Column="1" Name="button_go_Main" Content="標準モード" Margin="10" />
         </Grid>
         <Grid Grid.Row="1" Name="grid_PG">
             <Grid.ColumnDefinitions>
@@ -28,9 +28,9 @@
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Button Content="現在" Grid.Row="0" Grid.Column="0" Name="button_now" Padding="2" VerticalAlignment="Stretch" MouseRightButtonUp="button_erea_MouseRightButtonUp" />
-            <local:TimeView Grid.Row="1" x:Name="timeView" MouseRightButtonUp="button_erea_MouseRightButtonUp" />
-            <local:WeekDayView Grid.Column="1" x:Name="weekDayView" MouseRightButtonUp="button_erea_MouseRightButtonUp" />
+            <Button            Grid.Column="0" Grid.Row="0" Name="button_now" Content="現在" Padding="1" VerticalAlignment="Stretch" MouseRightButtonUp="button_erea_MouseRightButtonUp" />
+            <local:TimeView    Grid.Column="0" Grid.Row="1" x:Name="timeView" MouseRightButtonUp="button_erea_MouseRightButtonUp" />
+            <local:WeekDayView Grid.Column="1" Grid.Row="0" x:Name="weekDayView" MouseRightButtonUp="button_erea_MouseRightButtonUp" />
             <local:ProgramView Grid.Column="1" Grid.Row="1" x:Name="epgProgramView" />
         </Grid>
     </Grid>

@@ -5,7 +5,7 @@
 
     <Grid>
         <ScrollViewer Name="scrollViewer" HorizontalScrollBarVisibility="Visible">
-            <TextBox Name="textBox" AcceptsReturn="True" VerticalAlignment="Stretch" />
+            <TextBox Name="textBox" AcceptsReturn="True" VerticalAlignment="Stretch" VerticalContentAlignment="Top"/>
         </ScrollViewer>
     </Grid>
 </Window>

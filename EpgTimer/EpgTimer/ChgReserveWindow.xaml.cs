@@ -160,9 +160,6 @@ namespace EpgTimer
         {
             bool resModeProgram = (ReserveMode == UIReserveMode.Program);
 
-            radioButton_Epg.IsChecked = !resModeProgram;
-            radioButton_Program.IsChecked = resModeProgram;
-
             textBox_title.IsEnabled = resModeProgram;
             comboBox_service.IsEnabled = resModeProgram;
             datePicker_start.IsEnabled = resModeProgram;
@@ -334,10 +331,7 @@ namespace EpgTimer
                     return 0;
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return -1;
         }
 
@@ -360,10 +354,7 @@ namespace EpgTimer
 
                 SetReserveTime(resInfo.StartTime,resInfo.StartTime.AddSeconds(resInfo.DurationSecond));
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         private bool CheckExistReserveItem()
@@ -445,11 +436,13 @@ namespace EpgTimer
 
                 if (addMode == AddMode.Change)
                 {
-                    mutil.ReserveChange(CommonUtil.ToList(reserveInfo));
+                    bool ret = mutil.ReserveChange(CommonUtil.ToList(reserveInfo));
+                    CommonManager.Instance.StatusNotifySet(ret, "録画予約を変更");
                 }
                 else
                 {
-                    mutil.ReserveAdd(CommonUtil.ToList(reserveInfo));
+                    bool ret = mutil.ReserveAdd(CommonUtil.ToList(reserveInfo));
+                    CommonManager.Instance.StatusNotifySet(ret, "録画予約を追加");
                 }
 
                 // EPG自動予約以外になったら戻せないようにしておく
@@ -458,10 +451,7 @@ namespace EpgTimer
                     CanSelectAutoAdd = false;
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
 
             DialogResult = true;
         }
@@ -475,7 +465,8 @@ namespace EpgTimer
 
             if (CheckExistReserveItem() == false) return;
 
-            mutil.ReserveDelete(CommonUtil.ToList(reserveInfo));
+            bool ret = mutil.ReserveDelete(CommonUtil.ToList(reserveInfo));
+            CommonManager.Instance.StatusNotifySet(ret, "録画予約を削除");
 
             DialogResult = true;
         }

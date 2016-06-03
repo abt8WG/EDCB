@@ -233,6 +233,8 @@ namespace EpgTimer.EpgView
                         canvas.Children.RemoveAt(i--);
                     }
                 }
+                var itemFontNormal = CommonManager.Instance.VUtil.ItemFontNormal;
+                var itemFontTitle = CommonManager.Instance.VUtil.ItemFontTitle;
                 double totalWidth = 0;
                 foreach (var programList in programGroupList)
                 {
@@ -240,8 +242,8 @@ namespace EpgTimer.EpgView
                     item.Background = epgViewPanel.Background;
                     item.Height = Math.Ceiling(height);
                     item.Width = programList.Item1;
-                    item.ItemFontNormal = CommonManager.Instance.VUtil.ItemFontNormal.PrepareCache();
-                    item.ItemFontTitle = CommonManager.Instance.VUtil.ItemFontTitle.PrepareCache();
+                    item.ItemFontNormal = itemFontNormal;
+                    item.ItemFontTitle = itemFontTitle;
                     Canvas.SetLeft(item, totalWidth);
                     item.Items = programList.Item2;
                     item.InvalidateVisual();
@@ -250,6 +252,8 @@ namespace EpgTimer.EpgView
                 }
                 canvas.Height = Math.Ceiling(height);
                 canvas.Width = totalWidth;
+                itemFontNormal.ClearCache();
+                itemFontTitle.ClearCache();
             }
             catch (Exception ex)
             {

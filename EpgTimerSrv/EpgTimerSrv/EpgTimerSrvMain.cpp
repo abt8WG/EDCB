@@ -74,6 +74,7 @@ CEpgTimerSrvMain::~CEpgTimerSrvMain()
 
 bool CEpgTimerSrvMain::Main(bool serviceFlag_)
 {
+	this->notifyManager.SetGUI(!serviceFlag_);
 	this->residentFlag = serviceFlag_;
 
 	DWORD awayMode;
@@ -221,8 +222,8 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 		}
 		break;
 	case WM_QUERY_SHUTDOWN:
-		if( GetShellWindow() ){
-			//シェルがあるので直接尋ねる
+		if( ctx->sys->notifyManager.IsGUI() ){
+			//直接尋ねる
 			if( ctx->hDlgQueryShutdown == NULL ){
 				INITCOMMONCONTROLSEX icce;
 				icce.dwSize = sizeof(icce);
@@ -246,6 +247,7 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 				list.back().param1 = ctx->notifySrvStatus;
 			}else{
 				list = ctx->sys->notifyManager.RemoveSentList();
+				ctx->tcpServer.NotifyUpdate();
 			}
 			for( vector<NOTIFY_SRV_INFO>::const_iterator itr = list.begin(); itr != list.end(); itr++ ){
 				if( itr->notifyID == NOTIFY_UPDATE_SRV_STATUS ){
@@ -896,10 +898,9 @@ void CEpgTimerSrvMain::SetShutdown(BYTE shutdownMode)
 bool CEpgTimerSrvMain::QueryShutdown(BYTE rebootFlag, BYTE suspendMode)
 {
 	CSendCtrlCmd ctrlCmd;
-	map<DWORD, DWORD> registGUI;
-	this->notifyManager.GetRegistGUI(&registGUI);
-	for( map<DWORD, DWORD>::iterator itr = registGUI.begin(); itr != registGUI.end(); itr++ ){
-		ctrlCmd.SetPipeSetting(CMD2_GUI_CTRL_WAIT_CONNECT, CMD2_GUI_CTRL_PIPE, itr->first);
+	vector<DWORD> registGUI = this->notifyManager.GetRegistGUI();
+	for( size_t i = 0; i < registGUI.size(); i++ ){
+		ctrlCmd.SetPipeSetting(CMD2_GUI_CTRL_WAIT_CONNECT, CMD2_GUI_CTRL_PIPE, registGUI[i]);
 		//通信できる限り常に成功するので、重複問い合わせを考慮する必要はない
 		if( suspendMode == 0 && ctrlCmd.SendGUIQueryReboot(rebootFlag) == CMD_SUCCESS ||
 		    suspendMode != 0 && ctrlCmd.SendGUIQuerySuspend(rebootFlag, suspendMode) == CMD_SUCCESS ){
@@ -1753,6 +1754,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 					}
 					if (needToUpdate) {
 						sys->ReloadSetting();
+						sys->notifyManager.AddNotify(NOTIFY_UPDATE_PROFILE);
 					}
 					resParam->param = CMD_SUCCESS;
 				}

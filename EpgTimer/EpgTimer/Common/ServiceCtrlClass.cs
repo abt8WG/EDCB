@@ -388,7 +388,13 @@ namespace EpgTimer
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                // "この操作はユーザーによって取り消されました。" (ERROR_CANCELLED) は除く
+                bool show = !(ex is System.ComponentModel.Win32Exception) ||
+                            (ex as System.ComponentModel.Win32Exception).NativeErrorCode != 0x000004c7;
+                if (show)
+                {
+                    System.Windows.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                }
             }
             return ret;
         }

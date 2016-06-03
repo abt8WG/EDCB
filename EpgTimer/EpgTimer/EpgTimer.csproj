@@ -93,8 +93,10 @@
     </Compile>
     <Compile Include="Common\CallerInfo.cs" />
     <Compile Include="Common\BoxExchangeEditor.cs" />
+    <Compile Include="Common\ExceptionLogger.cs" />
     <Compile Include="DefineClass\InfoWindowBase.cs" />
     <Compile Include="DefineClass\InfoWindowViewModel.cs" />
+    <Compile Include="DefineClass\ReserveItemLive.cs" />
     <Compile Include="DefineClass\SerializableDictionary.cs" />
     <Compile Include="DefineClass\SerializableSecureString.cs" />
     <Compile Include="InfoWindow.xaml.cs">
@@ -292,6 +294,9 @@
     </Compile>
     <Compile Include="DefineClass\TunerSelectInfo.cs" />
     <Compile Include="Revision.cs" />
+    <Compile Include="UserCtrlView\StatusView.xaml.cs">
+      <DependentUpon>StatusView.xaml</DependentUpon>
+    </Compile>
     <Page Include="AddManualAutoAddWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -536,6 +541,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserCtrlView\ReserveListViewStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserCtrlView\StatusView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserCtrlView\UiLayoutStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

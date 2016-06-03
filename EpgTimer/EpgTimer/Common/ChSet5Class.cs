@@ -37,7 +37,7 @@ namespace EpgTimer
 
         public static bool IsVideo(UInt16 ServiceType)
         {
-            return ServiceType == 0x01 || ServiceType == 0xA5;
+            return ServiceType == 0x01 || ServiceType == 0xA5 || ServiceType == 0xAD;
         }
         public static bool IsDttv(UInt16 ONID)
         {
@@ -58,6 +58,10 @@ namespace EpgTimer
         public static bool IsCS2(UInt16 ONID)
         {
             return ONID == 0x0007;
+        }
+        public static bool IsSkyPerfectv(UInt16 ONID)
+        {
+            return ONID == 0x000A;
         }
         public static bool IsOther(UInt16 ONID)
         {
@@ -242,6 +246,7 @@ namespace EpgTimer
         public bool IsCS { get { return ChSet5.IsCS(ONID); } }
         public bool IsCS1 { get { return ChSet5.IsCS1(ONID); } }
         public bool IsCS2 { get { return ChSet5.IsCS2(ONID); } }
+        public bool IsSkyPerfectv { get { return ChSet5.IsSkyPerfectv(ONID); } }
         public bool IsOther { get { return ChSet5.IsOther(ONID); } }
 
         public override string ToString()

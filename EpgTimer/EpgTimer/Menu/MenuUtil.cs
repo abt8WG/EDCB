@@ -221,7 +221,7 @@ namespace EpgTimer
         {
             TextBlock block = new TextBlock();
             block.Text = text;
-            block.MaxWidth = 600;
+            block.MaxWidth = 400; //600;
             block.TextWrapping = TextWrapping.Wrap;
             return block;
         }
@@ -477,7 +477,7 @@ namespace EpgTimer
                 infoList[0].UseMargineFlag = 1;
 
                 var dlg = new Setting.SetDefRecSettingWindow();
-                dlg.Owner = (Window)PresentationSource.FromVisual(owner).RootVisual;
+                dlg.Owner = CommonUtil.GetTopWindow(owner);
                 dlg.SetSettingMode(start == true ? "開始マージン設定" : "終了マージン設定");
                 dlg.recSettingView.SetDefSetting(infoList[0]);
                 dlg.recSettingView.SetChangeMode(start == true ? 0 : 1);
@@ -526,7 +526,7 @@ namespace EpgTimer
             try
             {
                 var dlg = new Setting.SetDefRecSettingWindow();
-                dlg.Owner = (Window)PresentationSource.FromVisual(owner).RootVisual;
+                dlg.Owner = CommonUtil.GetTopWindow(owner);
                 dlg.SetSettingMode("まとめて録画設定を変更");
                 dlg.recSettingView.SetDefSetting(infoList[0], pgAll == true);
                 dlg.recSettingView.SetViewMode(pgAll != true);
@@ -550,7 +550,7 @@ namespace EpgTimer
             try
             {
                 var dlg = new SetDefSearchSettingWindow();
-                dlg.Owner = (Window)PresentationSource.FromVisual(owner).RootVisual;
+                dlg.Owner = CommonUtil.GetTopWindow(owner);
                 dlg.SetDefSetting(infoList[0]);
                 dlg.searchKey.searchKeyDescView.SetChangeMode(0);
 
@@ -981,7 +981,7 @@ namespace EpgTimer
             try
             {
                 var dlg = new AddReserveEpgWindow();
-                dlg.Owner = (Window)PresentationSource.FromVisual(Owner).RootVisual;
+                dlg.Owner = CommonUtil.GetTopWindow(Owner);
                 dlg.SetEventInfo(Data);
                 dlg.SetOpenMode(epgInfoOpenMode);
                 return dlg.ShowDialog();
@@ -1006,7 +1006,7 @@ namespace EpgTimer
             try
             {
                 var dlg = new ChgReserveWindow();
-                dlg.Owner = (Window)PresentationSource.FromVisual(Owner).RootVisual;
+                dlg.Owner = CommonUtil.GetTopWindow(Owner);
                 if (Data != null)
                 {
                     dlg.SetReserveInfo(Data);
@@ -1105,7 +1105,7 @@ namespace EpgTimer
             try
             {
                 var dlg = new AddManualAutoAddWindow();
-                dlg.Owner = (Window)PresentationSource.FromVisual(Owner).RootVisual;
+                dlg.Owner = CommonUtil.GetTopWindow(Owner);
                 if (Data != null)
                 {
                     dlg.SetChangeMode(true);
@@ -1125,7 +1125,7 @@ namespace EpgTimer
             try
             {
                 var dlg = new RecInfoDescWindow();
-                dlg.Owner = (Window)PresentationSource.FromVisual(Owner).RootVisual;
+                dlg.Owner = CommonUtil.GetTopWindow(Owner);
                 cmd.SendGetRecInfo(info.ID, ref info);
                 dlg.SetRecInfo(info);
                 return dlg.ShowDialog();

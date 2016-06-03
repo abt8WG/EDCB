@@ -463,6 +463,9 @@ void CTSOut::CheckNeedPID()
 			case 0x04:
 				name = "MPEG2 AUDIO";
 				break;
+			case 0x24:
+				name = "HEVC VIDEO";
+				break;
 			case 0x06:
 				name = "字幕";
 				break;
@@ -633,6 +636,22 @@ EPG_SECTION_STATUS CTSOut::GetSectionStatus(
 	if( Lock(L"GetSectionStatus") == FALSE ) return EpgNoData;
 
 	EPG_SECTION_STATUS status = this->epgUtil.GetSectionStatus(l_eitFlag);
+
+	UnLock();
+	return status;
+}
+
+//指定サービスのEPGデータの蓄積状態を取得する
+pair<EPG_SECTION_STATUS, BOOL> CTSOut::GetSectionStatusService(
+	WORD originalNetworkID,
+	WORD transportStreamID,
+	WORD serviceID,
+	BOOL l_eitFlag
+	)
+{
+	if( Lock(L"GetSectionStatusService") == FALSE ) return pair<EPG_SECTION_STATUS, BOOL>(EpgNoData, FALSE);
+
+	pair<EPG_SECTION_STATUS, BOOL> status = this->epgUtil.GetSectionStatusService(originalNetworkID, transportStreamID, serviceID, l_eitFlag);
 
 	UnLock();
 	return status;

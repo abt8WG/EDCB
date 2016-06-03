@@ -95,6 +95,7 @@ namespace EpgTimer
         public SolidColorBrush StatResForeColor { get; private set; }
         public SolidColorBrush StatRecForeColor { get; private set; }
         public SolidColorBrush StatOnAirForeColor { get; private set; }
+        public List<SolidColorBrush> InfoWindowItemBgColors { get; private set; }
 
         private static CommonManager _instance;
         public static CommonManager Instance
@@ -314,6 +315,10 @@ namespace EpgTimer
                 ContentKindDictionary2.Add(0x020C, new ContentKindInfo("邦画(CS)", "ホームドラマ", 0x02, 0x0C));
                 ContentKindDictionary2.Add(0x020F, new ContentKindInfo("邦画(CS)", "その他", 0x02, 0x0F));
 
+                ContentKindDictionary2.Add(0x03FF, new ContentKindInfo("アダルト(CS)", "", 0x03, 0xFF));
+                ContentKindDictionary2.Add(0x0300, new ContentKindInfo("アダルト(CS)", "アダルト", 0x03, 0x00));
+                ContentKindDictionary2.Add(0x030F, new ContentKindInfo("アダルト(CS)", "その他", 0x03, 0x0F));
+
                 if (ContentKindDictionary != null)
                 {
                     //CSもまとめて検索出来るようにする仮対応。
@@ -489,6 +494,10 @@ namespace EpgTimer
             {
                 RecModeForeColor = new List<SolidColorBrush>();
             }
+            if (InfoWindowItemBgColors == null)
+            {
+                InfoWindowItemBgColors = new List<SolidColorBrush>();
+            }
         }
 
         public static UInt64 Create64Key(UInt16 ONID, UInt16 TSID, UInt16 SID)
@@ -621,12 +630,8 @@ namespace EpgTimer
             return retText;
         }
 
-        /// <summary>
-        /// 良くある通信エラー(CMD_ERR_CONNECT,CMD_ERR_TIMEOUT)をMessageBoxで表示する。
-        /// Owner(this)を指定するとDispatcher.BeginInvokeで実行する。
-        /// </summary>
-        private static bool showing = false;
-        public static bool CmdErrMsgTypical(ErrCode err, string caption = "通信エラー", Control Owner = null)
+        /// <summary>良くある通信エラー(CMD_ERR_CONNECT,CMD_ERR_TIMEOUT)をMessageBoxで表示する。</summary>
+        public static bool CmdErrMsgTypical(ErrCode err, string caption = "通信エラー")
         {
             if (err == ErrCode.CMD_SUCCESS) return true;
 
@@ -646,33 +651,7 @@ namespace EpgTimer
                     msg = "通信エラーが発生しました。";
                     break;
             }
-
-            if (Owner != null)
-            {
-                Owner.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    // MessageBox 表示中は新たに表示させない。
-                    // Lock とかしてないのでまれに表示するかもだけど、もともと表示する流れだったし気にしない。
-                    if (showing == false)
-                    {
-                        showing = true;
-                        MessageBox.Show(msg, caption);
-                        showing = false;
-                    }
-                }), null);
-            }
-            else
-            {
-                // MessageBox 表示中は新たに表示させない。
-                // Lock とかしてないのでまれに表示するかもだけど、もともと表示する流れだったし気にしない。
-                if (showing == false)
-                {
-                    showing = true;
-                    MessageBox.Show(msg, caption);
-                    showing = false;
-                }
-            }
-
+            CommonUtil.DispatcherMsgBoxShow(msg, caption);
             return false;
         }
 
@@ -1084,6 +1063,10 @@ namespace EpgTimer
             {
                 retText = IsSimple == true ? "CS" : "CS2";
             }
+            else if (ChSet5.IsSkyPerfectv(originalNetworkID) == true)
+            {
+                retText = "スカパー";
+            }
             else
             {
                 retText = "その他";
@@ -1320,13 +1303,22 @@ namespace EpgTimer
             }
         }
 
-        public string GetFolderNameByDialog(string InitialPath = "", string Description = "")
+        public static void GetFolderNameByDialog(TextBox txtBox, string Description = "")
+        {
+            if (txtBox == null) return;
+            string path = CommonManager.GetFolderNameByDialog(txtBox.Text, Description);
+            if (path != null)
+            {
+                txtBox.Text = path;
+            }
+        }
+        public static string GetFolderNameByDialog(string InitialPath = "", string Description = "")
         {
             try
             {
                 if (Settings.Instance.OpenFolderWithFileDialog == true)
                 {
-                    System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
+                    var dlg = new System.Windows.Forms.OpenFileDialog();
                     dlg.Title = Description;
                     dlg.CheckFileExists = false;
                     dlg.DereferenceLinks = false;
@@ -1339,7 +1331,7 @@ namespace EpgTimer
                 }
                 else
                 {
-                    System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog();
+                    var dlg = new System.Windows.Forms.FolderBrowserDialog();
                     dlg.Description = Description;
                     dlg.SelectedPath = GetDirectoryName2(InitialPath);
                     if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -1348,21 +1340,26 @@ namespace EpgTimer
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
-
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return null;
         }
 
-        public string GetFileNameByDialog(string InitialPath = "", string Title = "", string DefaultExt = "")
+        public static void GetFileNameByDialog(TextBox txtBox, bool isNameOnly, string Title = "", string DefaultExt = "")
+        {
+            if (txtBox == null) return;
+            string path = CommonManager.GetFileNameByDialog(txtBox.Text, Title, DefaultExt);
+            if (path != null)
+            {
+                txtBox.Text = isNameOnly == true ? Path.GetFileName(path) : path;
+            }
+        }
+        public static string GetFileNameByDialog(string InitialPath = "", string Title = "", string DefaultExt = "")
         {
             try
             {
-                System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
+                var dlg = new System.Windows.Forms.OpenFileDialog();
                 dlg.Title = Title;
-                dlg.FileName = System.IO.Path.GetFileName(InitialPath);
+                dlg.FileName = Path.GetFileName(InitialPath);
                 dlg.InitialDirectory = GetDirectoryName2(InitialPath);
                 switch (DefaultExt)
                 {
@@ -1378,21 +1375,16 @@ namespace EpgTimer
                         dlg.Filter = "all Files(*.*)|*.*";
                         break;
                 }
-
                 if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     return dlg.FileName;
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
-
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return null;
         }
 
-        private string GetDirectoryName2(string folder_path)
+        private static string GetDirectoryName2(string folder_path)
         {
             string path = folder_path.Trim();
             while (path != "")
@@ -1603,6 +1595,12 @@ namespace EpgTimer
                 StatResForeColor = (SolidColorBrush)_GetColorBrush(Settings.Instance.StatColors[0], Settings.Instance.StatCustColors[0]);
                 StatRecForeColor = (SolidColorBrush)_GetColorBrush(Settings.Instance.StatColors[1], Settings.Instance.StatCustColors[1]);
                 StatOnAirForeColor = (SolidColorBrush)_GetColorBrush(Settings.Instance.StatColors[2], Settings.Instance.StatCustColors[2]);
+
+                InfoWindowItemBgColors.Clear();
+                for (int i = 0; i < Settings.Instance.InfoWindowItemBgColors.Count; i++)
+                {
+                    InfoWindowItemBgColors.Add((SolidColorBrush)_GetColorBrush(Settings.Instance.InfoWindowItemBgColors[i], Settings.Instance.InfoWindowItemBgCustColors[i]));
+                }
             }
             catch (Exception ex)
             {
@@ -1701,5 +1699,34 @@ namespace EpgTimer
             return null;
         }
 
+        public void StatusNotifySet(bool success, string subject, Visual target = null)
+        {
+            if (string.IsNullOrEmpty(subject)) return;
+            StatusNotifySet((success == true ? "" : "中断またはキャンセルされました < ") + subject, null, target);
+        }
+        public void StatusNotifySet(string s3, TimeSpan? interval = null, Visual target = null)
+        {
+            if (Settings.Instance.DisplayStatus == false || Settings.Instance.DisplayStatusNotify == false) return;
+            GetStatusbar(target).SetText(s3: s3, interval: interval);
+        }
+        public void StatusNotifyAppend(string s3, TimeSpan? interval = null, Visual target = null)
+        {
+            if (Settings.Instance.DisplayStatus == false || Settings.Instance.DisplayStatusNotify == false) return;
+            GetStatusbar(target).AppendText(s3: s3, interval: interval);
+        }
+        public void StatusSet(string s1 = null, string s2 = null, string s3 = null, Visual target = null)
+        {
+            if (Settings.Instance.DisplayStatus == false) return;
+            GetStatusbar(target).SetText(s1, s2, s3);
+        }
+        public void StatusAppend(string s1 = "", string s2 = "", string s3 = "", Visual target = null)
+        {
+            if (Settings.Instance.DisplayStatus == false) return;
+            GetStatusbar(target).AppendText(s1, s2, s3);
+        }
+        public UserCtrlView.StatusView GetStatusbar(Visual target = null)
+        {
+            return (target is SearchWindow) ? (target as SearchWindow).statusBar : (Application.Current.MainWindow as MainWindow).statusBar;
+        }
     }
 }

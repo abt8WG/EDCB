@@ -27,11 +27,11 @@
                             <RowDefinition Height="auto" />
                             <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" Name="label2" Content="TVTest.exeパス" Margin="4" />
-                        <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_exe" Margin="0,4" />
-                        <Button Grid.Column="2" Grid.Row="0" Name="button_exe" Content="開く" Margin="20,4,0,4" Click="button_exe_Click" />
-                        <Label Grid.Column="0" Grid.Row="1" Name="label4" Content="コマンドライン引数" Margin="4" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_cmd" Margin="0,4"/>
+                        <Label     Grid.Column="0" Grid.Row="0" Name="label2" Content="TVTest.exeパス" Margin="4" />
+                        <TextBox   Grid.Column="1" Grid.Row="0" Name="textBox_exe" Margin="0,4" />
+                        <Button    Grid.Column="2" Grid.Row="0" Name="button_exe" Content="開く" Margin="20,4,0,4" Click="button_exe_Click" />
+                        <Label     Grid.Column="0" Grid.Row="1" Name="label4" Content="コマンドライン引数" Margin="4" />
+                        <TextBox   Grid.Column="1" Grid.Row="1" Name="textBox_cmd" Margin="0,4"/>
                         <TextBlock Grid.Column="1" Grid.Row="2" Name="label5" Text="(BonDriverに関するオプションは自動的に付加されます)" Margin="4,0,4,4" TextWrapping="Wrap" />
                     </Grid>
                     <Grid Grid.Row="2" Margin="0,8">
@@ -39,16 +39,35 @@
                             <ColumnDefinition />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
-                            <RowDefinition />
-                            <RowDefinition Height="auto" />
-                        </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" Name="label3" Content="視聴に使用するBonDriver" Margin="4" />
-                        <ListBox Grid.Column="0" Grid.Row="1" Name="listBox_bon" Margin="40,4,0,4" />
-                        <Button Grid.Column="1" Grid.Row="1" Name="button_del" Content="削除" Margin="20,4,0,4" Click="button_del_Click" VerticalAlignment="Top" />
-                        <ComboBox Grid.Column="0" Grid.Row="2" Name="comboBox_bon" Margin="40,4,0,4" />
-                        <Button Grid.Column="1" Grid.Row="2" Name="button_add" Content="追加" Margin="20,4,0,4" Click="button_add_Click" />
+                        <Grid Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+                            <Label    Grid.Column="0" Grid.Row="0" Name="label3" Content="視聴に使用するBonDriver" Margin="4" />
+                            <ListBox  Grid.Column="0" Grid.Row="1" Name="listBox_bon" Margin="40,4,0,4" />
+                            <Button   Grid.Column="1" Grid.Row="1" Name="button_del" Content="削除" Margin="20,4,0,4" Click="button_del_Click" VerticalAlignment="Top" />
+                            <ComboBox Grid.Column="0" Grid.Row="2" Name="comboBox_bon" Margin="40,4,0,4" />
+                            <Button   Grid.Column="1" Grid.Row="2" Name="button_add" Content="追加" Margin="20,4,0,4" Click="button_add_Click" />
+                        </Grid>
+                        <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                            <Label Margin="4" Content=""/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0" >
+                                <Label Content="TvTestの起動待ち時間" />
+                                <TextBox Name="textBox_TvTestOpenWait" Style="{StaticResource NumberBox}" />
+                                <Label Content="ミリ秒" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0" >
+                                <Label Content="BonDriverの切り替え待ち時間" />
+                                <TextBox Name="textBox_TvTestChgBonWait" Style="{StaticResource NumberBox}" />
+                                <Label Content="ミリ秒" />
+                            </StackPanel>
+                        </StackPanel>
                     </Grid>
                     <StackPanel Grid.Row="3" Margin="0,8">
                         <CheckBox Name="checkBox_nwTvMode" Margin="4">

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
 using System.Collections;
 
 using EpgTimer.EpgView;
@@ -18,6 +15,9 @@ namespace EpgTimer
     public partial class EpgWeekMainView : EpgMainViewBase
     {
         private SortedList dayList = new SortedList();
+
+        //class RestoreDateとか用意するところだけど、今回はこれだけなので手抜き
+        public override object GetViewState() { return GetSelectID(); }
 
         public EpgWeekMainView()
         {
@@ -36,36 +36,10 @@ namespace EpgTimer
             base.RefreshMenu();
         }
 
-        public override bool ClearInfo()
-        {
-            base.ClearInfo();
-
-            weekDayView.ClearInfo();
-            dayList = new SortedList();
-
-            return true;
-        }
-
         public override void SetViewMode(CustomEpgTabInfo setInfo)
         {
             this.viewCustNeedTimeOnly = setInfo.NeedTimeOnlyWeek;
             base.SetViewMode(setInfo);
-        }
-
-        protected override bool ReloadEpgData()
-        {
-            if (base.ReloadEpgData() == false) return false;
-
-            ReloadProgramViewItem();
-            return true;
-        }
-
-        protected override bool ReloadReserveData()
-        {
-            if (base.ReloadReserveData() == false) return false;
-
-            ReloadReserveViewItem();
-            return true;
         }
 
         private enum TimeSelect : int
@@ -122,7 +96,7 @@ namespace EpgTimer
         /// <summary>
         /// 予約情報の再描画
         /// </summary>
-        private void ReloadReserveViewItem()
+        protected override void ReloadReserveViewItem()
         {
             try
             {
@@ -179,58 +153,39 @@ namespace EpgTimer
                 }
                 epgProgramView.SetReserveList(reserveList);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         /// <summary>
         /// 番組情報の再描画処理
         /// </summary>
-        private bool ReloadProgramViewItem()
+        protected override void ReloadProgramViewItem()
         {
             try
             {
-                Dictionary<UInt64, EpgServiceEventInfo> serviceEventList =
-                    setViewInfo.SearchMode == true ? searchEventList : CommonManager.Instance.DB.ServiceEventList;
+                //表示していたサービスの保存
+                ulong selectID = (restoreData as ulong?) ?? GetSelectID();
+
+                comboBox_service.Items.Clear();
 
                 //必要サービスの抽出
                 int selectIndex = 0;
-                UInt64 selectID = GetSelectID();
-                comboBox_service.Items.Clear();
-
                 foreach (UInt64 id in viewCustServiceList)
                 {
                     EpgServiceEventInfo serviceInfo;
-                    if (serviceEventList.TryGetValue(id, out serviceInfo) == false)
+                    if (serviceEventList.TryGetValue(id, out serviceInfo) == true)
                     {
-                        //サービス情報ないので無効
-                        continue;
-                    }
-
-                    ComboBoxItem item = new ComboBoxItem();
-                    item.Content = serviceInfo.serviceInfo.service_name;
-                    item.DataContext = serviceInfo.serviceInfo;
-                    int index = comboBox_service.Items.Add(item);
-                    if (selectID == id || selectID == 0)
-                    {
-                        selectIndex = index;
-                        selectID = id;
+                        var item = new ComboBoxItem();
+                        item.Content = serviceInfo.serviceInfo.service_name;
+                        item.DataContext = serviceInfo.serviceInfo;
+                        int index = comboBox_service.Items.Add(item);
+                        if (selectID == id) selectIndex = index;
                     }
                 }
+                //comboBox_service_SelectionChanged()からUpdateProgramView()が走る
                 comboBox_service.SelectedIndex = selectIndex;
-
-                //サービスの選択イベントから勝手に走る
-                //UpdateProgramView();
-
-                return true;
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-                return false;
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         private void UpdateProgramView()
@@ -239,17 +194,13 @@ namespace EpgTimer
             {
                 epgProgramView.ClearInfo();
                 timeList.Clear();
-                dayList.Clear();
                 programList.Clear();
-
                 nowViewTimer.Stop();
+                dayList.Clear();
 
                 if (comboBox_service.Items.Count == 0) return;
 
                 UInt64 selectID = GetSelectID(true);
-
-                Dictionary<UInt64, EpgServiceEventInfo> serviceEventList =
-                    setViewInfo.SearchMode == true ? base.searchEventList : CommonManager.Instance.DB.ServiceEventList;
 
                 //まず日時のチェック
                 foreach (EpgEventInfo eventInfo in serviceEventList[selectID].eventList)
@@ -361,16 +312,14 @@ namespace EpgTimer
                 ReDrawNowLine();
                 MoveNowTime();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         private void comboBox_service_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateProgramView();
             ReloadReserveViewItem();
+            UpdateStatus();
         }
 
         protected override void OnLoadingSubProc()

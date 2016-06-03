@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- このファイルをEpgTimer.exeと同じ場所に配置してデザインをカスタマイズできます -->
+<!-- テーマを適用する例 -->
+<ResourceDictionary
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  Source="pack://application:,,,/PresentationFramework.AeroLite, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;component/themes/aerolite.normalcolor.xaml"
+  />

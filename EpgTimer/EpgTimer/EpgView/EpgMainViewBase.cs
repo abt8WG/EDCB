@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -67,6 +66,7 @@ namespace EpgTimer.EpgView
         }
 
         /// <summary>保持情報のクリア</summary>
+#if false
         public override bool ClearInfo()
         {
             base.ClearInfo();
@@ -85,6 +85,13 @@ namespace EpgTimer.EpgView
             reserveList.Clear();
 
             return true;
+        }
+#endif
+
+        protected override void UpdateStatusData(int mode = 0)
+        {
+            this.status[1] = string.Format("番組数:{0}", programList.Count)
+                + vutil.ConvertReserveStatus(reserveList.GetDataList(), "　予約");
         }
 
         /// <summary>現在ライン表示用タイマーイベント呼び出し</summary>

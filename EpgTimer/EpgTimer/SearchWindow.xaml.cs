@@ -51,6 +51,9 @@ namespace EpgTimer
                 lstCtrl.SetViewSetting(listView_result, gridView_result, true, true, list_columns);
                 lstCtrl.SetSelectedItemDoubleClick(EpgCmds.ShowDialog);
 
+                //ステータス変更の設定
+                lstCtrl.SetSelectionChangedEventHandler((sender, e) => this.UpdateStatus(1));
+
                 //最初にコマンド集の初期化
                 mc = new CmdExeReserve(this);
                 mc.SetFuncGetSearchList(isAll => (isAll == true ? lstCtrl.dataList.ToList() : lstCtrl.GetSelectedItemsList()));
@@ -61,7 +64,7 @@ namespace EpgTimer
                 //コマンド集に無いもの
                 mc.AddReplaceCommand(EpgCmds.ReSearch, mc_Research);
                 mc.AddReplaceCommand(EpgCmds.ReSearch2, mc_Research);
-                mc.AddReplaceCommand(EpgCmds.Search, (sender, e) => SearchPg());
+                mc.AddReplaceCommand(EpgCmds.Search, (sender, e) => SearchPg(true));
                 mc.AddReplaceCommand(EpgCmds.AddInDialog, button_add_epgAutoAdd_Click);
                 mc.AddReplaceCommand(EpgCmds.ChangeInDialog, button_chg_epgAutoAdd_Click, (sender, e) => e.CanExecute = winMode == SearchMode.Change);
                 mc.AddReplaceCommand(EpgCmds.DeleteInDialog, button_del_epgAutoAdd_Click, (sender, e) => e.CanExecute = winMode == SearchMode.Change);
@@ -250,8 +253,10 @@ namespace EpgTimer
             tabItem2.Header = "録画設定" + preset_str;
         }
 
-        private void SearchPg()
+        private void SearchPg(bool addSearchLog = false)
         {
+            if (addSearchLog == true) searchKeyView.AddSearchLog();
+
             lstCtrl.ReloadInfoData(dataList =>
             {
                 EpgSearchKeyInfo key = GetSearchKey();
@@ -261,92 +266,105 @@ namespace EpgTimer
                 cmd.SendSearchPg(CommonUtil.ToList(key), ref list);
 
                 lstCtrl.dataList.AddFromEventList(list, false, true);
-
-                searchKeyView.AddSearchLog();
                 return true;
             });
 
-            RefreshStatus();
+            UpdateStatus();
             SetRecSettingTabHeader(null, null);
             WindowTitleSet();
         }
 
-        private void RefreshStatus()
+        private void UpdateStatus(int mode = 0)
         {
-            text_result.Text = string.Format("検索数:{0}  ", lstCtrl.dataList.Count);
-            List<ReserveData> rlist = lstCtrl.dataList.GetReserveList();
-            if (rlist.Count != 0)
+            string s1 = null;
+            string s2 = "";
+            if (mode == 0) s1 = vutil.ConvertSearchItemStatus(lstCtrl.dataList, "検索数");
+            if (Settings.Instance.DisplayStatus == true)
             {
-                int OnCount = rlist.Count(data => data.IsEnabled == true);
-                int OffCount = rlist.Count - OnCount;
-                text_result.Text += string.Format("予約数:{0} ( 有効 {1} / 無効 {2} )", rlist.Count, OnCount, OffCount);
+                List<SearchItem> sList = lstCtrl.GetSelectedItemsList();
+                s2 = sList.Count == 0 ? "" : vutil.ConvertSearchItemStatus(sList, "　選択中");
             }
+            this.statusBar.SetText(s1, s2);
         }
 
         private void ReloadReserveData()
         {
             lstCtrl.dataList.SetReserveData();
             this.listView_result.Items.Refresh();
-            RefreshStatus();
+            UpdateStatus();
         }
 
         private void button_add_epgAutoAdd_Click(object sender, ExecutedRoutedEventArgs e)
         {
+            bool ret = false;
             try
             {
-                if (CheckAutoAddChange(e, 0) == false) return;
-
-                //一覧画面非表示の状態から実施する場合のためのコード
-                if (autoAddView.IsVisible == false && CommonManager.Instance.DB.EpgAutoAddList.Count == 0)
+                ret = CheckAutoAddChange(e, 0);
+                if (ret == true)
                 {
-                    CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.AutoAddEpgInfo);
-                    CommonManager.Instance.DB.ReloadEpgAutoAddInfo();
-                }
-
-                List<uint> oldlist = CommonManager.Instance.DB.EpgAutoAddList.Keys.ToList();
-
-                if (mutil.AutoAddAdd(CommonUtil.ToList(this.GetAutoAddData())) == true)
-                {
-                    //以降の処理をEpgTimerSrvからの更新通知後に実行すればReload減らせるが、トラブル増えそうなのでこのまま。
-                    CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.AutoAddEpgInfo);
-                    CommonManager.Instance.DB.ReloadEpgAutoAddInfo();
-                    
-                    List<uint> newlist = CommonManager.Instance.DB.EpgAutoAddList.Keys.ToList();
-                    List<uint> diflist = newlist.Except(oldlist).ToList();
-
-                    if (diflist.Count == 1)
+                    //一覧画面非表示の状態から実施する場合のためのコード
+                    if (autoAddView.IsVisible == false && CommonManager.Instance.DB.EpgAutoAddList.Count == 0)
                     {
-                        ChangeAutoAddData(CommonManager.Instance.DB.EpgAutoAddList[diflist[0]], false);
+                        CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.AutoAddEpgInfo);
+                        CommonManager.Instance.DB.ReloadEpgAutoAddInfo();
+                    }
+
+                    List<uint> oldlist = CommonManager.Instance.DB.EpgAutoAddList.Keys.ToList();
+
+                    ret = mutil.AutoAddAdd(CommonUtil.ToList(this.GetAutoAddData()));
+                    if (ret == true)
+                    {
+                        //以降の処理をEpgTimerSrvからの更新通知後に実行すればReload減らせるが、トラブル増えそうなのでこのまま。
+                        CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.AutoAddEpgInfo);
+                        CommonManager.Instance.DB.ReloadEpgAutoAddInfo();
+
+                        List<uint> newlist = CommonManager.Instance.DB.EpgAutoAddList.Keys.ToList();
+                        List<uint> diflist = newlist.Except(oldlist).ToList();
+
+                        if (diflist.Count == 1)
+                        {
+                            ChangeAutoAddData(CommonManager.Instance.DB.EpgAutoAddList[diflist[0]], false);
+                        }
                     }
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
+            CommonManager.Instance.StatusNotifySet(ret, "キーワード予約を追加", this);
         }
 
         private void button_chg_epgAutoAdd_Click(object sender, ExecutedRoutedEventArgs e)
         {
+            bool ret = false;
             try
             {
-                if (CheckAutoAddChange(e, 1) == false) return;
-
-                mutil.AutoAddChange(CommonUtil.ToList(this.GetAutoAddData()));
+                ret = CheckAutoAddChange(e, 1);
+                if (ret == true)
+                {
+                    ret = mutil.AutoAddChange(CommonUtil.ToList(this.GetAutoAddData()));
+                }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
+            CommonManager.Instance.StatusNotifySet(ret, "キーワード予約を変更", this);
         }
 
         private void button_del_epgAutoAdd_Click(object sender, ExecutedRoutedEventArgs e)
         {
+            bool ret = false;
             try
             {
-                if (CheckAutoAddChange(e, 2) == false) return;
-
-                if (mutil.AutoAddDelete(CommonUtil.ToList(CommonManager.Instance.DB.EpgAutoAddList[autoAddID])) == true)
+                ret = CheckAutoAddChange(e, 2);
+                if (ret == true)
                 {
-                    SetViewMode(SearchMode.NewAdd);
-                    this.autoAddID = 0;
+                    ret = mutil.AutoAddDelete(CommonUtil.ToList(CommonManager.Instance.DB.EpgAutoAddList[autoAddID]));
+                    if (ret == true)
+                    {
+                        SetViewMode(SearchMode.NewAdd);
+                        this.autoAddID = 0;
+                    }
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
+            CommonManager.Instance.StatusNotifySet(ret, "キーワード予約を削除", this);
         }
 
         //proc 0:追加、1:変更、2:削除
@@ -451,12 +469,19 @@ namespace EpgTimer
                 if (reserveOnly && item.IsReserved == false) return;
                 if (onReserveOnly && item.ReserveInfo.IsEnabled == false) return;
 
-                BlackoutWindow.SelectedItem = item;
+                if (mainWindow.IsVisible == false || mainWindow.WindowState == WindowState.Minimized)
+                {
+                    mainWindow.RestoreMinimizedWindow();
+                }
 
-                SetHideSearchWindow(this);
-                SearchWindow.MinimizeWindows();
+                mainWindow.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SetHideSearchWindow(this);
+                    SearchWindow.MinimizeWindows();
 
-                mainWindow.moveTo_tabItem(code);
+                    BlackoutWindow.SelectedItem = item;
+                    mainWindow.moveTo_tabItem(code);
+                }));
             }
         }
 
@@ -558,19 +583,16 @@ namespace EpgTimer
             AllClosing = false;
         }
 
-        public static void UpdatesInfo(bool refreshOnly = false)
+        public static void UpdatesInfo(bool reload = true)
         {
             foreach (SearchWindow win in Application.Current.Windows.OfType<SearchWindow>())
             {
-                win.UpdateInfo(refreshOnly);
+                win.UpdateInfo(reload);
             }
         }
-        public void UpdateInfo(bool refreshOnly = false)
+        public void UpdateInfo(bool reload = true)
         {
-            if (refreshOnly == false)
-            {
-                ReloadInfo = true;
-            }
+            ReloadInfo |= reload;
             ReloadReserveInfo = true;
             ReloadInfoData();
         }
@@ -652,18 +674,30 @@ namespace EpgTimer
             mainWindow.EmphasizeSearchButton(SearchWindow.HasHideSearchWindow);
         }
 
-        public static void RestoreMinimizedWindow()
+        public static void RestoreHideSearchWindow()
         {
             // 最小化したSearchWindowを復帰
             if (SearchWindow.HasHideSearchWindow == true)
             {
+                hideSearchWindow.Show();
                 hideSearchWindow.WindowState = WindowState.Normal;
             }
         }
 
+        public static void UpdatesParentStatus()
+        {
+            foreach (SearchWindow win in Application.Current.Windows.OfType<SearchWindow>())
+            {
+                win.UpdateParentStatus();
+            }
+        }
+        public void UpdateParentStatus()
+        {
+            checkBox_windowPinned_Checked(checkBox_windowPinned, null);
+        }
         private void checkBox_windowPinned_Checked(object sender, RoutedEventArgs e)
         {
-            this.Owner = ((sender as CheckBox).IsChecked == true) ? mainWindow : null;
+            this.Owner = (sender as CheckBox).IsChecked == true && mainWindow.IsVisible == true ? mainWindow : null;
         }
     }
 }

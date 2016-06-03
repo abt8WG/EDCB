@@ -1,85 +1,35 @@
 ﻿<Window x:Class="EpgTimer.MainWindow"
-TextOptions.TextFormattingMode="Display"
+        TextOptions.TextFormattingMode="Display"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:EpgTimer"
+        xmlns:user="clr-namespace:EpgTimer.UserCtrlView"
         Title="EpgTimer" Height="480" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged" LocationChanged="Window_LocationChanged" StateChanged="Window_StateChanged" PreviewDragEnter="Window_PreviewDragEnter" PreviewDrop="Window_PreviewDrop" PreviewKeyDown="Window_PreviewKeyDown" AllowDrop="True">
-
-    <!-- app.xaml で定義してアプリ全体で上書きさせたいが、テーマのマージが反映されなくなってしまうのでここで定義しておく -->
-    <Window.Resources>
-        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-            <Setter Property="InputMethod.PreferredImeState" Value="Off" />
-            <Setter Property="Padding" Value="2" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="PasswordBox" BasedOn="{StaticResource {x:Type PasswordBox}}">
-            <Setter Property="Padding" Value="2" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Padding" Value="10,2" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="ScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}">
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-        </Style>
-    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <StackPanel Name="stackPanel_button" Orientation="Horizontal" />
-        </Grid>
-
-        <TabControl Name="tabControl_main" Grid.Row="1">
+        <StackPanel Grid.Row="0" Name="stackPanel_button" Orientation="Horizontal" />
+        <TabControl Grid.Row="1" Name="tabControl_main" >
             <TabItem Header="予約一覧" Name="tabItem_reserve">
-                <Grid>
-                    <local:ReserveView x:Name="reserveView" />
-                </Grid>
+                <local:ReserveView x:Name="reserveView" />
             </TabItem>
             <TabItem Header="使用予定チューナー" Name="tabItem_tunerReserve">
-                <Grid>
-                    <local:TunerReserveMainView x:Name="tunerReserveView" />
-                </Grid>
+                <local:TunerReserveMainView x:Name="tunerReserveView" />
             </TabItem>
             <TabItem Header="録画済み一覧" Name="tabItem_recinfo">
-                <Grid>
-                    <local:RecInfoView x:Name="recInfoView" />
-                </Grid>
+                <local:RecInfoView x:Name="recInfoView" />
             </TabItem>
             <TabItem Header="自動予約登録" Name="tabItem_epgAutoAdd">
-                <Grid>
-                    <local:AutoAddView x:Name="autoAddView" />
-                </Grid>
+                <local:AutoAddView x:Name="autoAddView" />
             </TabItem>
             <TabItem Header="番組表" Name="tabItem_epg">
-                <Grid>
-                    <local:EpgDataView x:Name="epgView" />
-                </Grid>
+                <local:EpgDataView x:Name="epgView" />
             </TabItem>
         </TabControl>
+        <user:StatusView Grid.Row="2" x:Name="statusBar" Margin="3" />
     </Grid>
 </Window>

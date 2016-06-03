@@ -14,29 +14,23 @@
             <RowDefinition Height="auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Margin="12,4,0,4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Name="label1" Content="プリセット" Margin="0,0,10,0" MinWidth="80" />
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <ComboBox Name="comboBox_preSet" Margin="0,0,20,0" Width="200" SelectionChanged="comboBox_preSet_SelectionChanged" />
-                <Button Name="button_reload_preset" Content="再読込" Margin="5,0" Click="button_reload_preset_Click" />
-                <Button Name="button_add_preset" Content="追加" Margin="5,0" Click="button_add_preset_Click" />
-                <Button Name="button_chg_preset" Content="変更" Margin="5,0" Click="button_chg_preset_Click" />
-                <Button Name="button_del_preset" Content="削除" Margin="5,0" Click="button_del_preset_Click" />
-            </StackPanel>
-        </Grid>
-        <Border Grid.Row="1" BorderThickness="1" BorderBrush="#FF8C8E94" Padding="4,1,4,1">
-            <Grid>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="12,4,0,4" >
+            <Label Content="プリセット" Margin="0,0,10,0" MinWidth="80" />
+            <ComboBox Name="comboBox_preSet" Margin="0,0,20,0" Width="200" SelectionChanged="comboBox_preSet_SelectionChanged" />
+            <Button Name="button_reload_preset" Content="再読込" Margin="5,0" Click="button_reload_preset_Click" />
+            <Button Name="button_add_preset" Content="追加" Margin="5,0" Click="button_add_preset_Click" />
+            <Button Name="button_chg_preset" Content="変更" Margin="5,0" Click="button_chg_preset_Click" />
+            <Button Name="button_del_preset" Content="削除" Margin="5,0" Click="button_del_preset_Click" />
+        </StackPanel>
+        <Border Grid.Row="1" BorderThickness="0,1" BorderBrush="#FF8C8E94" Padding="0,1">
+            <Grid Margin="12,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition />
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="7,0">
+                <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" MinWidth="90" />
                         <ColumnDefinition />
@@ -50,14 +44,14 @@
                         <RowDefinition Height="auto" />
                     </Grid.RowDefinitions>
                     
-                    <Label Grid.Row="0" Grid.Column="0" Name="label7" Content="録画モード" Margin="0,0,10,0" />
+                    <Label    Grid.Row="0" Grid.Column="0" Content="録画モード" Margin="0,0,10,0" />
                     <ComboBox Grid.Row="0" Grid.Column="1" Name="comboBox_recMode" Margin="0,0,50,0" ItemsSource="{Binding}"/>
-                    <Label Grid.Row="0" Grid.Column="2" Name="label8" Content="イベントリレー追従" Margin="0,0,10,0" />
+                    <Label    Grid.Row="0" Grid.Column="2" Content="イベントリレー追従" Margin="0,0,10,0" />
                     <ComboBox Grid.Row="0" Grid.Column="3" Name="comboBox_tuijyu" Margin="0,0,120,0" ItemsSource="{Binding}" />
 
-                    <Label Grid.Row="1" Grid.Column="0" Name="label10" Content="優先度" Margin="0,0,10,0" />
-                    <ComboBox Grid.Row="1" Grid.Column="1" Name="comboBox_priority" Margin="0,0,180,0" ItemsSource="{Binding}" />
-                    <Label Grid.Row="1" Grid.Column="2" Name="label9" Content="ぴったり（？）録画" Margin="0,0,10,0" />
+                    <Label    Grid.Row="1" Grid.Column="0" Content="優先度" Margin="0,0,10,0" />
+                    <ComboBox Grid.Row="1" Grid.Column="1" Name="comboBox_priority" Margin="0,0,120,0" ItemsSource="{Binding}" />
+                    <Label    Grid.Row="1" Grid.Column="2" Content="ぴったり（？）録画" Margin="0,0,10,0" />
                     <ComboBox Grid.Row="1" Grid.Column="3" Name="comboBox_pittari" Margin="0,0,120,0" ItemsSource="{Binding}" />
 
                     <Grid Grid.Row="3" Grid.ColumnSpan="4">
@@ -74,30 +68,30 @@
                             <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
 
-                        <Label Grid.Row="0" Grid.Column="0" Name="label12" Content="録画マージン" Margin="0,0,10,0" />
-                        <CheckBox Grid.Row="0" Grid.Column="1" Name="checkBox_margineDef" Content="デフォルト" Margin="0,0,20,0" Checked="checkBox_margineDef_Checked" Unchecked="checkBox_margineDef_Checked" />
+                        <Label      Grid.Row="0" Grid.Column="0" Content="録画マージン" Margin="0,0,10,0" />
+                        <CheckBox   Grid.Row="0" Grid.Column="1" Name="checkBox_margineDef" Content="デフォルト" Margin="0,0,20,0" Checked="checkBox_margineDef_Checked" Unchecked="checkBox_margineDef_Checked" />
                         <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
-                            <Label Name="label13" Content="開始" Margin="0,0,10,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
-                            <TextBox Name="textBox_margineStart" Width="57" Text="0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
+                            <Label Content="開始" Margin="0,0,10,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
+                            <TextBox Name="textBox_margineStart" Text="0" Style="{StaticResource NumberBox}" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Horizontal">
-                            <Label Name="label14" Content="終了" Margin="0,0,10,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
-                            <TextBox Name="textBox_margineEnd" Width="57" Text="0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
+                            <Label Content="終了" Margin="0,0,10,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
+                            <TextBox Name="textBox_margineEnd" Text="0" Style="{StaticResource NumberBox}" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_margineDef, Converter={StaticResource invert}}" />
                         </StackPanel>
 
-                        <Label Grid.Row="1" Grid.Column="0" Name="label15" Content="指定サービス対象データ" Margin="0,0,10,0"/>
-                        <CheckBox Grid.Row="1" Grid.Column="1" Name="checkBox_serviceMode" Content="デフォルト" Margin="0,0,20,0" Checked="checkBox_serviceMode_Checked" Unchecked="checkBox_serviceMode_Checked" />
-                        <CheckBox Grid.Row="1" Grid.Column="2" Name="checkBox_serviceCaption" Content="字幕を含める" Margin="0,0,20,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_serviceMode, Converter={StaticResource invert}}" />
-                        <CheckBox Grid.Row="1" Grid.Column="3" Name="checkBox_serviceData" Content="データカルーセルを含める" Margin="0,0,20,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_serviceMode, Converter={StaticResource invert}}" />
+                        <Label    Grid.Row="1" Grid.Column="0" Content="指定サービス対象データ" Margin="0,0,10,0"/>
+                        <CheckBox Grid.Row="1" Grid.Column="1" Name="checkBox_serviceMode"    Content="デフォルト"               Margin="0,0,20,0" Checked="checkBox_serviceMode_Checked" Unchecked="checkBox_serviceMode_Checked" />
+                        <CheckBox Grid.Row="1" Grid.Column="2" Name="checkBox_serviceCaption" Content="字幕を含める"             Margin="4,0,20,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_serviceMode, Converter={StaticResource invert}}" />
+                        <CheckBox Grid.Row="1" Grid.Column="3" Name="checkBox_serviceData"    Content="データカルーセルを含める" Margin="4,0,20,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_serviceMode, Converter={StaticResource invert}}" />
                     </Grid>
                 </Grid>
 
-                <Grid Grid.Row="1" Margin="0,8,0,0">
+                <Grid Grid.Row="1" Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition Width="auto"/>
                     </Grid.ColumnDefinitions>
-                    <ListView Grid.Column="0" Name="listView_recFolder" Margin="5,4" ItemsSource="{Binding}">
+                    <ListView Grid.Column="0" Name="listView_recFolder" ItemsSource="{Binding}">
                         <ListView.Resources>
                             <Style TargetType="ListViewItem">
                                 <EventSetter Event="MouseDoubleClick" Handler="listView_recFolder_MouseDoubleClick"/>
@@ -128,28 +122,28 @@
                             </GridView>
                         </ListView.View>
                     </ListView>
-                    <StackPanel Grid.Column="1">
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <Button Name="button_recFolderChg" Content="変更" Margin="5,2,3,2" Click="button_recFolderChg_Click" />
-                            <Button Name="button_recFolderDel" Content="削除" Margin="3,2,5,2" Click="button_recFolderDel_Click" />
+                            <Button Name="button_recFolderChg" Content="変更" Margin="0,2,3,2" Click="button_recFolderChg_Click" />
+                            <Button Name="button_recFolderDel" Content="削除" Margin="3,2,0,2" Click="button_recFolderDel_Click" />
                         </StackPanel>
-                        <Button Name="button_recFolderAdd" Content="追加" Margin="5,2" Click="button_recFolderAdd_Click" />
-                        <Button Name="button_recFolderAdd_1seg" Content="部分受信追加" Margin="5,2" Click="button_recFolderAdd_1seg_Click" />
+                        <Button Name="button_recFolderAdd" Content="追加" Margin="0,2" Click="button_recFolderAdd_Click" />
+                        <Button Name="button_recFolderAdd_1seg" Content="部分受信追加" Margin="0,2" Click="button_recFolderAdd_1seg_Click" />
                     </StackPanel>
                 </Grid>
 
-                <Grid Grid.Row="2" Grid.RowSpan="2" Margin="0,8,0,0">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                <Grid Grid.Row="2" Grid.RowSpan="2">
+                    <StackPanel Margin="0,4,0,0">
+                        <StackPanel Orientation="Horizontal">
                             <CheckBox Name="checkBox_partial" Content="部分受信（ワンセグ）を別ファイルに同時出力する" Margin="30,0,30,0" />
                             <CheckBox Name="checkBox_continueRec" Content="後ろの予約を同一ファイルで出力する" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="6,0,0,4">
-                            <Label Name="label23" Content="使用チューナー強制指定" Margin="0,0,20,0" />
-                            <ComboBox Name="comboBox_tuner"  Width="370" ItemsSource="{Binding}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Label Content="使用チューナー強制指定" Margin="0,0,20,0" />
+                            <ComboBox Name="comboBox_tuner" Width="370" ItemsSource="{Binding}" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="6,0,0,4">
-                            <Label Name="label18" Content="録画後動作" Margin="0,0,20,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Label Content="録画後動作" Margin="0,0,20,0" />
                             <CheckBox Name="checkBox_suspendDef" Content="デフォルト" Margin="0,0,10,0" Checked="checkBox_suspendDef_Checked" Unchecked="checkBox_suspendDef_Checked"/>
                             <RadioButton Name="radioButton_non" Content="何もしない" Margin="0,0,10,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_suspendDef, Converter={StaticResource invert}}" />
                             <RadioButton Name="radioButton_standby" Content="スタンバイ" Margin="0,0,10,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_suspendDef, Converter={StaticResource invert}}" />
@@ -157,7 +151,7 @@
                             <RadioButton Name="radioButton_shutdown" Content="シャットダウン" Margin="0,0,20,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_suspendDef, Converter={StaticResource invert}}" />
                             <CheckBox Name="checkBox_reboot" Content="復帰後再起動する" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_suspendDef, Converter={StaticResource invert}}" />
                         </StackPanel>
-                        <Grid Margin="6,0,6,4">
+                        <Grid  Margin="0,4,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition />
@@ -167,11 +161,11 @@
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="auto" />
                             </Grid.RowDefinitions>
-                            <Label Grid.Column="0" Name="label16" Content="録画後実行bat" Margin="0,0,20,0" />
-                            <TextBox Grid.Column="1" Name="textBox_bat" Margin="0,0,10,0" />
-                            <Button Grid.Column="2" Name="button_bat" Content="開く" Click="button_bat_Click" />
-                            <Label Grid.Column="0" Grid.Row="1" Name="label17" Content="録画タグ" ToolTip="録画タグの内容はバッチファイル内のマクロ $RecTag$ で参照できます。" />
-                            <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_recTag" Margin="0,0,10,0" ToolTip="録画タグの内容はバッチファイル内のマクロ $RecTag$ で参照できます。" />
+                            <Label   Grid.Column="0" Grid.Row="0" Content="録画後実行bat" Margin="0,0,20,0" />
+                            <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_bat" />
+                            <Button  Grid.Column="2" Grid.Row="0" Name="button_bat" Content="開く" Margin="10,0,0,0" Click="button_bat_Click" />
+                            <Label   Grid.Column="0" Grid.Row="1" Content="録画タグ" Margin="0,0,20,0" ToolTip="{Binding ToolTip, ElementName=textBox_recTag}" />
+                            <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_recTag" ToolTip="録画タグの内容はバッチファイル内のマクロ $RecTag$ で参照できます。" />
                         </Grid>
                     </StackPanel>
                 </Grid>
