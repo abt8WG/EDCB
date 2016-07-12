@@ -138,9 +138,6 @@
     <ClInclude Include="..\..\Common\TCPServer.h">
       <Filter>ヘッダー ファイル\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\NWStructDef.h">
-      <Filter>ヘッダー ファイル\Common</Filter>
-    </ClInclude>
     <ClInclude Include="FileStreamingUtil.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -180,13 +177,13 @@
     <ClInclude Include="NotifyManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\WinHTTPUtil.h">
-      <Filter>ヘッダー ファイル\Common</Filter>
-    </ClInclude>
     <ClInclude Include="SyoboiCalUtil.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="civetweb.h">
+      <Filter>ヘッダー ファイル\civetweb</Filter>
+    </ClInclude>
+    <ClInclude Include="civetweb_lua.h">
       <Filter>ヘッダー ファイル\civetweb</Filter>
     </ClInclude>
     <ClInclude Include="lua.h">
@@ -208,6 +205,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="UpnpSsdpServer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="NetPathUtil.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -311,9 +311,6 @@
     <ClCompile Include="NotifyManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\WinHTTPUtil.cpp">
-      <Filter>ソース ファイル\Common</Filter>
-    </ClCompile>
     <ClCompile Include="SyoboiCalUtil.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -324,6 +321,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="UpnpSsdpServer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="NetPathUtil.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
