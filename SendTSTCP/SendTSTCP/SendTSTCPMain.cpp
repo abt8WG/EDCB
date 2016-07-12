@@ -3,6 +3,7 @@
 #include "../../Common/BlockLock.h"
 
 #include <process.h>
+#include <Objbase.h>
 
 //SendTSTCPプロトコルのヘッダの送信を抑制する既定のポート範囲
 #define SEND_TS_TCP_NOHEAD_PORT_MIN 22000
@@ -234,6 +235,7 @@ DWORD CSendTSTCPMain::ClearSendBuff(
 
 UINT WINAPI CSendTSTCPMain::ConnectThread(LPVOID pParam)
 {
+	CoInitialize(NULL);
 	CSendTSTCPMain* pSys = (CSendTSTCPMain*)pParam;
     for(;;){
 		if( ::WaitForSingleObject(pSys->m_hStopConnectEvent, 500) != WAIT_TIMEOUT ){
@@ -291,11 +293,13 @@ UINT WINAPI CSendTSTCPMain::ConnectThread(LPVOID pParam)
 			}
 		}
 	}
+	CoUninitialize();
 	return 0;
 }
 
 UINT WINAPI CSendTSTCPMain::SendThread(LPVOID pParam)
 {
+	CoInitialize(NULL);
 	CSendTSTCPMain* pSys = (CSendTSTCPMain*)pParam;
 	DWORD dwWait = 0;
 	DWORD dwCount = 0;
@@ -378,5 +382,6 @@ UINT WINAPI CSendTSTCPMain::SendThread(LPVOID pParam)
 			delete[] pbSend;
 		}
 	}
+	CoUninitialize();
 	return 0;
 }

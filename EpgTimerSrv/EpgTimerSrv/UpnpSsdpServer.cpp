@@ -3,6 +3,7 @@
 #include "../../Common/StringUtil.h"
 #include <process.h>
 #include <iphlpapi.h>
+#include <Objbase.h>
 #pragma comment(lib, "iphlpapi.lib")
 
 CUpnpSsdpServer::CUpnpSsdpServer()
@@ -91,6 +92,7 @@ static bool GetInetAddr(unsigned long* addr, const char* host)
 
 UINT WINAPI CUpnpSsdpServer::SsdpThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CUpnpSsdpServer* sys = (CUpnpSsdpServer*)param;
 	WSAData wsaData;
 	WSAStartup(MAKEWORD(2, 0), &wsaData);
@@ -202,6 +204,7 @@ UINT WINAPI CUpnpSsdpServer::SsdpThread(LPVOID param)
 	sys->SendNotifyAliveOrByebye(true, nicList);
 
 	WSACleanup();
+	CoUninitialize();
 	return 0;
 }
 

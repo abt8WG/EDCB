@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "NotifyManager.h"
 #include <process.h>
+#include <Objbase.h>
 
 #include "../../Common/CtrlCmdDef.h"
 #include "../../Common/SendCtrlCmd.h"
@@ -236,11 +237,13 @@ void CNotifyManager::SendNotify()
 
 UINT WINAPI CNotifyManager::SendNotifyThread_(LPVOID param)
 {
+	CoInitialize(NULL);
 	__try {
 		CNotifyManager* sys = (CNotifyManager*)param;
 		return sys->SendNotifyThread();
 	}
 	__except (FilterException(GetExceptionInformation())) { }
+	CoUninitialize();
 	return 0;
 }
 

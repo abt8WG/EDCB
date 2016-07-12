@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "TCPServer.h"
 #include <process.h>
+#include <Objbase.h>
 #include "ErrDef.h"
 #include "CtrlCmdUtil.h"
 #include "CryptUtil.h"
@@ -284,6 +285,7 @@ BOOL CTCPServer::CheckCmd(DWORD cmd, DWORD size)
 
 UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 {
+	CoInitialize(NULL);
 	CTCPServer* pSys = (CTCPServer*)pParam;
 
 	struct WAIT_INFO {
@@ -460,5 +462,6 @@ UINT WINAPI CTCPServer::ServerThread(LPVOID pParam)
 	WSAEventSelect(pSys->m_sock, NULL, 0);
 	WSACloseEvent(hEventList.back());
 
+	CoUninitialize();
 	return 0;
 }

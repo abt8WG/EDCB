@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "PipeServer.h"
 #include <process.h>
+#include <Objbase.h>
 
 #include "StringUtil.h"
 #include "CtrlCmdDef.h"
@@ -91,6 +92,7 @@ static DWORD ReadFileAll(HANDLE hFile, BYTE* lpBuffer, DWORD dwToRead)
 
 UINT WINAPI CPipeServer::ServerThread(LPVOID pParam)
 {
+	CoInitialize(NULL);
 	CPipeServer* pSys = (CPipeServer*)pParam;
 
 	HANDLE hPipe = NULL;
@@ -188,5 +190,6 @@ UINT WINAPI CPipeServer::ServerThread(LPVOID pParam)
 
 	CloseHandle(hEventArray[1]);
 	CloseHandle(hEventConnect);
+	CoUninitialize();
 	return 0;
 }

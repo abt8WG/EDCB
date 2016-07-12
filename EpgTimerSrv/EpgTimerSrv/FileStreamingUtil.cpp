@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "FileStreamingUtil.h"
 #include <process.h>
+#include <Objbase.h>
 
 CFileStreamingUtil::CFileStreamingUtil(void)
 {
@@ -96,6 +97,7 @@ BOOL CFileStreamingUtil::OpenTimeShift(LPCWSTR filePath, DWORD processID,DWORD e
 
 UINT WINAPI CFileStreamingUtil::SizeChkThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CFileStreamingUtil* sys = (CFileStreamingUtil*)param;
 
 	for(;;){
@@ -112,6 +114,7 @@ UINT WINAPI CFileStreamingUtil::SizeChkThread(LPVOID param)
 		}
 	}
 
+	CoUninitialize();
 	return 0;
 }
 

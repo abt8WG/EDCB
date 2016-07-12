@@ -1911,7 +1911,6 @@ bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPG
 	CBlockLock lock(&this->managerLock);
 	bool ret = false;
 
-	CoInitialize(NULL);
 	try{
 		IRegExpPtr regExp;
 		regExp.CreateInstance(CLSID_RegExp);
@@ -1946,7 +1945,6 @@ bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPG
 	}catch( _com_error& e ){
 		_OutputDebugString(L"%s\r\n", e.ErrorMessage());
 	}
-	CoUninitialize();
 
 	return ret;
 }
@@ -1984,11 +1982,13 @@ vector<CH_DATA5> CReserveManager::GetChDataList() const
 
 UINT WINAPI CReserveManager::WatchdogThread_(LPVOID param)
 {
+	CoInitialize(NULL);
 	__try {
 		CReserveManager* sys = (CReserveManager*)param;
 		sys->WatchdogThread();
 	}
 	__except (FilterException(GetExceptionInformation())) { }
+	CoUninitialize();
 	return 0;
 }
 

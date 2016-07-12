@@ -1044,6 +1044,7 @@ int CALLBACK CEDCBSupportPlugin::CtrlCmdCallback(void *pParam,CMD_STREAM *pCmdPa
 // ‰Šú‰»ˆ—ƒXƒŒƒbƒh
 unsigned int __stdcall CEDCBSupportPlugin::InitializeThread(void *pParam)
 {
+	CoInitialize(NULL);
 	CEDCBSupportPlugin *pThis=static_cast<CEDCBSupportPlugin*>(pParam);
 	DWORD Err;
 
@@ -1146,6 +1147,7 @@ unsigned int __stdcall CEDCBSupportPlugin::InitializeThread(void *pParam)
 			pThis->m_pApp->AddLog(pszMessage);
 	}
 
+	CoUninitialize();
 	return 0;
 }
 

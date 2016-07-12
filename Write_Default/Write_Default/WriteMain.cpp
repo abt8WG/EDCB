@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "WriteMain.h"
 #include <process.h>
+#include <Objbase.h>
 #include "../../Common/BlockLock.h"
 
 extern HINSTANCE g_instance;
@@ -191,6 +192,7 @@ BOOL CWriteMain::Write(
 
 UINT WINAPI CWriteMain::TeeThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CWriteMain* sys = (CWriteMain*)param;
 	wstring cmd = sys->teeCmd;
 	Replace(cmd, L"$FilePath$", sys->savePath);
@@ -261,5 +263,6 @@ UINT WINAPI CWriteMain::TeeThread(LPVOID param)
 			CloseHandle(writePipe);
 		}
 	}
+	CoUninitialize();
 	return 0;
 }

@@ -55,11 +55,13 @@ BOOL CEpgDBManager::ReloadEpgData()
 
 UINT WINAPI CEpgDBManager::LoadThread_(LPVOID param)
 {
+	CoInitialize(NULL);
 	__try {
 		CEpgDBManager* sys = (CEpgDBManager*)param;
 		return sys->LoadThread();
 	}
 	__except (FilterException(GetExceptionInformation())) { }
+	CoUninitialize();
 	return 0;
 }
 
@@ -393,14 +395,12 @@ BOOL CEpgDBManager::SearchEpg(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumPro
 	BOOL ret = TRUE;
 
 	map<ULONGLONG, SEARCH_RESULT_EVENT> resultMap;
-	CoInitialize(NULL);
 	{
 		IRegExpPtr regExp;
 		for( size_t i=0; i<key->size(); i++ ){
 			SearchEvent( &(*key)[i], &resultMap, regExp );
 		}
 	}
-	CoUninitialize();
 
 	vector<SEARCH_RESULT_EVENT> result;
 	map<ULONGLONG, SEARCH_RESULT_EVENT>::iterator itr;
@@ -431,7 +431,6 @@ BOOL CEpgDBManager::SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*en
 	GetSystemTime(&dummyinfo.start_time);//途中にコンバート関数があるので、まともな値を入れておく。
 	dummy.info = &dummyinfo;
 
-	CoInitialize(NULL);
 	{
 		IRegExpPtr regExp;
 		for( size_t i=0; i<key->size(); i++ ){
@@ -446,7 +445,6 @@ BOOL CEpgDBManager::SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*en
 			result.push_back(dummy);
 		}
 	}
-	CoUninitialize();
 
 	//ここはロック状態なのでコールバック先で排他制御すべきでない
 	enumProc(&result, param);

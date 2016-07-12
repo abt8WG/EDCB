@@ -328,6 +328,7 @@ void CBonCtrl::RecvCallback(void* param, BYTE* data, DWORD size, DWORD remain)
 
 UINT WINAPI CBonCtrl::AnalyzeThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CBonCtrl* sys = (CBonCtrl*)param;
 	std::list<vector<BYTE>> data;
 
@@ -352,6 +353,7 @@ UINT WINAPI CBonCtrl::AnalyzeThread(LPVOID param)
 			WaitForSingleObject(sys->analyzeEvent, 1000);
 		}
 	}
+	CoUninitialize();
 	return 0;
 }
 
@@ -681,6 +683,7 @@ DWORD CBonCtrl::GetChScanStatus(
 
 UINT WINAPI CBonCtrl::ChScanThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CBonCtrl* sys = (CBonCtrl*)param;
 
 	//TODO: chUtilをconstに保っていないのでスレッド安全性は破綻している。スキャン時だけの問題なので修正はしないが要注意
@@ -803,6 +806,7 @@ UINT WINAPI CBonCtrl::ChScanThread(LPVOID param)
 
 	sys->chUtil.LoadChSet(chSet4, chSet5);
 
+	CoUninitialize();
 	return 0;
 }
 
@@ -897,6 +901,7 @@ DWORD CBonCtrl::GetEpgCapStatus(
 
 UINT WINAPI CBonCtrl::EpgCapThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CBonCtrl* sys = (CBonCtrl*)param;
 
 	BOOL chkNext = TRUE;
@@ -1040,6 +1045,7 @@ UINT WINAPI CBonCtrl::EpgCapThread(LPVOID param)
 			}
 		}
 	}
+	CoUninitialize();
 	return 0;
 }
 
@@ -1145,6 +1151,7 @@ void CBonCtrl::StopBackgroundEpgCap()
 
 UINT WINAPI CBonCtrl::EpgCapBackThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	wstring folderPath;
 	GetModuleFolderPath( folderPath );
 	wstring iniPath = folderPath;
@@ -1241,6 +1248,7 @@ UINT WINAPI CBonCtrl::EpgCapBackThread(LPVOID param)
 		}
 	}
 
+	CoUninitialize();
 	return 0;
 }
 

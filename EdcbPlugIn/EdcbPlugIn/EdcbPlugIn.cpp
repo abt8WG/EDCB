@@ -12,6 +12,7 @@
 #include "../../Common/BlockLock.h"
 #include "../../Common/ParseTextInstances.h"
 #include <process.h>
+#include <Objbase.h>
 
 namespace
 {
@@ -1035,9 +1036,11 @@ bool CEdcbPlugIn:: IsTunerBonDriver() const
 
 UINT WINAPI CEdcbPlugIn::ReloadEpgThread(void *param)
 {
+	CoInitialize(NULL);
 	CSendCtrlCmd cmd;
 	cmd.SetConnectTimeOut(4000);
 	cmd.SendReloadEpg();
+	CoUninitialize();
 	return 0;
 }
 

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "TimeShiftUtil.h"
 #include <process.h>
+#include <Objbase.h>
 
 CTimeShiftUtil::CTimeShiftUtil(void)
 {
@@ -245,6 +246,7 @@ BOOL CTimeShiftUtil::StopTimeShift()
 
 UINT WINAPI CTimeShiftUtil::ReadThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CTimeShiftUtil* sys = (CTimeShiftUtil*)param;
 	BYTE buff[188*256];
 	CPacketInit packetInit;
@@ -471,6 +473,7 @@ Err_End:
 		sys->sendTcp->SendData(endBuff, 188*512);
 	}
 
+	CoUninitialize();
 	return 0;
 }
 
