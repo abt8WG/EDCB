@@ -840,19 +840,21 @@ void CEpgDBManager::ConvertSearchText(wstring& str)
 		0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFF0 - FFFF
 	};
 
+	// str[str.size()] したくなかったため、str.c_str()[str.size()] としていたが loop内の c_str() が無駄なので外出し。
+	const wchar_t *pstr = str.c_str();
 	size_t j = 0;
 	for (size_t i = 0; i < str.size(); i++) {
-		wchar_t wch = str[i];
+		wchar_t wch = pstr[i];
 		if (wch >= 0xFF00 && wch <= 0xFFFF)
 		{
 			wchar_t wch2 = FF0X_table[wch & 0xFF];
 			if (wch2)
 			{
-				if (str.c_str()[i+1] == L'ﾞ' && ((wch >= L'ｶ' && wch <= L'ﾄ') || (wch >= L'ﾊ' && wch <= L'ﾎ')))
+				if (pstr[i+1] == L'ﾞ' && ((wch >= L'ｶ' && wch <= L'ﾄ') || (wch >= L'ﾊ' && wch <= L'ﾎ')))
 				{
 					wch2++; i++;
 				}
-				else if (str.c_str()[i+1] == L'ﾟ' && wch >= L'ﾊ' && wch <= L'ﾎ')
+				else if (pstr[i+1] == L'ﾟ' && wch >= L'ﾊ' && wch <= L'ﾎ')
 				{
 					wch2 += 2; i++;
 				}
