@@ -2066,9 +2066,14 @@ bool CReserveManager::AutoAddReserveEPG(
 
 	reserveText.RemoveReserveAutoAddId(data.dataID, data.reserveList);
 
+	if (data.searchInfo.searchKeyHash == 0) {
+		data.searchInfo.searchKeyHash = UINT_MAX; // 新規の検索 (ハッシュ値として 0 や UINT_MAX になりにくいと仮定)
+	}
+
 	vector<CEpgDBManager::SEARCH_RESULT_EVENT_DATA> resultList;
 	vector<EPGDB_SEARCH_KEY_INFO> key(1, data.searchInfo);
 	this->epgDBManager.SearchEpg(&key, &resultList);
+	data.searchInfo.searchKeyHash = key[0].searchKeyHash; // 検索キーハッシュ値の更新
 
 	for( size_t i = 0; i < resultList.size(); i++ ){
 		const EPGDB_EVENT_INFO& info = resultList[i].info;

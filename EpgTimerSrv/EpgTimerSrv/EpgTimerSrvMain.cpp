@@ -404,17 +404,24 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 				bool addCountUpdated = false;
 				bool addReserve = false;
 				{
+					TIME_MEASURE();
+
 					CBlockLock lock(&ctx->sys->settingLock);
 					for( map<DWORD, EPG_AUTO_ADD_DATA>::const_iterator itr = ctx->sys->epgAutoAdd.GetMap().begin(); itr != ctx->sys->epgAutoAdd.GetMap().end(); itr++ ){
 						DWORD addCount = itr->second.addCount;
+						_OutputDebugString(L"キーワード予約登録処理:%03d %s\r\n", itr->second.dataID, itr->second.searchInfo.andKey.c_str());  
 						addReserve |= ctx->sys->AutoAddReserveEPG(itr->second, true);
 						if( addCount != itr->second.addCount ){
 							addCountUpdated = true;
 						}
 					}
 					for( map<DWORD, MANUAL_AUTO_ADD_DATA>::const_iterator itr = ctx->sys->manualAutoAdd.GetMap().begin(); itr != ctx->sys->manualAutoAdd.GetMap().end(); itr++ ){
+						_OutputDebugString(L"プログラム予約登録処理:%03d %s\r\n", itr->second.dataID, itr->second.title.c_str());
 						addReserve |= ctx->sys->AutoAddReserveProgram(itr->second, true);
 					}
+					_CrtMemState s;
+					_CrtMemCheckpoint(&s);
+					_CrtMemDumpStatistics(&s);
 				}
 				if( addCountUpdated ){
 					//予約登録数の変化を通知する
@@ -978,6 +985,7 @@ bool CEpgTimerSrvMain::AutoAddReserveEPG(const EPG_AUTO_ADD_DATA& data, bool noR
 	vector<RESERVE_BASIC_DATA> reserveBasic; reserveBasic.resize(reserveData.size());
 	std::copy(reserveData.begin(), reserveData.end(), reserveBasic.begin());
 	epgAutoAdd.SetAddList(data.dataID, reserveBasic);
+	epgAutoAdd.SetSearchKeyHash(data.dataID, data.searchInfo.searchKeyHash); //検索キーハッシュ値の更新
 	return ret;
 }
 

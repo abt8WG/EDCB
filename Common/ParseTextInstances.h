@@ -170,6 +170,7 @@ public:
 	bool SetRecList(DWORD id, const vector<REC_FILE_BASIC_INFO>& recList);
 	bool AddRecList(DWORD id, const vector<REC_FILE_BASIC_INFO>& recList);
 	bool DelData(DWORD id);
+	bool SetSearchKeyHash(DWORD id, DWORD searchKeyHash);
 protected:
 	bool ParseLine(LPCWSTR parseLine, pair<DWORD, EPG_AUTO_ADD_DATA>& item);
 	bool SaveLine(const pair<DWORD, EPG_AUTO_ADD_DATA>& item, wstring& saveLine) const;

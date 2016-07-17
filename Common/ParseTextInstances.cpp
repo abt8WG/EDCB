@@ -864,6 +864,7 @@ bool CParseEpgAutoAddText::ChgData(const EPG_AUTO_ADD_DATA& item)
 		itr->second.addCount = tmp.addCount;
 		itr->second.reserveList = tmp.reserveList;
 		itr->second.recFileList = tmp.recFileList;
+		itr->second.searchInfo.searchKeyHash = tmp.searchInfo.searchKeyHash; //âﬂãéåüçıÉLÅ[ÇÃï€ë∂
 		return true;
 	}
 	return false;
@@ -904,6 +905,16 @@ bool CParseEpgAutoAddText::AddRecList(DWORD id, const vector<REC_FILE_BASIC_INFO
 bool CParseEpgAutoAddText::DelData(DWORD id)
 {
 	return this->itemMap.erase(id) != 0;
+}
+
+bool CParseEpgAutoAddText::SetSearchKeyHash(DWORD id, DWORD searchKeyHash)
+{
+	map<DWORD, EPG_AUTO_ADD_DATA>::iterator itr = this->itemMap.find(id);
+	if (itr != this->itemMap.end()) {
+		itr->second.searchInfo.searchKeyHash = searchKeyHash;
+		return true;
+	}
+	return false;
 }
 
 bool CParseEpgAutoAddText::ParseLine(LPCWSTR parseLine, pair<DWORD, EPG_AUTO_ADD_DATA>& item)

@@ -222,6 +222,9 @@
     <ClInclude Include="..\..\Common\CryptUtil.h">
       <Filter>ヘッダー ファイル\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\Measure.h">
+      <Filter>ヘッダー ファイル\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
