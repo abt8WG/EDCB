@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "EpgTimerSrvMain.h"
 #include "HttpServer.h"
+#include "../../Common/PathUtil.h"
 #include "../../Common/TimeUtil.h"
 
 int CEpgTimerSrvMain::InitLuaCallback(lua_State* L)
@@ -133,7 +134,8 @@ int CEpgTimerSrvMain::LuaConvert(lua_State* L)
 			}
 		}
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 int CEpgTimerSrvMain::LuaGetPrivateProfile(lua_State* L)

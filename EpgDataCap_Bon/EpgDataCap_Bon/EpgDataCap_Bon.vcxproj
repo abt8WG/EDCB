@@ -113,6 +113,9 @@
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>DPIAware.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -139,6 +142,9 @@
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>DPIAware.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -171,6 +177,9 @@
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>DPIAware.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -203,6 +212,9 @@
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\bin\pre-build.cmd" $(ConfigurationName) "$(ProjectDir)"</Command>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>DPIAware.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
