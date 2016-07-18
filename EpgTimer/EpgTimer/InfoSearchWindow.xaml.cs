@@ -298,7 +298,7 @@ namespace EpgTimer
         }
     }
     //ジェネリックパラメータTはstatic関係の分割用なので何でもいい
-    public class InfoSearchWindowBase : HideableWindow<InfoSearchWindow>
+    public class InfoSearchWindowBase : HidableWindow<InfoSearchWindow>
     {
         static InfoSearchWindowBase()
         {

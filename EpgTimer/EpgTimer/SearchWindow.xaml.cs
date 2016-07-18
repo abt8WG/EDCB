@@ -556,7 +556,7 @@ namespace EpgTimer
             }
         }
     }
-    public class SearchWindowBase : HideableWindow<SearchWindow>
+    public class SearchWindowBase : HidableWindow<SearchWindow>
     {
         static SearchWindowBase()
         {

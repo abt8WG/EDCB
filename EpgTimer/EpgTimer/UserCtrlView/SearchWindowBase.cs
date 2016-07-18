@@ -6,7 +6,7 @@ using System.Windows.Controls;
 
 namespace EpgTimer.UserCtrlView
 {
-    public class HideableWindowSet
+    public class HidableWindowSet
     {
         public double Top = -100;
         public double Left = -100;
@@ -14,7 +14,7 @@ namespace EpgTimer.UserCtrlView
         public double Height = -100;
         public bool Pinned = true;
 
-        public void SetToWindow<T>(HideableWindow<T> win)
+        public void SetToWindow<T>(HidableWindow<T> win)
         {
             if (Top != -100) win.Top = Top;
             if (Left != -100) win.Left = Left;
@@ -22,7 +22,7 @@ namespace EpgTimer.UserCtrlView
             if (Height > 0) win.Height = Height;
             win.Pinned = Pinned;
         }
-        public void GetFromWindow<T>(HideableWindow<T> win, bool force = false)
+        public void GetFromWindow<T>(HidableWindow<T> win, bool force = false)
         {
             if (force == true || win.Visibility == Visibility.Visible && win.WindowState == WindowState.Normal)
             {
@@ -35,18 +35,18 @@ namespace EpgTimer.UserCtrlView
         }
     }
 
-    //HideableWindow全体管理用
-    public class HideableWindowBase : Window
+    //HidableWindow全体管理用
+    public class HidableWindowBase : Window
     {
         protected static MainWindow mainWindow { get { return ViewUtil.MainWindow; } }
         protected static MenuManager mm { get { return CommonManager.Instance.MM; } }
         protected MenuBinds mBinds = new MenuBinds();
     }
-    public class HideableWindow<T> : HideableWindowBase
+    public class HidableWindow<T> : HidableWindowBase
     {
         public static void RefreshMenus()
         {
-            foreach (var win in Application.Current.Windows.OfType<HideableWindow<T>>())
+            foreach (var win in Application.Current.Windows.OfType<HidableWindow<T>>())
             {
                 win.RefreshMenu();
             }
@@ -58,7 +58,7 @@ namespace EpgTimer.UserCtrlView
         protected virtual void ReloadInfoData() { }
         public static void UpdatesInfo(bool reload = true)
         {
-            foreach (var win in Application.Current.Windows.OfType<HideableWindow<T>>())
+            foreach (var win in Application.Current.Windows.OfType<HidableWindow<T>>())
             {
                 win.UpdateInfo(reload);
             }
@@ -75,9 +75,9 @@ namespace EpgTimer.UserCtrlView
 
         /// <summary>番組表などへジャンプした際に最小化したWindow</summary>
         protected static string buttonID = "[]";
-        protected static HideableWindow<T> hideWindow = null;
+        protected static HidableWindow<T> hideWindow = null;
         public static bool HasHideWindow { get { return hideWindow != null; } }
-        protected static void SetHideWindow(HideableWindow<T> win)
+        protected static void SetHideWindow(HidableWindow<T> win)
         {
             // 情報を保持は最新のもの1つだけ
             hideWindow = win;
@@ -109,7 +109,7 @@ namespace EpgTimer.UserCtrlView
         }
         public static void MinimizeWindows()
         {
-            foreach (var win in Application.Current.Windows.OfType<HideableWindow<T>>())
+            foreach (var win in Application.Current.Windows.OfType<HidableWindow<T>>())
             {
                 win.WindowState = WindowState.Minimized;
             }
@@ -120,7 +120,7 @@ namespace EpgTimer.UserCtrlView
             if (hideWindow == this) SetHideWindow(null);
 
             //フォーカスがおかしくなるときがあるので、とりあえずの対応
-            if (Application.Current.Windows.OfType<HideableWindowBase>().Count() == 0)
+            if (Application.Current.Windows.OfType<HidableWindowBase>().Count() == 0)
             {
                 mainWindow.Activate();
             }
@@ -139,7 +139,7 @@ namespace EpgTimer.UserCtrlView
         {
             AllClosing = true;
 
-            foreach (var win in Application.Current.Windows.OfType<HideableWindow<T>>())
+            foreach (var win in Application.Current.Windows.OfType<HidableWindow<T>>())
             {
                 win.Close();
             }
@@ -165,7 +165,7 @@ namespace EpgTimer.UserCtrlView
         }
         public static void UpdatesParentStatus()
         {
-            foreach (var win in Application.Current.Windows.OfType<HideableWindow<T>>())
+            foreach (var win in Application.Current.Windows.OfType<HidableWindow<T>>())
             {
                 win.UpdateParentStatus();
             }

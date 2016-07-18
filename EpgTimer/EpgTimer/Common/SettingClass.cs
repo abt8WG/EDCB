@@ -955,7 +955,7 @@ namespace EpgTimer
         /// <summary>検索の並べ替え操作の方向</summary>
         public ListSortDirection SearchSortDirection { get; set; }
 		/// <summary>検索ウィンドウ用</summary>
-		public HideableWindowSet SearchWndSet { get; set; }
+		public HidableWindowSet SearchWndSet { get; set; }
         /// <summary>検索/キーワード予約ダイアログで検索語を保存する</summary>
         public bool SaveSearchKeyword { get; set; }
 		/// <summary>予約簡易検索で表示する列項目のリスト</summary>
@@ -979,7 +979,7 @@ namespace EpgTimer
 		/// <summary>予約簡易検索で検索結果のツールチップを表示する</summary>
 		public bool InfoSearchItemTooltip { get; set; }
 		/// <summary>予約簡易検索ウィンドウ</summary>
-		public HideableWindowSet InfoSearchWndSet { get; set; }
+		public HidableWindowSet InfoSearchWndSet { get; set; }
         /// <summary>情報通知をファイルに記録する</summary>
         public short AutoSaveNotifyLog { get; set; }
         /// <summary>タスクトレイアイコンを表示する</summary>
@@ -1241,7 +1241,7 @@ namespace EpgTimer
             SearchWndColumn = new List<ListColumnInfo>();
             SearchColumnHead = "";
             SearchSortDirection = ListSortDirection.Ascending;
-            SearchWndSet = new HideableWindowSet();
+            SearchWndSet = new HidableWindowSet();
             SaveSearchKeyword = true;
             InfoSearchWndColumn = new List<ListColumnInfo>();
             InfoSearchColumnHead = "";
@@ -1253,7 +1253,7 @@ namespace EpgTimer
             InfoSearchEpgAutoAddInfo = true;
             InfoSearchManualAutoAddInfo = true;
             InfoSearchItemTooltip = true;
-            InfoSearchWndSet = new HideableWindowSet();
+            InfoSearchWndSet = new HidableWindowSet();
             AutoSaveNotifyLog = 0;
             ShowTray = true;
             MinHide = true;
