@@ -463,8 +463,6 @@ namespace EpgTimer
             //複数ダイアログの禁止(タスクアイコンからの起動対策)
             if (ViewUtil.SingleWindowCheck(typeof(ConnectWindow)) != 0) return;
 
-            if (CommonManager.Instance.NWMode == false) return;
-
             if (connectTimer != null) return;
 
             var dlg = new ConnectWindow();
@@ -482,8 +480,6 @@ namespace EpgTimer
         {
             //ダイアログが残っているようなら閉じる(タスクアイコンからの起動対策)
             ViewUtil.SingleWindowCheck(typeof(ConnectWindow), true);
-
-            if (CommonManager.Instance.NWMode == false) return;
 
             var interval = TimeSpan.FromSeconds(Settings.Instance.WoLWaitSecond + 60);
             var CheckIsConnected = new Action(() =>
