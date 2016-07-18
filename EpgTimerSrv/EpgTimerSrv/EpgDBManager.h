@@ -83,7 +83,9 @@ public:
 			return;
 		}
 
-		TIME_MEASURE();
+#ifdef _DEBUG
+		TIME_MEASURE_1(key->andKey.c_str());
+#endif
 
 		wstring andKey = key->andKey;
 		BOOL caseFlag = FALSE;
@@ -285,31 +287,29 @@ public:
 							continue;
 						}
 					}else if( andKeyList.size() != 0 || notKeyList.size() != 0 ){
-						DWORD searchKeyHash = 0;
-						if( key->searchKeyHash != 0 ){
-							// 検索キー毎に結果を保存するための検索キーIDを生成する
-							std::hash<int> hash_int;
-							std::hash<wstring> hash_wstr;
-							int flags = (key->titleOnlyFlag ? 1 : 0) | (key->regExpFlag ? 2 : 0) | (key->aimaiFlag ? 4 : 0) | (caseFlag ? 8 : 0);
-							searchKeyHash = static_cast<DWORD>(hash_int(flags) ^ hash_wstr(key->andKey) ^ hash_wstr(key->notKey));
-							if( key->searchKeyHash != searchKeyHash ){
-								// search内容が変わってる。古い検索結果を消す。
-								itrEvent->second->searchResult.erase(key->searchKeyHash);
-								auto itrErase = find(itrEvent->second->searchIgnore.cbegin(), itrEvent->second->searchIgnore.cend(), key->searchKeyHash);
-								if( itrErase != itrEvent->second->searchIgnore.cend() ){
-									itrEvent->second->searchIgnore.erase(itrErase);
-								}
-								key->searchKeyHash = searchKeyHash;
-							}
+						// 検索キー毎に結果を保存するための検索キーハッシュ値を生成する
+						std::hash<int> hash_int;
+						std::hash<wstring> hash_wstr;
+						int flags = (key->titleOnlyFlag ? 1 : 0) | (key->regExpFlag ? 2 : 0) | (key->aimaiFlag ? 4 : 0) | (caseFlag ? 8 : 0);
+						DWORD searchKeyHash = static_cast<DWORD>(hash_int(flags) ^ hash_wstr(key->andKey) ^ hash_wstr(key->notKey));
 
-							// マッチしない検索として登録されていれば検索しない
-							if( find(itrEvent->second->searchIgnore.cbegin(), itrEvent->second->searchIgnore.cend(), searchKeyHash) != itrEvent->second->searchIgnore.cend() ){
-								continue;
+						if( key->searchKeyHash != 0 && key->searchKeyHash != searchKeyHash ){
+							// search内容が変わってる。古い検索結果を消す。
+							itrEvent->second->searchResult.erase(key->searchKeyHash);
+							auto itrErase = find(itrEvent->second->searchIgnore.cbegin(), itrEvent->second->searchIgnore.cend(), key->searchKeyHash);
+							if( itrErase != itrEvent->second->searchIgnore.cend() ){
+								itrEvent->second->searchIgnore.erase(itrErase);
 							}
+							key->searchKeyHash = searchKeyHash;
+						}
+
+						// マッチしない検索として登録されていれば検索しない
+						if (find(itrEvent->second->searchIgnore.cbegin(), itrEvent->second->searchIgnore.cend(), searchKeyHash) != itrEvent->second->searchIgnore.cend()) {
+							continue;
 						}
 
 						// 検索結果が保存されてなければ検索する
-						auto itrResult = searchKeyHash ? itrEvent->second->searchResult.find(searchKeyHash) : itrEvent->second->searchResult.end();
+						auto itrResult = key->searchKeyHash ? itrEvent->second->searchResult.find(searchKeyHash) : itrEvent->second->searchResult.end();
 						if( itrResult == itrEvent->second->searchResult.end() ){
 #if 1 /* 検索対象の文字列をキャッシュする */
 							//検索対象文字列が保存されていなければ作成する
@@ -322,7 +322,6 @@ public:
 								}
 								ConvertSearchText(itrEvent->second->search_event_name);
 								ConvertSearchText(itrEvent->second->search_text_char);
-								//itrEvent->second->searchResult.clear();
 							}
 							//検索対象の文字列作成
 							targetWord = itrEvent->second->search_event_name;
@@ -345,7 +344,7 @@ public:
 							if( notKeyList.size() != 0 ){
 								if( IsFindKeyword(key->regExpFlag, regExp, caseFlag, &notKeyList, targetWord, FALSE) != FALSE ){
 									//notキーワード見つかったので対象外
-									if( searchKeyHash) itrEvent->second->searchIgnore.push_back(searchKeyHash);
+									if( key->searchKeyHash ) itrEvent->second->searchIgnore.push_back(searchKeyHash);
 									continue;
 								}
 							}
@@ -354,18 +353,18 @@ public:
 									//あいまい検索
 									if( IsFindLikeKeyword(caseFlag, &andKeyList, targetWord, TRUE, &matchKey) == FALSE ){
 										//andキーワード見つからなかったので対象外
-										if( searchKeyHash) itrEvent->second->searchIgnore.push_back(searchKeyHash);
+										if( key->searchKeyHash ) itrEvent->second->searchIgnore.push_back(searchKeyHash);
 										continue;
 									}
 								}else{
 									if( IsFindKeyword(key->regExpFlag, regExp, caseFlag, &andKeyList, targetWord, TRUE, &matchKey) == FALSE ){
 										//andキーワード見つからなかったので対象外
-										if( searchKeyHash) itrEvent->second->searchIgnore.push_back(searchKeyHash);
+										if( key->searchKeyHash ) itrEvent->second->searchIgnore.push_back(searchKeyHash);
 										continue;
 									}
 								}
 							}
-							if( searchKeyHash) itrEvent->second->searchResult.insert(pair<DWORD, wstring>(searchKeyHash, matchKey));
+							if( key->searchKeyHash ) itrEvent->second->searchResult.insert(pair<DWORD, wstring>(searchKeyHash, matchKey));
 						}else{
 							matchKey = itrResult->second;
 						}

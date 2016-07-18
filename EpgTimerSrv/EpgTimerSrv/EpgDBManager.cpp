@@ -294,6 +294,7 @@ BOOL CEpgDBManager::ConvertEpgInfo(const EPGDB_SERVICE_INFO* service, const EPG_
 	// 検索用文字列を再生成するためにクリアしておく。
 	dest->search_event_name.clear();
 	dest->search_text_char.clear();
+	dest->searchIgnore.clear();
 	dest->searchResult.clear();
 
 	return TRUE;

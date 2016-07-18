@@ -412,24 +412,23 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 				bool addCountUpdated = false;
 				bool addReserve = false;
 				{
-					TIME_MEASURE();
-
+					TIME_MEASURE_1(L"—\–ñ“o˜^ˆ—");
 					CBlockLock lock(&ctx->sys->settingLock);
 					for( map<DWORD, EPG_AUTO_ADD_DATA>::const_iterator itr = ctx->sys->epgAutoAdd.GetMap().begin(); itr != ctx->sys->epgAutoAdd.GetMap().end(); itr++ ){
 						DWORD addCount = itr->second.addCount;
-						_OutputDebugString(L"ƒL[ƒ[ƒh—\–ñ“o˜^ˆ—:%03d %s\r\n", itr->second.dataID, itr->second.searchInfo.andKey.c_str());  
 						addReserve |= ctx->sys->AutoAddReserveEPG(itr->second, true);
 						if( addCount != itr->second.addCount ){
 							addCountUpdated = true;
 						}
 					}
 					for( map<DWORD, MANUAL_AUTO_ADD_DATA>::const_iterator itr = ctx->sys->manualAutoAdd.GetMap().begin(); itr != ctx->sys->manualAutoAdd.GetMap().end(); itr++ ){
-						_OutputDebugString(L"ƒvƒƒOƒ‰ƒ€—\–ñ“o˜^ˆ—:%03d %s\r\n", itr->second.dataID, itr->second.title.c_str());
 						addReserve |= ctx->sys->AutoAddReserveProgram(itr->second, true);
 					}
+#ifdef _DEBUG
 					_CrtMemState s;
 					_CrtMemCheckpoint(&s);
 					_CrtMemDumpStatistics(&s);
+#endif
 				}
 				if( addCountUpdated ){
 					//—\–ñ“o˜^”‚Ì•Ï‰»‚ğ’Ê’m‚·‚é
