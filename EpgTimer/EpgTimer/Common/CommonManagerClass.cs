@@ -497,10 +497,25 @@ namespace EpgTimer
         {
             return ((UInt64)ONID) << 32 | ((UInt64)TSID) << 16 | (UInt64)SID;
         }
-
         public static UInt64 Create64PgKey(UInt16 ONID, UInt16 TSID, UInt16 SID, UInt16 EventID)
         {
             return ((UInt64)ONID) << 48 | ((UInt64)TSID) << 32 | ((UInt64)SID) << 16 | (UInt64)EventID;
+        }
+
+        public static String Convert64PGKeyString(UInt64 Key)
+        {
+            return Convert64KeyString(Key >> 16) + "\r\n"
+                + ConvertEpgIDString("EventID", Key);
+        }
+        public static String Convert64KeyString(UInt64 Key)
+        {
+            return ConvertEpgIDString("OriginalNetworkID", Key >> 32) + "\r\n" +
+            ConvertEpgIDString("TransportStreamID", Key >> 16) + "\r\n" +
+            ConvertEpgIDString("ServiceID", Key);
+        }
+        private static String ConvertEpgIDString(String Title, UInt64 id)
+        {
+            return string.Format("{0} : {1} (0x{1:X4})", Title, 0x000000000000FFFF & id);
         }
 
         public static EpgServiceInfo ConvertChSet5To(ChSet5Item item)
@@ -526,6 +541,10 @@ namespace EpgTimer
             return info;
         }
 
+        public static string AdjustSearchText(string s)
+        {
+            return ReplaceUrl(s.ToLower()).Replace("　", " ").Replace("\r\n", "");
+        }
         public static String ReplaceUrl(String url)
         {
             string retText = url;
@@ -603,6 +622,7 @@ namespace EpgTimer
             retText = retText.Replace("＜", "<");
             retText = retText.Replace("＞", ">");
             retText = retText.Replace("？", "?");
+            retText = retText.Replace("！", "!");
             retText = retText.Replace("＿", "_");
             retText = retText.Replace("＋", "+");
             retText = retText.Replace("－", "-");
@@ -1237,11 +1257,6 @@ namespace EpgTimer
             return flowDoc;
         }
 
-        public String ConvertTextSearchString(String s)
-        {
-            return ReplaceUrl(MenuUtil.TrimKeyword(s));
-        }        
-
         //デフォルト番組表の情報作成
         public List<CustomEpgTabInfo> CreateDefaultTabInfo()
         {
@@ -1693,36 +1708,6 @@ namespace EpgTimer
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return null;
-        }
-
-        public void StatusNotifySet(bool success, string subject, Visual target = null)
-        {
-            if (string.IsNullOrEmpty(subject)) return;
-            StatusNotifySet((success == true ? "" : "中断またはキャンセルされました < ") + subject, null, target);
-        }
-        public void StatusNotifySet(string s3, TimeSpan? interval = null, Visual target = null)
-        {
-            if (Settings.Instance.DisplayStatus == false || Settings.Instance.DisplayStatusNotify == false) return;
-            GetStatusbar(target).SetText(s3: s3, interval: interval);
-        }
-        public void StatusNotifyAppend(string s3, TimeSpan? interval = null, Visual target = null)
-        {
-            if (Settings.Instance.DisplayStatus == false || Settings.Instance.DisplayStatusNotify == false) return;
-            GetStatusbar(target).AppendText(s3: s3, interval: interval);
-        }
-        public void StatusSet(string s1 = null, string s2 = null, string s3 = null, Visual target = null)
-        {
-            if (Settings.Instance.DisplayStatus == false) return;
-            GetStatusbar(target).SetText(s1, s2, s3);
-        }
-        public void StatusAppend(string s1 = "", string s2 = "", string s3 = "", Visual target = null)
-        {
-            if (Settings.Instance.DisplayStatus == false) return;
-            GetStatusbar(target).AppendText(s1, s2, s3);
-        }
-        public UserCtrlView.StatusView GetStatusbar(Visual target = null)
-        {
-            return (target is SearchWindow) ? (target as SearchWindow).statusBar : (Application.Current.MainWindow as MainWindow).statusBar;
         }
     }
 }

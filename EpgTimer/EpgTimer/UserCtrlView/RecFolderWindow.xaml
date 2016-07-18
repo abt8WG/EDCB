@@ -48,7 +48,7 @@
         </Grid>
 
         <StackPanel Grid.ColumnSpan="3" Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Name="button_ok"     Content="追加" Margin="0,0,20,0" Click="button_ok_Click" />
+            <Button Name="button_ok"     Content="追加" Margin="0,0,20,0" Click="button_ok_Click" IsDefault="True" />
             <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" IsCancel="True" />
         </StackPanel>
     </Grid>

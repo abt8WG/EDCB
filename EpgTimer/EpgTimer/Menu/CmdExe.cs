@@ -64,7 +64,7 @@ namespace EpgTimer
         protected static MenuManager mm { get { return CommonManager.Instance.MM; } }
 
         protected Control Owner;
-        protected static MainWindow mainWindow { get { return (MainWindow)Application.Current.MainWindow; } }
+        protected static MainWindow mainWindow { get { return ViewUtil.MainWindow; } }
 
         protected Dictionary<ICommand, cmdOption> cmdList = new Dictionary<ICommand, cmdOption>();
 
@@ -115,6 +115,7 @@ namespace EpgTimer
             cmdList.Add(EpgCmds.JumpReserve, new cmdOption(mc_JumpReserve, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.JumpTuner, new cmdOption(mc_JumpTuner, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.JumpTable, new cmdOption(mc_JumpTable, null, cmdExeType.SingleItem));
+            cmdList.Add(EpgCmds.JumpList, new cmdOption(null, null, cmdExeType.Direct));//個別に指定
             cmdList.Add(EpgCmds.ShowAutoAddDialog, new cmdOption(mc_ShowAutoAddDialog, null, cmdExeType.SingleItem, changeDB: true));
             cmdList.Add(EpgCmds.ToAutoadd, new cmdOption(mc_ToAutoadd, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.ReSearch, new cmdOption(null, null, cmdExeType.Direct));//個別に指定
@@ -123,6 +124,7 @@ namespace EpgTimer
             cmdList.Add(EpgCmds.OpenFolder, new cmdOption(mc_OpenFolder, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.CopyTitle, new cmdOption(mc_CopyTitle, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.CopyContent, new cmdOption(mc_CopyContent, null, cmdExeType.SingleItem));
+            cmdList.Add(EpgCmds.InfoSearchTitle, new cmdOption(mc_InfoSearchTitle, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.SearchTitle, new cmdOption(mc_SearchTitle, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.CopyNotKey, new cmdOption(mc_CopyNotKey, null, cmdExeType.SingleItem));
             cmdList.Add(EpgCmds.SetNotKey, new cmdOption(mc_SetNotKey, null, cmdExeType.MultiItem, true, changeDB: true));
@@ -250,7 +252,7 @@ namespace EpgTimer
                         if (Settings.Instance.DisplayStatus == true && Settings.Instance.DisplayStatusNotify == true &&
                             e != null && e.Command != null)
                         {
-                            CommonManager.Instance.StatusNotifySet(IsCommandExecuted, GetCmdMessage(e.Command), this.Owner);
+                            StatusManager.StatusNotifySet(IsCommandExecuted, GetCmdMessage(e.Command));
                         }
                     }
                 }
@@ -300,20 +302,12 @@ namespace EpgTimer
         }
         protected virtual void mcs_SetBlackoutWindow(SearchItem item = null)
         {
-            BlackoutWindow.SelectedItem = item;
+            BlackoutWindow.SelectedData = item;
         }
         protected virtual ReserveData mcs_GetNextReserve() { return new ReserveData(); }
         protected virtual void mc_ShowAutoAddDialog(object sender, ExecutedRoutedEventArgs e)
         {
-            AutoAddData autoAdd = AutoAddData.AutoAddList(CmdExeUtil.ReadObjData(e) as Type, (uint)CmdExeUtil.ReadIdData(e));
-            if (autoAdd is EpgAutoAddData)
-            {
-                IsCommandExecuted = true == MenuUtil.OpenChangeEpgAutoAddDialog(autoAdd as EpgAutoAddData);
-            }
-            else if (autoAdd is ManualAutoAddData)
-            {
-                IsCommandExecuted = true == MenuUtil.OpenChangeManualAutoAddDialog(autoAdd as ManualAutoAddData, this.Owner);
-            }
+            IsCommandExecuted = true == MenuUtil.OpenChangeAutoAddDialog(CmdExeUtil.ReadObjData(e) as Type, (uint)CmdExeUtil.ReadIdData(e), this.Owner);
         }
         protected virtual void mc_ToAutoadd(object sender, ExecutedRoutedEventArgs e)
         {
@@ -331,6 +325,11 @@ namespace EpgTimer
             IsCommandExecuted = true;
         }
         protected virtual void mc_CopyContent(object sender, ExecutedRoutedEventArgs e) { }
+        protected virtual void mc_InfoSearchTitle(object sender, ExecutedRoutedEventArgs e)
+        {
+            MenuUtil.OpenInfoSearchDialog(dataList[0].DataTitle, CmdExeUtil.IsKeyGesture(e));
+            IsCommandExecuted = true;
+        }
         protected virtual void mc_SearchTitle(object sender, ExecutedRoutedEventArgs e)
         {
             MenuUtil.SearchTextWeb(dataList[0].DataTitle, CmdExeUtil.IsKeyGesture(e));
@@ -614,12 +613,12 @@ namespace EpgTimer
             cmdMessage.TryGetValue(icmd, out cmdMsg);
             return GetCmdMessageFormat(cmdMsg, this.itemCount);
         }
-        protected string GetCmdMessageFormat(string cmdMsg, int Count)
+        public string GetCmdMessageFormat(string cmdMsg, int Count)
         {
             if (string.IsNullOrEmpty(cmdMsg) == true) return null;
             return string.Format("{0}(処理数:{1})", cmdMsg, Count);
         }
-        protected virtual void SetCmdMessage()
+        public virtual void SetCmdMessage()
         {
             cmdMessage.Add(EpgCmds.Add, "予約を追加");
             //cmdMessage.Add(EpgCmds.ShowAddDialog, "");

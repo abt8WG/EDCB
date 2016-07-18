@@ -436,12 +436,12 @@ namespace EpgTimer
                 if (addMode == AddMode.Change)
                 {
                     bool ret = MenuUtil.ReserveChange(CommonUtil.ToList(reserveInfo));
-                    CommonManager.Instance.StatusNotifySet(ret, "録画予約を変更");
+                    StatusManager.StatusNotifySet(ret, "録画予約を変更");
                 }
                 else
                 {
                     bool ret = MenuUtil.ReserveAdd(CommonUtil.ToList(reserveInfo));
-                    CommonManager.Instance.StatusNotifySet(ret, "録画予約を追加");
+                    StatusManager.StatusNotifySet(ret, "録画予約を追加");
                 }
 
                 // EPG自動予約以外になったら戻せないようにしておく
@@ -465,7 +465,7 @@ namespace EpgTimer
             if (CheckExistReserveItem() == false) return;
 
             bool ret = MenuUtil.ReserveDelete(CommonUtil.ToList(reserveInfo));
-            CommonManager.Instance.StatusNotifySet(ret, "録画予約を削除");
+            StatusManager.StatusNotifySet(ret, "録画予約を削除");
 
             DialogResult = true;
         }
@@ -517,8 +517,7 @@ namespace EpgTimer
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.ListFoucsOnVisibleChanged();
+            ViewUtil.MainWindow.ListFoucsOnVisibleChanged();
         }
     }
 

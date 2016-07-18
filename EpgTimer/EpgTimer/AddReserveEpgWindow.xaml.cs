@@ -52,7 +52,7 @@ namespace EpgTimer
                 { return; }
             }
             bool ret = MenuUtil.ReserveAdd(CommonUtil.ToList(eventInfo), recSettingView);
-            CommonManager.Instance.StatusNotifySet(ret, "録画予約を追加");
+            StatusManager.StatusNotifySet(ret, "録画予約を追加");
 
             if (ret == false) return;
             DialogResult = true;
@@ -60,8 +60,7 @@ namespace EpgTimer
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.ListFoucsOnVisibleChanged();
+            ViewUtil.MainWindow.ListFoucsOnVisibleChanged();
         }
     }
 }

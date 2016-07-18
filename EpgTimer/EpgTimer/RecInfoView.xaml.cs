@@ -26,9 +26,9 @@ namespace EpgTimer
             {
                 //リストビュー関連の設定
                 lstCtrl = new ListViewController<RecInfoItem>(this);
-                lstCtrl.SetSavePath(CommonUtil.GetMemberName(() => Settings.Instance.RecInfoListColumn)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.RecInfoColumnHead)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.RecInfoSortDirection));
+                lstCtrl.SetSavePath(CommonUtil.NameOf(() => Settings.Instance.RecInfoListColumn)
+                    , CommonUtil.NameOf(() => Settings.Instance.RecInfoColumnHead)
+                    , CommonUtil.NameOf(() => Settings.Instance.RecInfoSortDirection));
                 lstCtrl.SetViewSetting(listView_recinfo, gridView_recinfo, true, true);
                 lstCtrl.SetSelectedItemDoubleClick((sender, e) =>
                 {
@@ -103,6 +103,15 @@ namespace EpgTimer
             if (mode == 0) this.status[1] = ViewUtil.ConvertRecinfoStatus(lstCtrl.dataList, "録画結果");
             List<RecInfoItem> sList = lstCtrl.GetSelectedItemsList();
             this.status[2] = sList.Count == 0 ? "" : ViewUtil.ConvertRecinfoStatus(sList, "　選択中");
+        }
+        protected override void UserControl_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            base.UserControl_IsVisibleChanged(sender, e);
+
+            if (this.IsVisible == false) return;
+
+            ViewUtil.JumpToListItem(BlackoutWindow.SelectedData, this.listView_recinfo, BlackoutWindow.NowJumpTable);
+            BlackoutWindow.Clear();
         }
     }
 }

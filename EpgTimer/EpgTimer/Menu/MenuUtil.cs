@@ -12,38 +12,15 @@ namespace EpgTimer
     {
         private static CtrlCmdUtil cmd { get { return CommonManager.Instance.CtrlCmd; } }
 
-        public static string TrimEpgKeyword(string txtKey, bool NotToggle = false)//NotToggleはショートカット用
+        public static string TrimEpgKeyword(string KeyWord, bool NotToggle = false)//NotToggleはショートカット用
         {
-            string txtKey1 = txtKey;
-            bool setting = Settings.Instance.MenuSet.Keyword_Trim;
-            if (Keyboard.Modifiers == ModifierKeys.Shift && NotToggle == false)
-            {
-                setting=!setting;
-            }
-
-            if (setting == true)
-            {
-                txtKey1 = TrimKeyword(txtKey1);
-            }
-
-            return txtKey1;
+            return TrimKeywordCheckToggled(KeyWord, Settings.Instance.MenuSet.Keyword_Trim, NotToggle);
         }
 
-        public static void CopyTitle2Clipboard(string txtTitle, bool NotToggle = false)
+        public static void CopyTitle2Clipboard(string Title, bool NotToggle = false)
         {
-            string txtTitle1 = txtTitle;
-            bool setting = Settings.Instance.MenuSet.CopyTitle_Trim;
-            if (Keyboard.Modifiers == ModifierKeys.Shift && NotToggle == false)
-            {
-                setting = !setting;
-            }
-
-            if (setting == true)
-            {
-                txtTitle1 = TrimKeyword(txtTitle1);
-            }
-
-            Clipboard.SetDataObject(txtTitle1, true);
+            Title = TrimKeywordCheckToggled(Title, Settings.Instance.MenuSet.CopyTitle_Trim, NotToggle);
+            Clipboard.SetDataObject(Title, true);
         }
 
         public static void CopyContent2Clipboard(EpgEventInfo eventInfo, bool NotToggle = false)
@@ -52,12 +29,7 @@ namespace EpgTimer
 
             if (eventInfo != null)
             {
-                bool setting = Settings.Instance.MenuSet.CopyContentBasic;
-                if (Keyboard.Modifiers == ModifierKeys.Shift && NotToggle == false)
-                {
-                    setting = !setting;
-                }
-
+                bool setting = CheckShiftToggled(Settings.Instance.MenuSet.CopyContentBasic, NotToggle);
                 if (setting == true)
                 {
                     //text = eventInfo.ShortInfo.text_char;
@@ -85,12 +57,7 @@ namespace EpgTimer
 
             if (recInfo != null)
             {
-                bool setting = Settings.Instance.MenuSet.CopyContentBasic;
-                if (Keyboard.Modifiers == ModifierKeys.Shift && NotToggle == false)
-                {
-                    setting = !setting;
-                }
-
+                bool setting = CheckShiftToggled(Settings.Instance.MenuSet.CopyContentBasic, NotToggle);
                 if (setting == true)
                 {
                     string[] stArrayData = recInfo.ProgramInfo.Replace("\r\n", "\n").Split('\n');
@@ -112,22 +79,10 @@ namespace EpgTimer
             Clipboard.SetDataObject(text, true);
         }
 
-        public static void SearchTextWeb(string txtKey, bool NotToggle = false)
+        public static void SearchTextWeb(string KeyWord, bool NotToggle = false)
         {
-            string txtKey1 = txtKey;
-            bool setting = Settings.Instance.MenuSet.SearchTitle_Trim;
-            if (Keyboard.Modifiers == ModifierKeys.Shift && NotToggle == false)
-            {
-                setting = !setting;
-            }
-
-            if (setting == true)
-            {
-                txtKey1 = TrimKeyword(txtKey1);
-            }
-
-            string txtURI = Settings.Instance.MenuSet.SearchURI;
-            txtURI += UrlEncode(txtKey1, System.Text.Encoding.UTF8);
+            KeyWord = TrimKeywordCheckToggled(KeyWord, Settings.Instance.MenuSet.SearchTitle_Trim, NotToggle);
+            string txtURI = Settings.Instance.MenuSet.SearchURI + UrlEncode(KeyWord, System.Text.Encoding.UTF8);
 
             try
             {
@@ -140,8 +95,19 @@ namespace EpgTimer
             }
         }
 
+        private static string TrimKeywordCheckToggled(string s, bool setting, bool NotToggle = false)
+        {
+            return CheckShiftToggled(setting, NotToggle) == true ? TrimKeyword(s) : s;
+        }
+        private static bool CheckShiftToggled(bool setting, bool NotToggle = false)
+        {
+            return (Keyboard.Modifiers == ModifierKeys.Shift && NotToggle == false) ? !setting : setting;
+        }
+
         public static string TrimKeyword(string txtKey)
         {
+            if (string.IsNullOrEmpty(txtKey)) return txtKey;
+
             //
             // 前後の記号を取り除く
             //
@@ -210,15 +176,6 @@ namespace EpgTimer
                 else
                     rt.Append("%" + i.ToString("X2"));
             return rt.ToString();
-        }
-
-        public static TextBlock GetTooltipBlockStandard(string text)
-        {
-            var block = new TextBlock();
-            block.Text = text;
-            block.MaxWidth = 400;
-            block.TextWrapping = TextWrapping.Wrap;
-            return block;
         }
 
         /// <summary>
@@ -824,7 +781,7 @@ namespace EpgTimer
             //並べ替え不要
             if (list.Count == 0) return true;
 
-            var autoView = ((MainWindow)Application.Current.MainWindow).autoAddView;
+            var autoView = ViewUtil.MainWindow.autoAddView;
             var view = (list[0] is EpgAutoAddData) ? (AutoAddListView)autoView.epgAutoAddView : autoView.manualAutoAddView;
 
             if (changeID == true)
@@ -1046,6 +1003,20 @@ namespace EpgTimer
             return null;
         }
 
+        public static bool? OpenChangeAutoAddDialog(Type t, uint id, Control Owner)
+        {
+            AutoAddData autoAdd = AutoAddData.AutoAddList(t, id);
+            if (t == typeof(EpgAutoAddData))
+            {
+                return OpenChangeEpgAutoAddDialog(autoAdd as EpgAutoAddData);
+            }
+            else if (t == typeof(ManualAutoAddData))
+            {
+                return OpenChangeManualAutoAddDialog(autoAdd as ManualAutoAddData, Owner);
+            }
+            return null;
+        }
+
         public static bool? OpenRecInfoDialog(RecFileInfo info, Control Owner)
         {
             try
@@ -1055,6 +1026,21 @@ namespace EpgTimer
                 cmd.SendGetRecInfo(info.ID, ref info);//***
                 dlg.SetRecInfo(info);
                 return dlg.ShowDialog();
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
+            return null;
+        }
+
+        public static bool? OpenInfoSearchDialog(string word = null, bool NotToggle = false)
+        {
+            try
+            {
+                word = TrimKeywordCheckToggled(word, Settings.Instance.MenuSet.InfoSearchTitle_Trim, NotToggle);
+
+                var dlg = new InfoSearchWindow();
+                dlg.SetSearchWord(word);
+                dlg.Show();
+                return true;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return null;
@@ -1071,7 +1057,7 @@ namespace EpgTimer
 
         public static List<EpgAutoAddData> FazySearchEpgAutoAddData(string title, bool? IsEnabled = null)
         {
-            Func<string, string> _regulate_str = s => CommonManager.ReplaceUrl(TrimKeyword(s)).ToLower();
+            Func<string, string> _regulate_str = s => CommonManager.AdjustSearchText(TrimKeyword(s));
 
             string title_key = _regulate_str(title);
 
@@ -1088,6 +1074,18 @@ namespace EpgTimer
             return IsEnabled == null ? list : list.FindAll(data => data.IsEnabled == IsEnabled);
         }
 
+        public static string ConvertAutoddTextMenu(AutoAddData data)
+        {
+            if(data is EpgAutoAddData)
+            {
+                return "キーワード予約:" + (data.DataTitle == "" ? "(空白)" : data.DataTitle);
+            }
+            else
+            {
+                var view = new ManualAutoAddDataItem(data as ManualAutoAddData);
+                return "プログラム自動:" + string.Format("({0}){1} {2}", view.DayOfWeek, view.StartTimeShort, view.EventName == "" ? "(空白)" : view.EventName);
+            }
+        }
     }
 
 }

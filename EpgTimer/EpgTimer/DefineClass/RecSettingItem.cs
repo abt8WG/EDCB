@@ -5,24 +5,8 @@ using System.Text;
 
 namespace EpgTimer
 {
-    public class RecSettingItem : IRecSetttingData
+    public class RecSettingItem : DataListItemBase, IRecSetttingData
     {
-        public static string GetValuePropertyName(string key)
-        {
-            var obj = new RecSettingItem();
-            if (key == CommonUtil.GetMemberName(() => obj.MarginStart))
-            {
-                return CommonUtil.GetMemberName(() => obj.MarginStartValue);
-            }
-            else if (key == CommonUtil.GetMemberName(() => obj.MarginEnd))
-            {
-                return CommonUtil.GetMemberName(() => obj.MarginEndValue);
-            }
-            else
-            {
-                return key;
-            }
-        }
         public virtual RecSettingData RecSettingInfo { get { return null; } }
         public virtual void Reset() { preset = null; }
         public virtual bool IsManual { get { return false; } }

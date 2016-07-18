@@ -7,34 +7,29 @@ using System.Windows.Input;
 
 namespace EpgTimer
 {
+    using UserCtrlView;
+
     /// <summary>
     /// SearchWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class SearchWindow : Window
+    public partial class SearchWindow : SearchWindowBase
     {
-        //よく使うので
-        private static MainWindow mainWindow { get { return (MainWindow)Application.Current.MainWindow; } }
-        private static EpgAutoAddView autoAddView { get { return mainWindow.autoAddView.epgAutoAddView; } }
-
-        private static CtrlCmdUtil cmd { get { return CommonManager.Instance.CtrlCmd; } }
-        private static MenuManager mm { get { return CommonManager.Instance.MM; } }
-
-        private CmdExeReserve mc; //予約系コマンド集
-        private MenuBinds mBinds = new MenuBinds();
-
         private ListViewController<SearchItem> lstCtrl;
+        private CmdExeReserve mc; //予約系コマンド集
+
+        private bool ReloadReserveInfo = false;
 
         public enum SearchMode { Find, NewAdd, Change }
         private SearchMode winMode = SearchMode.Find;
-        
-        private UInt32 autoAddID = 0;
 
-        private bool ReloadInfo = false;
-        private bool ReloadReserveInfo = false;
+        private static EpgAutoAddView autoAddView { get { return ViewUtil.MainWindow.autoAddView.epgAutoAddView; } }
+        private UInt32 autoAddID = 0;
 
         public SearchWindow()
         {
             InitializeComponent();
+
+            chkboxPinned = this.checkBox_windowPinned;
 
             try
             {
@@ -43,9 +38,9 @@ namespace EpgTimer
                 list_columns.AddRange(Resources["RecSettingViewColumns"] as GridViewColumnList);
 
                 lstCtrl = new ListViewController<SearchItem>(this);
-                lstCtrl.SetSavePath(CommonUtil.GetMemberName(() => Settings.Instance.SearchWndColumn)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.SearchColumnHead)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.SearchSortDirection));
+                lstCtrl.SetSavePath(CommonUtil.NameOf(() => Settings.Instance.SearchWndColumn)
+                    , CommonUtil.NameOf(() => Settings.Instance.SearchColumnHead)
+                    , CommonUtil.NameOf(() => Settings.Instance.SearchSortDirection));
                 lstCtrl.SetViewSetting(listView_result, gridView_result, true, true, list_columns);
                 lstCtrl.SetSelectedItemDoubleClick(EpgCmds.ShowDialog);
 
@@ -62,7 +57,7 @@ namespace EpgTimer
                 //コマンド集に無いもの
                 mc.AddReplaceCommand(EpgCmds.ReSearch, mc_Research);
                 mc.AddReplaceCommand(EpgCmds.ReSearch2, mc_Research);
-                mc.AddReplaceCommand(EpgCmds.Search, (sender, e) => SearchPg(true));
+                mc.AddReplaceCommand(EpgCmds.Search, button_search_Click);
                 mc.AddReplaceCommand(EpgCmds.AddInDialog, button_add_epgAutoAdd_Click);
                 mc.AddReplaceCommand(EpgCmds.ChangeInDialog, button_chg_epgAutoAdd_Click, (sender, e) => e.CanExecute = winMode == SearchMode.Change);
                 mc.AddReplaceCommand(EpgCmds.DeleteInDialog, button_del_epgAutoAdd_Click, (sender, e) => e.CanExecute = winMode == SearchMode.Change);
@@ -103,24 +98,11 @@ namespace EpgTimer
                 //録画プリセット変更時の対応
                 recSettingView.SelectedPresetChanged += new EventHandler(SetRecSettingTabHeader);
 
+                //ステータスバーの登録
+                StatusManager.RegisterStatusbar(this.statusBar, this);
+
                 //ウインドウ位置の復元
-                if (Settings.Instance.SearchWndTop != -100)
-                {
-                    this.Top = Settings.Instance.SearchWndTop;
-                }
-                if (Settings.Instance.SearchWndLeft != -100)
-                {
-                    this.Left = Settings.Instance.SearchWndLeft;
-                }
-                if (Settings.Instance.SearchWndWidth > 0)
-                {
-                    this.Width = Settings.Instance.SearchWndWidth;
-                }
-                if (Settings.Instance.SearchWndHeight > 0)
-                {
-                    this.Height = Settings.Instance.SearchWndHeight;
-                }
-                checkBox_windowPinned.IsChecked = Settings.Instance.SearchWndPinned;
+                Settings.Instance.SearchWndSet.SetToWindow(this);
 
                 SetSearchKey(Settings.Instance.DefSearchKey);
                 SetRecSetting(Settings.Instance.RecPresetList[0].RecPresetData);
@@ -133,15 +115,7 @@ namespace EpgTimer
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
-        public static void RefreshMenu(Window owner_win)
-        {
-            foreach (SearchWindow win in owner_win.OwnedWindows.OfType<SearchWindow>())
-            {
-                SearchWindow.RefreshMenu(win);
-                win.RefreshMenu();
-            }
-        }
-        public void RefreshMenu()
+        public override void RefreshMenu()
         {
             mBinds.ResetInputBindings(this, listView_result);
             mm.CtxmGenerateContextMenu(listView_result.ContextMenu, CtxmCode.SearchWindow, true);
@@ -169,22 +143,18 @@ namespace EpgTimer
         {
             return searchKeyView.GetSearchKey();
         }
-
         public void SetSearchKey(EpgSearchKeyInfo key)
         {
             searchKeyView.SetSearchKey(key);
         }
-
         public RecSettingData GetRecSetting()
         {
             return recSettingView.GetRecSetting();
         }
-
         public void SetRecSetting(RecSettingData set)
         {
             recSettingView.SetDefSetting(set);
         }
-
         public EpgAutoAddData GetAutoAddData()
         {
             var data = new EpgAutoAddData();
@@ -193,7 +163,6 @@ namespace EpgTimer
             data.recSetting = GetRecSetting();
             return data;
         }
-
         public void SetAutoAddData(EpgAutoAddData data)
         {
             autoAddID = data.dataID;
@@ -203,7 +172,6 @@ namespace EpgTimer
             //nekopanda版(8beae159)
             SetRecFileList(data.recFileList);
         }
-
         private void ChangeAutoAddData(EpgAutoAddData data, bool refresh = true)
         {
             this.SetViewMode(SearchMode.Change);
@@ -215,7 +183,6 @@ namespace EpgTimer
 
             if (refresh == true) UpdateInfo();
         }
-
         public void SetViewMode(SearchMode md)
         {
             winMode = md;
@@ -226,7 +193,6 @@ namespace EpgTimer
             recFileTabItem.Visibility = (winMode == SearchMode.Change ? Visibility.Visible : Visibility.Collapsed);
             WindowTitleSet();
         }
-
         public void WindowTitleSet()
         {
             string s = (winMode == SearchMode.Find ? "検索" : "キーワード自動予約登録");
@@ -236,7 +202,6 @@ namespace EpgTimer
             }
             this.Title = s;
         }
-
         public void SetRecSettingTabHeader(object sender, EventArgs e)
         {
             string preset_str = "";
@@ -251,6 +216,11 @@ namespace EpgTimer
             tabItem2.Header = "録画設定" + preset_str;
         }
 
+        private void button_search_Click(object sender, ExecutedRoutedEventArgs e)
+        {
+            SearchPg(true);
+            StatusManager.StatusNotifySet(true, "検索を実行");
+        }
         private void SearchPg(bool addSearchLog = false)
         {
             if (addSearchLog == true) searchKeyView.AddSearchLog();
@@ -261,7 +231,7 @@ namespace EpgTimer
                 key.keyDisabledFlag = 0; //無効解除
                 var list = new List<EpgEventInfo>();
 
-                cmd.SendSearchPg(CommonUtil.ToList(key), ref list);
+                CommonManager.Instance.CtrlCmd.SendSearchPg(CommonUtil.ToList(key), ref list);
 
                 lstCtrl.dataList.AddFromEventList(list, false, true);
                 return true;
@@ -284,7 +254,6 @@ namespace EpgTimer
             }
             this.statusBar.SetText(s1, s2);
         }
-
         private void ReloadReserveData()
         {
             lstCtrl.dataList.SetReserveData();
@@ -327,9 +296,8 @@ namespace EpgTimer
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
-            CommonManager.Instance.StatusNotifySet(ret, "キーワード予約を追加", this);
+            StatusManager.StatusNotifySet(ret, "キーワード予約を追加");
         }
-
         private void button_chg_epgAutoAdd_Click(object sender, ExecutedRoutedEventArgs e)
         {
             bool ret = false;
@@ -342,9 +310,8 @@ namespace EpgTimer
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
-            CommonManager.Instance.StatusNotifySet(ret, "キーワード予約を変更", this);
+            StatusManager.StatusNotifySet(ret, "キーワード予約を変更");
         }
-
         private void button_del_epgAutoAdd_Click(object sender, ExecutedRoutedEventArgs e)
         {
             bool ret = false;
@@ -362,9 +329,8 @@ namespace EpgTimer
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
-            CommonManager.Instance.StatusNotifySet(ret, "キーワード予約を削除", this);
+            StatusManager.StatusNotifySet(ret, "キーワード予約を削除");
         }
-
         //proc 0:追加、1:変更、2:削除
         private bool CheckAutoAddChange(ExecutedRoutedEventArgs e, int proc)
         {
@@ -397,7 +363,6 @@ namespace EpgTimer
 
             return true;
         }
-
         private void button_up_down_Click(int direction)
         {
             EpgAutoAddData newItem;
@@ -444,19 +409,6 @@ namespace EpgTimer
 
             ChangeAutoAddData(newItem);
         }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if ((winMode == SearchMode.Find || winMode == SearchMode.NewAdd) && string.IsNullOrEmpty(searchKeyView.ComboBox_andKey.Text))
-            {
-                this.searchKeyView.ComboBox_andKey.Focus();
-            }
-            else
-            {
-                this.SearchPg();
-            }
-        }
-
         private void mc_JumpTab(CtxmCode code, bool reserveOnly = false, bool onReserveOnly = false)
         {
             if (listView_result.SelectedItem != null)
@@ -467,22 +419,9 @@ namespace EpgTimer
                 if (reserveOnly && item.IsReserved == false) return;
                 if (onReserveOnly && item.ReserveInfo.IsEnabled == false) return;
 
-                if (mainWindow.IsVisible == false || mainWindow.WindowState == WindowState.Minimized)
-                {
-                    mainWindow.RestoreMinimizedWindow();
-                }
-
-                mainWindow.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    SetHideSearchWindow(this);
-                    SearchWindow.MinimizeWindows();
-
-                    BlackoutWindow.SelectedItem = item;
-                    mainWindow.moveTo_tabItem(code);
-                }));
+                JumpTabAndHide(code, item);
             }
         }
-
         private void mc_Research(object sender, ExecutedRoutedEventArgs e)
         {
             try
@@ -523,83 +462,38 @@ namespace EpgTimer
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
-        public static void MinimizeWindows()
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            foreach (SearchWindow win in Application.Current.Windows.OfType<SearchWindow>())
+            if ((winMode == SearchMode.Find || winMode == SearchMode.NewAdd) && string.IsNullOrEmpty(searchKeyView.ComboBox_andKey.Text))
             {
-                win.WindowState = WindowState.Minimized;
+                this.searchKeyView.ComboBox_andKey.Focus();
+            }
+            else
+            {
+                this.SearchPg();
             }
         }
-
-        private void Window_StateChanged(object sender, EventArgs e)
-        {
-            if (this.WindowState != WindowState.Minimized)
-            {
-                if (hideSearchWindow == this) SearchWindow.SetHideSearchWindow(null);
-            }
-        }
-
-        private void Window_Closed(object sender, System.EventArgs e)
+        protected override void Window_Closed(object sender, EventArgs e)
         {
             //nekopanda版(8beae159)
             CommonManager.Instance.DB.EpgAutoAddUpdated -= DB_EpgAutoAddUpdated;
 
-            if (this.Visibility == Visibility.Visible && this.WindowState == WindowState.Normal)
-            {
-                Settings.Instance.SearchWndWidth = this.Width;
-                Settings.Instance.SearchWndHeight = this.Height;
-                Settings.Instance.SearchWndTop = this.Top;
-                Settings.Instance.SearchWndLeft = this.Left;
-            }
-
-            Settings.Instance.SearchWndPinned = checkBox_windowPinned.IsChecked == true;
+            Settings.Instance.SearchWndSet.GetFromWindow(this);
             lstCtrl.SaveViewDataToSettings();
-            if (hideSearchWindow == this) SearchWindow.SetHideSearchWindow(null);
-
-            if (AllClosing == false)
-            {
-                Settings.SaveToXmlFile();//検索ワード、ウィンドウ位置の保存
-                if (Application.Current.Windows.OfType<SearchWindow>().Count(win => win.IsActive == true) == 0)
-                {
-                    mainWindow.ListFoucsOnVisibleChanged();
-                }
-            }
+            base.Window_Closed(sender, e);
         }
 
-        private static bool AllClosing = false;
-        public static void CloseWindows(bool IsSave = false)
+        public override void UpdateInfo(bool reload = true)
         {
-            AllClosing = true;
-
-            foreach (SearchWindow win in Application.Current.Windows.OfType<SearchWindow>())
-            {
-                win.Close();
-            }
-
-            if (IsSave == true) Settings.SaveToXmlFile();
-
-            AllClosing = false;
-        }
-
-        public static void UpdatesInfo(bool reload = true)
-        {
-            foreach (SearchWindow win in Application.Current.Windows.OfType<SearchWindow>())
-            {
-                win.UpdateInfo(reload);
-            }
-        }
-        public void UpdateInfo(bool reload = true)
-        {
-            ReloadInfo |= reload;
             ReloadReserveInfo = true;
-            ReloadInfoData();
+            base.UpdateInfo(reload);
         }
-        private void Window_Activated(object sender, EventArgs e)
+        protected override void Window_Activated(object sender, EventArgs e)
         {
             UpdateEpgAutoAddViewSelection();
-            ReloadInfoData();
+            base.Window_Activated(sender, e);
         }
-        private void ReloadInfoData()
+        protected override void ReloadInfoData()
         {
             //再検索はCtrlCmdを使うので、アクティブウィンドウでだけ実行させる。
             if (this.IsActive == true)
@@ -623,7 +517,7 @@ namespace EpgTimer
         }
         public static bool UpdatesEpgAutoAddViewSelection()
         {
-            foreach (SearchWindow win in Application.Current.Windows.OfType<SearchWindow>())
+            foreach (var win in Application.Current.Windows.OfType<SearchWindow>())
             {
                 if (win.IsActive == true)
                 {
@@ -661,41 +555,12 @@ namespace EpgTimer
                 this.autoAddID = changeIDTable[this.autoAddID];
             }
         }
-
-        /// <summary>番組表などへジャンプした際に最小化したSearchWindow</summary>
-        private static SearchWindow hideSearchWindow = null;
-        public static bool HasHideSearchWindow { get { return hideSearchWindow != null; } }
-        private static void SetHideSearchWindow(SearchWindow win)
+    }
+    public class SearchWindowBase : HideableWindow<SearchWindow>
+    {
+        static SearchWindowBase()
         {
-            // 情報を保持は最新のもの1つだけ
-            hideSearchWindow = win;
-            mainWindow.EmphasizeSearchButton(SearchWindow.HasHideSearchWindow);
-        }
-
-        public static void RestoreHideSearchWindow()
-        {
-            // 最小化したSearchWindowを復帰
-            if (SearchWindow.HasHideSearchWindow == true)
-            {
-                hideSearchWindow.Show();
-                hideSearchWindow.WindowState = WindowState.Normal;
-            }
-        }
-
-        public static void UpdatesParentStatus()
-        {
-            foreach (SearchWindow win in Application.Current.Windows.OfType<SearchWindow>())
-            {
-                win.UpdateParentStatus();
-            }
-        }
-        public void UpdateParentStatus()
-        {
-            checkBox_windowPinned_Checked(checkBox_windowPinned, null);
-        }
-        private void checkBox_windowPinned_Checked(object sender, RoutedEventArgs e)
-        {
-            this.Owner = (sender as CheckBox).IsChecked == true && mainWindow.IsVisible == true ? mainWindow : null;
+            buttonID = "検索";
         }
     }
 }

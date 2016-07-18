@@ -63,6 +63,7 @@
                             <Separator Style="{StaticResource MiddleLine}" />
                             <CheckBox Content="番組名/ANDキーをコピー" />
                             <CheckBox Content="番組情報をコピー" />
+                            <CheckBox Content="番組名/ANDキーで予約簡易検索" />
                             <CheckBox Content="番組名/ANDキーをネットで検索" />
                             <CheckBox Content="NOTキーをコピー" />
                             <CheckBox Content="NOTキーに貼り付け" />
@@ -94,6 +95,7 @@
                             <Separator Style="{StaticResource MiddleLine}" />
                             <CheckBox Content="記号類を取り除く" Name="checkBox_CopyTitle_Trim" />
                             <CheckBox Content="基本情報のみコピーする" Name="checkBox_CopyContentBasic" />
+                            <CheckBox Content="記号類を取り除く" Name="checkBox_InfoSearchTtile_Trim" />
                             <CheckBox Content="記号類を取り除く" Name="checkBox_SearchTtile_Trim" />
                             <CheckBox Visibility="Hidden" />
                             <CheckBox Content="確認メッセージを表示しない" Name="checkBox_NoMessageNotKEY" />
@@ -178,7 +180,7 @@
             </TabItem>
         </TabControl>
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,0,12,12" >
-            <Button Name="button_Initialize" Content="設定の初期化" Margin="50,0,0,0" Click="button_Initialize_Click" />
+            <Button Name="button_Initialize" Content="設定の初期化" Margin="50,0,0,0" Click="button_Initialize_Click" ToolTip="Shift+クリックでショートカットキーのみ初期化&#10;(※他はダイアログを開いた時の状態に戻ります)" />
         </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,0,12,12" HorizontalAlignment="Right">
             <Button Name="button_OK" Content="    OK    " Margin="0,0,30,0" Click="button_OK_Click" />

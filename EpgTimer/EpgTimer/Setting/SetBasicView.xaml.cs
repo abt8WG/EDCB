@@ -41,6 +41,11 @@ namespace EpgTimer.Setting
                 }
                 group_recFolder.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画保存フォルダ
 
+                if (textBox_recFolder.IsEnabled)
+                {
+                    textBox_recFolder.KeyDown += ViewUtil.KeyDown_Enter(button_rec_add);
+                }
+
                 // 読める設定のみ項目に反映させる
                 if (IniFileHandler.CanReadInifile)
                 {
@@ -585,7 +590,7 @@ namespace EpgTimer.Setting
                 button_rec_up.Click += new RoutedEventHandler(bxr.button_Up_Click);
                 button_rec_down.Click += new RoutedEventHandler(bxr.button_Down_Click);
                 button_rec_del.Click += new RoutedEventHandler(bxr.button_Delete_Click);
-                button_rec_add.Click += ViewUtil.ListBox_TextCheckAdd(listBox_recFolder, textBox_recFolder);
+				button_rec_add.Click += button_rec_add_Click;
 
                 //チューナ関係関係
                 bxb.AllowDragDrop();
@@ -645,6 +650,62 @@ namespace EpgTimer.Setting
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
+
+		private void button_rec_add_Click(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				if (String.IsNullOrEmpty(textBox_recFolder.Text) == false)
+				{
+					foreach (var info in listBox_recFolder.Items)
+					{
+						if (String.Compare(textBox_recFolder.Text, info.ToString(), true) == 0)
+						{
+							MessageBox.Show("すでに追加されています");
+							return;
+						}
+					}
+
+					// 追加対象のフォルダーの空き容量をサーバーに問い合わせてみる
+					// SendEnumRecFolders にフォルダー名を指定した場合、そのフォルダーの空き容量を返してくる
+					var folders = new List<RecFolderInfo>();
+					if (CommonManager.Instance.CtrlCmd.SendEnumRecFolders(textBox_recFolder.Text, ref folders) != ErrCode.CMD_SUCCESS)
+					{
+						if (CommonManager.Instance.NW.IsConnected == false)
+						{
+							if (System.IO.Directory.Exists(textBox_recFolder.Text))
+							{
+								//サーバーが問い合わせに対応していないようなので、フォルダー名だけ登録する
+								folders.Add(new RecFolderInfo(textBox_recFolder.Text));
+							}
+							else
+							{
+								MessageBox.Show("フォルダーが存在するか確認してください。");
+								return;
+							}
+						}
+						else
+						{
+							MessageBox.Show("EpgTimerNW ではフォルダーの追加は出来ません。");
+							return;
+						}
+					}
+					if (folders.Count == 1)
+					{
+						listBox_recFolder.Items.Add(new UserCtrlView.BGBarListBoxItem(folders[0]));
+					}
+					else
+					{
+						// SendEnumRecFolders でフォルダーの空き容量が取得できなかった場合
+						MessageBox.Show("サーバーからアクセスできるフォルダーか確認してください。");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+			}
+		}
 
         private void button_shortCutSrv_Click(object sender, RoutedEventArgs e)
         {

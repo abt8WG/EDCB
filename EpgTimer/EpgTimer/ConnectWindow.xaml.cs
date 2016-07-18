@@ -50,6 +50,9 @@ namespace EpgTimer
                     Settings.Instance.NWMode = true;
                 }
                 listView_List.SelectedIndex = Settings.Instance.NWMode == true ? pos : 0;
+
+                this.KeyDown += ViewUtil.KeyDown_Escape_Close();
+                listView_List.KeyDown += ViewUtil.KeyDown_Enter(button_connect);
             }
             catch { }
         }
@@ -80,13 +83,8 @@ namespace EpgTimer
                     Settings.Instance.NWPassword = data.NWPassword;
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-                return;
-            }
-
-            DialogResult = true;
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
+            return;
         }
 
         private void listView_List_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -180,12 +178,6 @@ namespace EpgTimer
             }
 
             return macAddress;
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            ViewUtil.Window_EscapeKey_Close(e, this);
-            base.OnKeyDown(e);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

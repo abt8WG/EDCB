@@ -15,9 +15,11 @@ namespace EpgTimer
 {
     public static class ViewUtil
     {
+        public static MainWindow MainWindow { get { return (MainWindow)Application.Current.MainWindow; } }
+
         public static Brush EpgDataContentBrush(EpgEventInfo EventInfo)
         {
-            if (EventInfo == null) return Brushes.White;
+            if (EventInfo == null) return null;
             if (EventInfo.ContentInfo == null) return CommonManager.Instance.CustContentColorList[0x10];
 
             return EpgDataContentBrush(EventInfo.ContentInfo.nibbleList);
@@ -74,7 +76,7 @@ namespace EpgTimer
             }
             return CommonManager.Instance.ResDefBackColor;
         }
-        
+
         public static void SetSpecificChgAppearance(Control obj)
         {
             obj.Background = Brushes.LavenderBlush;
@@ -330,16 +332,32 @@ namespace EpgTimer
             }
         }
 
-        public static void ScrollToFindItem(SearchItem target_item, ListBox listBox, bool IsMarking)
+        //指定アイテムまでマーキング付で移動する。
+        public static void JumpToListItem(object target, ListBox listBox, bool IsMarking)
+        {
+            if (target is DataListItemBase)
+            {
+                ulong ID = ((DataListItemBase)target).KeyID;
+                target = listBox.Items.OfType<DataListItemBase>().FirstOrDefault(data => data.KeyID == ID);
+            }
+            ScrollToFindItem(target, listBox, IsMarking);
+        }
+
+        public static void ScrollToFindItem(object target, ListBox listBox, bool IsMarking)
         {
             try
             {
-                ScrollToItem(target_item, listBox);
+                listBox.SelectedItem = target;
+
+                if (target == null) return;
+
+                listBox.ScrollIntoView(target);
 
                 //パネルビューと比較して、こちらでは最後までゆっくり点滅させる。全表示時間は同じ。
                 //ただ、結局スクロールさせる位置がうまく調整できてないので効果は限定的。
-                if (IsMarking == true)
+                if (IsMarking == true && target is DataListItemBase)
                 {
+                    var target_item = target as DataListItemBase;
                     listBox.SelectedItem = null;
 
                     var notifyTimer = new DispatcherTimer();
@@ -361,24 +379,6 @@ namespace EpgTimer
                     };
                     notifyTimer.Start();
                 }
-            }
-            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
-        }
-
-        public static void ScrollToItem(object target_item, ListBox listBox)
-        {
-            try
-            {
-                if (target_item == null) return;
-
-                listBox.SelectedItem = target_item;
-                listBox.ScrollIntoView(target_item);
-
-                //いまいちな感じ
-                //listView_event.ScrollIntoView(listView_event.Items[0]);
-                //listView_event.ScrollIntoView(listView_event.Items[listView_event.Items.Count-1]);
-                //int scrollpos = ((listView_event.SelectedIndex - 5) >= 0 ? listView_event.SelectedIndex - 5 : 0);
-                //listView_event.ScrollIntoView(listView_event.Items[scrollpos]);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
@@ -490,6 +490,19 @@ namespace EpgTimer
             return string.Format("{0}:{1} (有効予約数:{2} 無効予約数:{3})",
                 itemText, list.Count(), onRes.Distinct().Count(), offRes.Distinct().Count());
         }
+        public static string ConvertInfoSearchItemStatus(IEnumerable<InfoSearchItem> list, string itemText)
+        {
+            string det = "";
+            foreach (var key in InfoSearchItem.ViewTypeNameList())
+            {
+                int num = list.Count(item => item.ViewItemName == key);
+                if (num != 0)
+                {
+                    det += string.Format("{0}:{1} ", key.Substring(0, 2), num);
+                }
+            }
+            return string.Format("{0}:{1}", itemText, list.Count()) + (det == "" ? "" : " (" + det.TrimEnd() + ")");
+        }
 
         public static Type GetListBoxItemType(ListBox lb)
         {
@@ -554,14 +567,29 @@ namespace EpgTimer
             lstBox.Items.Add(text);
         }
 
-        public static bool Window_EscapeKey_Close(KeyEventArgs e, Window win)
+		public static KeyEventHandler KeyDown_Escape_Close()
         {
-            if (win != null && Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.Escape)
+            return new KeyEventHandler((sender, e) =>
             {
-                e.Handled = true;
-                win.Close();
-            }
-            return e.Handled;
+                if (e.Handled == false && Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.Escape)
+                {
+                    e.Handled = true;
+                    var win = CommonUtil.GetTopWindow(sender as Visual);
+                    if (win != null) win.Close();
+                }
+            });
+        }
+
+        public static KeyEventHandler KeyDown_Enter(Button btn)
+        {
+            return new KeyEventHandler((sender, e) =>
+            {
+                if (e.Handled == false && Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.Enter)
+                {
+                    e.Handled = true;
+                    if (btn != null) btn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                }
+            });
         }
 
         ///<summary>同じアイテムがあってもスクロールするようにしたもの(ItemSource使用時無効)</summary>
@@ -600,5 +628,37 @@ namespace EpgTimer
             var element = lb.InputHitTest((Point)(pt ?? Mouse.GetPosition(lb))) as DependencyObject;
             return element == null ? null : lb.ContainerFromElement(element);
         }
+
+        public static int SingleWindowCheck(Type t, bool closeWindow = false)
+        {
+            var wList = Application.Current.Windows.OfType<Window>().Where(w => w.GetType() == t);
+            foreach (var w in wList)
+            {
+                if (closeWindow == true)
+                {
+                    w.Close();
+                }
+                else
+                {
+                    if (w.WindowState == WindowState.Minimized)
+                    {
+                        w.WindowState = WindowState.Normal;
+                    }
+                    w.Visibility = Visibility.Visible;
+                    w.Activate();
+                }
+            }
+            return wList.Count();
+        }
+
+        public static TextBlock GetTooltipBlockStandard(string text)
+        {
+            var block = new TextBlock();
+            block.Text = text;
+            block.MaxWidth = 400;
+            block.TextWrapping = TextWrapping.Wrap;
+            return block;
+        }
+
     }
 }

@@ -12,6 +12,8 @@ namespace EpgTimer
         public ReserveItem() { }
         public ReserveItem(ReserveData item) { base.ReserveInfo = item; }
 
+        public override ulong KeyID { get { return ReserveInfo == null ? 0 : ReserveInfo.ReserveID; } }
+
         public override EpgEventInfo EventInfo
         {
             get
@@ -60,8 +62,12 @@ namespace EpgTimer
             {
                 if (ReserveInfo == null) return "";
                 //
-                return CommonManager.ConvertTimeText(ReserveInfo.StartTime, ReserveInfo.DurationSecond, Settings.Instance.ResInfoNoYear, Settings.Instance.ResInfoNoSecond);
+                return GetTimeStringReserveStyle(ReserveInfo.StartTime, ReserveInfo.DurationSecond);
             }
+        }
+        public static String GetTimeStringReserveStyle(DateTime time, uint durationSecond)
+        {
+            return CommonManager.ConvertTimeText(time, durationSecond, Settings.Instance.ResInfoNoYear, Settings.Instance.ResInfoNoSecond);
         }
         public override long StartTimeValue
         {
@@ -87,8 +93,12 @@ namespace EpgTimer
             {
                 if (ReserveInfo == null) return "";
                 //
-                return CommonManager.ConvertDurationText(ReserveInfo.DurationSecond, Settings.Instance.ResInfoNoDurSecond);
+                return GetDurationStringReserveStyle(ReserveInfo.DurationSecond);
             }
+        }
+        public static String GetDurationStringReserveStyle(uint durationSecond)
+        {
+            return CommonManager.ConvertDurationText(durationSecond, Settings.Instance.ResInfoNoDurSecond);
         }
         public override UInt32 ProgramDurationValue
         {
@@ -99,16 +109,7 @@ namespace EpgTimer
                 return ReserveInfo.DurationSecond;
             }
         }
-        public override TextBlock ToolTipView
-        {
-            get
-            {
-                if (Settings.Instance.NoToolTip == true) return null;
-                //
-                return MenuUtil.GetTooltipBlockStandard(ConvertInfoText());
-            }
-        }
-        public String ConvertInfoText()
+        public override String ConvertInfoText()
         {
             if (ReserveInfo == null) return "";
             //
@@ -117,13 +118,9 @@ namespace EpgTimer
             view += EventName + "\r\n\r\n";
 
             view += ConvertRecSettingText() + "\r\n";
-            view += "予約状況 : " + Comment;
-            view += "\r\n\r\n";
+            view += "予約状況 : " + Comment + "\r\n\r\n";
 
-            view += "OriginalNetworkID : " + ReserveInfo.OriginalNetworkID.ToString() + " (0x" + ReserveInfo.OriginalNetworkID.ToString("X4") + ")\r\n";
-            view += "TransportStreamID : " + ReserveInfo.TransportStreamID.ToString() + " (0x" + ReserveInfo.TransportStreamID.ToString("X4") + ")\r\n";
-            view += "ServiceID : " + ReserveInfo.ServiceID.ToString() + " (0x" + ReserveInfo.ServiceID.ToString("X4") + ")\r\n";
-            view += "EventID : " + ReserveInfo.EventID.ToString() + " (0x" + ReserveInfo.EventID.ToString("X4") + ")";
+            view += CommonManager.Convert64PGKeyString(ReserveInfo.Create64PgKey());
 
             return view;
         }

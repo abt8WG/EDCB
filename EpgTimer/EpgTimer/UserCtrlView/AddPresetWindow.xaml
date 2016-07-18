@@ -13,12 +13,12 @@
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Name="label1" Content="プリセット名" />
+            <Label Grid.Column="0" Content="プリセット名" />
             <TextBox Grid.Column="1" Name="textBox_name" />
         </Grid>
         <Label Grid.Row="1" Name="label_chgMsg" Content="(※設定内容も同時に変更されます)" Margin="20,0" VerticalAlignment="Bottom" Visibility="Hidden" />
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <Button Name="button_add" Content="追加" Margin="0,0,30,0" Click="button_add_Click" />
+            <Button Name="button_add" Content="追加" Margin="0,0,30,0" Click="button_add_Click" IsDefault="True" />
             <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" IsCancel="True" />
         </StackPanel>
     </Grid>
