@@ -39,6 +39,13 @@ void CReserveManager::Initialize()
 	this->reserveText.ParseText((settingPath + L"\\" + RESERVE_TEXT_NAME).c_str());
 
 	ReloadSetting();
+	wstring iniPath;
+	GetModuleIniPath(iniPath);
+	DWORD shiftID = GetPrivateProfileInt(L"SET", L"RecInfoShiftID", 100000, iniPath.c_str());
+	if( shiftID != 0 ){
+		this->recInfoText.SetNextID(shiftID + 1);
+		WritePrivateProfileInt(L"SET", L"RecInfoShiftID", shiftID % 900000 + 100000, iniPath.c_str());
+	}
 	this->recInfoText.ParseText((settingPath + L"\\" + REC_INFO_TEXT_NAME).c_str());
 	this->recInfo2Text.ParseText((settingPath + L"\\" + REC_INFO2_TEXT_NAME).c_str());
 
@@ -95,10 +102,10 @@ void CReserveManager::ReloadSetting()
 			//曜日指定接尾辞(w1=Mon,...,w7=Sun)
 			unsigned int hour, minute, wday = 0;
 			if( swscanf_s(buff.c_str(), L"%u:%uw%u", &hour, &minute, &wday) >= 2 ){
-				//取得種別(bit0(LSB)=BS,bit1=CS1,bit2=CS2)。負値のときは共通設定に従う
+				//取得種別(bit0(LSB)=BS,bit1=CS1,bit2=CS2,bit3=CS3)。負値のときは共通設定に従う
 				wsprintf(key, L"%dBasicOnlyFlags", i);
 				int basicOnlyFlags = GetPrivateProfileInt(L"EPG_CAP", key, -1, iniPath.c_str());
-				basicOnlyFlags = basicOnlyFlags < 0 ? 0xFF : basicOnlyFlags & 7;
+				basicOnlyFlags = basicOnlyFlags < 0 ? 0xFF : basicOnlyFlags & 15;
 				if( wday == 0 ){
 					//曜日指定なし
 					for( int j = 0; j < 7; j++ ){
@@ -140,7 +147,7 @@ void CReserveManager::ReloadSetting()
 	this->recInfoText.SetRecInfoFolder(GetPrivateProfileToString(L"SET", L"RecInfoFolder", L"", commonIniPath.c_str()).c_str());
 
 	this->recInfo2Text.SetKeepCount(GetPrivateProfileInt(L"SET", L"RecInfo2Max", 1000, iniPath.c_str()));
-	this->recInfo2DropChk = GetPrivateProfileInt(L"SET", L"RecInfo2DropChk", 15, iniPath.c_str());
+	this->recInfo2DropChk = GetPrivateProfileInt(L"SET", L"RecInfo2DropChk", 2, iniPath.c_str());
 	this->recInfo2RegExp = GetPrivateProfileToString(L"SET", L"RecInfo2RegExp", L"", iniPath.c_str());
 
 	this->defEnableCaption = GetPrivateProfileInt(L"SET", L"Caption", 1, viewIniPath.c_str()) != 0;
@@ -254,7 +261,7 @@ bool CReserveManager::GetReserveData(DWORD id, RESERVE_DATA* reserveData, bool g
 	return false;
 }
 
-bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus)
+bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus, bool noReportNotify)
 {
 	CBlockLock lock(&this->managerLock);
 
@@ -291,7 +298,10 @@ bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bo
 		this->reserveText.SaveText();
 		ReloadBankMap(minStartTime);
 		CheckAutoDel();
-		AddNotifyAndPostBat(NOTIFY_UPDATE_RESERVE_INFO);
+		//自動登録リスト更新時(EPG更新時など)にNOTIFYの発生を抑制するため
+		if( noReportNotify != true){
+			AddNotifyAndPostBat(NOTIFY_UPDATE_RESERVE_INFO);
+		}
 		AddPostBatWork(batWorkList, L"PostAddReserve.bat");
 		return true;
 	}
@@ -310,7 +320,7 @@ bool CReserveManager::ChgReserveData(const vector<RESERVE_DATA>& reserveList, bo
 		map<DWORD, RESERVE_DATA>::const_iterator itr = this->reserveText.GetMap().find(r.reserveID);
 		if( itr != this->reserveText.GetMap().end() ){
 			//変更できないフィールドを上書き
-			r.comment = itr->second.comment;
+			//r.comment = itr->second.comment;プログラム予約に変更する場合があるので許可(tknerec版)
 			r.presentFlag = itr->second.presentFlag;
 			r.startTimeEpg = itr->second.startTimeEpg;
 			if( setReserveStatus == false ){
@@ -420,7 +430,7 @@ bool CReserveManager::ChgReserveData(const vector<RESERVE_DATA>& reserveList, bo
 				        r.recSetting.startMargine != itr->second.recSetting.startMargine ||
 				        r.recSetting.endMargine != itr->second.recSetting.endMargine) ||
 				    r.recSetting.tunerID != itr->second.recSetting.tunerID ){
-					__int64 startTime, startTimeNext;
+					__int64 startTimeNext;
 					CalcEntireReserveTime(&startTime, NULL, itr->second);
 					CalcEntireReserveTime(&startTimeNext, NULL, r);
 					minStartTime = min(min(startTime, startTimeNext), minStartTime);
@@ -477,16 +487,74 @@ void CReserveManager::DelReserveData(const vector<DWORD>& idList)
 	}
 }
 
-vector<REC_FILE_INFO> CReserveManager::GetRecFileInfoAll() const
+vector<REC_FILE_INFO> CReserveManager::GetRecFileInfoAll(bool getExtraInfo) const
 {
-	CBlockLock lock(&this->managerLock);
-
 	vector<REC_FILE_INFO> infoList;
-	infoList.reserve(this->recInfoText.GetMap().size());
-	for( map<DWORD, REC_FILE_INFO>::const_iterator itr = this->recInfoText.GetMap().begin(); itr != this->recInfoText.GetMap().end(); itr++ ){
-		infoList.push_back(itr->second);
+	wstring folder;
+	{
+		CBlockLock lock(&this->managerLock);
+		infoList.reserve(this->recInfoText.GetMap().size());
+		for( map<DWORD, REC_FILE_INFO>::const_iterator itr = this->recInfoText.GetMap().begin(); itr != this->recInfoText.GetMap().end(); itr++ ){
+			infoList.push_back(itr->second);
+		}
+		if( getExtraInfo ){
+			folder = this->recInfoText.GetRecInfoFolder();
+		}
+	}
+	if( getExtraInfo ){
+		for( size_t i = 0; i < infoList.size(); i++ ){
+			infoList[i].programInfo = CParseRecInfoText::GetExtraInfo(infoList[i].recFilePath.c_str(), L".program.txt", folder);
+			infoList[i].errInfo = CParseRecInfoText::GetExtraInfo(infoList[i].recFilePath.c_str(), L".err", folder);
+		}
 	}
 	return infoList;
+}
+
+vector<REC_FILE_INFO> CReserveManager::GetRecFileInfoList(const vector<DWORD>& idList, bool getExtraInfo) const
+{
+	vector<REC_FILE_INFO> infoList;
+	wstring folder;
+	{
+		CBlockLock lock(&this->managerLock);
+		infoList.reserve(idList.size());
+		for( size_t i = 0; i < idList.size(); i++ ){
+			map<DWORD, REC_FILE_INFO>::const_iterator itr = this->recInfoText.GetMap().find(idList[i]);
+			if( itr != this->recInfoText.GetMap().end() ){
+				infoList.push_back(itr->second);
+			}
+		}
+		if( getExtraInfo ){
+			folder = this->recInfoText.GetRecInfoFolder();
+		}
+	}
+	if( getExtraInfo ){
+		for( size_t i = 0; i < infoList.size(); i++ ){
+			infoList[i].programInfo = CParseRecInfoText::GetExtraInfo(infoList[i].recFilePath.c_str(), L".program.txt", folder);
+			infoList[i].errInfo = CParseRecInfoText::GetExtraInfo(infoList[i].recFilePath.c_str(), L".err", folder);
+		}
+	}
+	return infoList;
+}
+
+bool CReserveManager::GetRecFileInfo(DWORD id, REC_FILE_INFO* recInfo, bool getExtraInfo) const
+{
+	wstring folder;
+	{
+		CBlockLock lock(&this->managerLock);
+		map<DWORD, REC_FILE_INFO>::const_iterator itr = this->recInfoText.GetMap().find(id);
+		if( itr == this->recInfoText.GetMap().end() ){
+			return false;
+		}
+		*recInfo = itr->second;
+		if( getExtraInfo ){
+			folder = this->recInfoText.GetRecInfoFolder();
+		}
+	}
+	if( getExtraInfo ){
+		recInfo->programInfo = CParseRecInfoText::GetExtraInfo(recInfo->recFilePath.c_str(), L".program.txt", folder);
+		recInfo->errInfo = CParseRecInfoText::GetExtraInfo(recInfo->recFilePath.c_str(), L".err", folder);
+	}
+	return true;
 }
 
 void CReserveManager::DelRecFileInfo(const vector<DWORD>& idList)
@@ -1382,7 +1450,6 @@ DWORD CReserveManager::Check()
 				}
 			}
 			if( modified ){
-				CBlockLock lock(&this->managerLock);
 				this->reserveText.SaveText();
 				this->recInfoText.SaveText();
 				this->recInfo2Text.SaveText();
@@ -1491,31 +1558,32 @@ bool CReserveManager::CheckEpgCap(bool isEpgCap)
 						GetCommonIniPath(iniCommonPath);
 						int lastFlags = (GetPrivateProfileInt(L"SET", L"BSBasicOnly", 1, iniCommonPath.c_str()) != 0 ? 1 : 0) |
 						                (GetPrivateProfileInt(L"SET", L"CS1BasicOnly", 1, iniCommonPath.c_str()) != 0 ? 2 : 0) |
-						                (GetPrivateProfileInt(L"SET", L"CS2BasicOnly", 1, iniCommonPath.c_str()) != 0 ? 4 : 0);
+						                (GetPrivateProfileInt(L"SET", L"CS2BasicOnly", 1, iniCommonPath.c_str()) != 0 ? 4 : 0) |
+						                (GetPrivateProfileInt(L"SET", L"CS3BasicOnly", 0, iniCommonPath.c_str()) != 0 ? 8 : 0);
 						if( basicOnlyFlags >= 0 ){
 							//一時的に設定を変更してEPG取得チューナ側の挙動を変える
 							//TODO: パイプコマンドを拡張すべき
 							this->epgCapBasicOnlyFlags = lastFlags;
-							WritePrivateProfileString(L"SET", L"BSBasicOnly", basicOnlyFlags & 1 ? L"1" : L"0", iniCommonPath.c_str());
-							WritePrivateProfileString(L"SET", L"CS1BasicOnly", basicOnlyFlags & 2 ? L"1" : L"0", iniCommonPath.c_str());
-							WritePrivateProfileString(L"SET", L"CS2BasicOnly", basicOnlyFlags & 4 ? L"1" : L"0", iniCommonPath.c_str());
+							WritePrivateProfileInt(L"SET", L"BSBasicOnly", (basicOnlyFlags & 1) != 0, iniCommonPath.c_str());
+							WritePrivateProfileInt(L"SET", L"CS1BasicOnly", (basicOnlyFlags & 2) != 0, iniCommonPath.c_str());
+							WritePrivateProfileInt(L"SET", L"CS2BasicOnly", (basicOnlyFlags & 4) != 0, iniCommonPath.c_str());
+							WritePrivateProfileInt(L"SET", L"CS3BasicOnly", (basicOnlyFlags & 8) != 0, iniCommonPath.c_str());
 						}else{
 							this->epgCapBasicOnlyFlags = -1;
 							basicOnlyFlags = lastFlags;
 						}
 						//各チューナに振り分け
 						LONGLONG lastKey = -1;
-						bool inBS = false;
-						bool inCS1 = false;
-						bool inCS2 = false;
+						bool inONIDs[16] = {};
 						size_t listIndex = 0;
 						vector<vector<SET_CH_INFO>> epgCapChList(epgCapIDList.size());
 						for( map<LONGLONG, CH_DATA5>::const_iterator itr = this->chUtil.GetMap().begin(); itr != this->chUtil.GetMap().end(); itr++ ){
 							if( itr->second.epgCapFlag == FALSE ||
 							    lastKey >= 0 && lastKey == itr->first >> 16 ||
-							    itr->second.originalNetworkID == 4 && (basicOnlyFlags & 1) && inBS ||
-							    itr->second.originalNetworkID == 6 && (basicOnlyFlags & 2) && inCS1 ||
-							    itr->second.originalNetworkID == 7 && (basicOnlyFlags & 4) && inCS2 ){
+							    itr->second.originalNetworkID == 4 && (basicOnlyFlags & 1) && inONIDs[4] ||
+							    itr->second.originalNetworkID == 6 && (basicOnlyFlags & 2) && inONIDs[6] ||
+							    itr->second.originalNetworkID == 7 && (basicOnlyFlags & 4) && inONIDs[7] ||
+							    itr->second.originalNetworkID == 10 && (basicOnlyFlags & 8) && inONIDs[10] ){
 								continue;
 							}
 							lastKey = itr->first >> 16;
@@ -1528,9 +1596,7 @@ bool CReserveManager::CheckEpgCap(bool isEpgCap)
 							for( size_t i = 0; i < epgCapIDList.size(); i++ ){
 								if( this->tunerManager.IsSupportService(epgCapIDList[listIndex], addCh.ONID, addCh.TSID, addCh.SID) ){
 									epgCapChList[listIndex].push_back(addCh);
-									inBS = inBS || addCh.ONID == 4;
-									inCS1 = inCS1 || addCh.ONID == 6;
-									inCS2 = inCS2 || addCh.ONID == 7;
+									inONIDs[min(addCh.ONID, _countof(inONIDs) - 1)] = true;
 									listIndex = (listIndex + 1) % epgCapIDList.size();
 									break;
 								}
@@ -1542,6 +1608,7 @@ bool CReserveManager::CheckEpgCap(bool isEpgCap)
 						}
 						this->epgCapWork = true;
 						this->epgCapSetTimeSync = false;
+						this->epgCapTimeSyncBase = -1;
 						this->notifyManager.AddNotify(NOTIFY_UPDATE_EPGCAP_START);
 					}
 				}
@@ -1550,16 +1617,44 @@ bool CReserveManager::CheckEpgCap(bool isEpgCap)
 	}else{
 		//EPG取得中
 		if( this->epgCapTimeSync && this->epgCapSetTimeSync == false ){
-			//時計合わせ(要SE_SYSTEMTIME_NAME特権)
+			DWORD tick = GetTickCount();
 			for( auto itr = this->tunerBankMap.cbegin(); itr != this->tunerBankMap.end(); itr++ ){
 				if( itr->second->GetState() == CTunerBankCtrl::TR_EPGCAP ){
 					__int64 delay = itr->second->DelayTime();
-					if( delay < -10 * I64_1SEC || 10 * I64_1SEC < delay ){
-						SYSTEMTIME setTime;
-						ConvertSystemTime(now + delay, &setTime);
-						_OutputDebugString(L"★SetLocalTime %s%d\r\n", SetLocalTime(&setTime) ? L"" : L"err ", (int)(delay / I64_1SEC));
-						this->epgCapSetTimeSync = true;
+					if( this->epgCapTimeSyncBase < 0 ){
+						if( delay < -10 * I64_1SEC || 10 * I64_1SEC < delay ){
+							//時計合わせが必要かもしれない。遅延時間の観測開始
+							this->epgCapTimeSyncBase = now;
+							this->epgCapTimeSyncDelayMin = delay;
+							this->epgCapTimeSyncDelayMax = delay;
+							this->epgCapTimeSyncTick = tick;
+							this->epgCapTimeSyncQuality = 0;
+							OutputDebugString(L"★SetLocalTime start\r\n");
+						}
+					}else if( delay != 0 ){
+						//遅延時間の揺らぎを記録する(delay==0は未取得と区別できないので除外)
+						this->epgCapTimeSyncDelayMin = min(delay, this->epgCapTimeSyncDelayMin);
+						this->epgCapTimeSyncDelayMax = max(delay, this->epgCapTimeSyncDelayMax);
+						this->epgCapTimeSyncQuality += tick - this->epgCapTimeSyncTick;
 					}
+				}
+			}
+			if( this->epgCapTimeSyncBase >= 0 ){
+				this->epgCapTimeSyncBase += (tick - this->epgCapTimeSyncTick) * (I64_1SEC / 1000);
+				this->epgCapTimeSyncTick = tick;
+				if( now - this->epgCapTimeSyncBase < -3 * I64_1SEC || 3 * I64_1SEC < now - this->epgCapTimeSyncBase ||
+				    this->epgCapTimeSyncDelayMax - this->epgCapTimeSyncDelayMin > 10 * I64_1SEC ){
+					//別のプロセスが時計合わせしたor揺らぎすぎ
+					this->epgCapTimeSyncBase = -1;
+					OutputDebugString(L"★SetLocalTime cancel\r\n");
+				}else if( this->epgCapTimeSyncQuality > 150 * 1000 ){
+					//概ね2チャンネル以上の遅延時間を観測できたはず
+					//時計合わせ(要SE_SYSTEMTIME_NAME特権)
+					__int64 delay = (this->epgCapTimeSyncDelayMax + this->epgCapTimeSyncDelayMin) / 2;
+					SYSTEMTIME setTime;
+					ConvertSystemTime(now + delay, &setTime);
+					_OutputDebugString(L"★SetLocalTime %s%d\r\n", SetLocalTime(&setTime) ? L"" : L"err ", (int)(delay / I64_1SEC));
+					this->epgCapSetTimeSync = true;
 				}
 			}
 		}
@@ -1569,9 +1664,10 @@ bool CReserveManager::CheckEpgCap(bool isEpgCap)
 				//EPG取得開始時の設定を書き戻し
 				wstring iniCommonPath;
 				GetCommonIniPath(iniCommonPath);
-				WritePrivateProfileString(L"SET", L"BSBasicOnly", this->epgCapBasicOnlyFlags & 1 ? L"1" : L"0", iniCommonPath.c_str());
-				WritePrivateProfileString(L"SET", L"CS1BasicOnly", this->epgCapBasicOnlyFlags & 2 ? L"1" : L"0", iniCommonPath.c_str());
-				WritePrivateProfileString(L"SET", L"CS2BasicOnly", this->epgCapBasicOnlyFlags & 4 ? L"1" : L"0", iniCommonPath.c_str());
+				WritePrivateProfileInt(L"SET", L"BSBasicOnly", (this->epgCapBasicOnlyFlags & 1) != 0, iniCommonPath.c_str());
+				WritePrivateProfileInt(L"SET", L"CS1BasicOnly", (this->epgCapBasicOnlyFlags & 2) != 0, iniCommonPath.c_str());
+				WritePrivateProfileInt(L"SET", L"CS2BasicOnly", (this->epgCapBasicOnlyFlags & 4) != 0, iniCommonPath.c_str());
+				WritePrivateProfileInt(L"SET", L"CS3BasicOnly", (this->epgCapBasicOnlyFlags & 8) != 0, iniCommonPath.c_str());
 			}
 			this->epgCapWork = false;
 			doneEpgCap = true;
@@ -1768,7 +1864,7 @@ bool CReserveManager::GetRecFilePath(DWORD reserveID, wstring& filePath, DWORD* 
 	return false;
 }
 
-bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, WORD chkDay) const
+bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPGDB_SEARCH_KEY_INFO& key) const
 {
 	CBlockLock lock(&this->managerLock);
 	bool ret = false;
@@ -1788,10 +1884,10 @@ bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, WORD chkD
 			if( infoEventName.empty() == false && info.StartTimeFlag != 0 ){
 				map<DWORD, PARSE_REC_INFO2_ITEM>::const_iterator itr;
 				for( itr = this->recInfo2Text.GetMap().begin(); itr != this->recInfo2Text.GetMap().end(); itr++ ){
-					if( itr->second.originalNetworkID == info.original_network_id &&
-					    itr->second.transportStreamID == info.transport_stream_id &&
-					    itr->second.serviceID == info.service_id &&
-					    ConvertI64Time(itr->second.startTime) + chkDay*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
+					if( ( key.chkRecNoService == 1 || itr->second.originalNetworkID == info.original_network_id &&
+						itr->second.transportStreamID == info.transport_stream_id &&
+						itr->second.serviceID == info.service_id ) &&
+						ConvertI64Time(itr->second.startTime) + key.chkRecDay*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
 						wstring eventName = itr->second.eventName;
 						if( this->recInfo2RegExp.empty() == false ){
 							_bstr_t rpl = regExp->Replace(_bstr_t(eventName.c_str()), _bstr_t());
@@ -1861,10 +1957,7 @@ void CReserveManager::AddPostBatWork(vector<BAT_WORK_INFO>& workList, LPCWSTR fi
 		GetModuleFolderPath(workList[0].batFilePath);
 		workList[0].batFilePath += L'\\';
 		workList[0].batFilePath += fileName;
-		WIN32_FIND_DATA findData;
-		HANDLE hFind = FindFirstFile(workList[0].batFilePath.c_str(), &findData);
-		if( hFind != INVALID_HANDLE_VALUE ){
-			FindClose(hFind);
+		if( GetFileAttributes(workList[0].batFilePath.c_str()) != INVALID_FILE_ATTRIBUTES ){
 			for( size_t i = 0; i < workList.size(); i++ ){
 				workList[i].batFilePath = workList[0].batFilePath;
 				this->batPostManager.AddBatWork(workList[i]);

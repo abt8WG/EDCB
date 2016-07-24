@@ -28,13 +28,17 @@ public:
 	//予約情報を取得する
 	bool GetReserveData(DWORD id, RESERVE_DATA* reserveData, bool getRecFileName = false) const;
 	//予約情報を追加する
-	bool AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false);
+	bool AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false, const bool noReportNotify = false);
 	//予約情報を変更する
 	bool ChgReserveData(const vector<RESERVE_DATA>& reserveList, bool setReserveStatus = false);
 	//予約情報を削除する
 	void DelReserveData(const vector<DWORD>& idList);
 	//録画済み情報一覧を取得する
-	vector<REC_FILE_INFO> GetRecFileInfoAll() const;
+	vector<REC_FILE_INFO> GetRecFileInfoAll(bool getExtraInfo = true) const;
+	//録画済み情報を指定リストで取得する
+	vector<REC_FILE_INFO> GetRecFileInfoList(const vector<DWORD>& idLis, bool getExtraInfo = true) const;
+	//録画済み情報を取得する
+	bool GetRecFileInfo(DWORD id, REC_FILE_INFO* recInfo, bool getExtraInfo = true) const;
 	//録画済み情報を削除する
 	void DelRecFileInfo(const vector<DWORD>& idList);
 	//録画済み情報のプロテクトを変更する
@@ -69,7 +73,7 @@ public:
 	//予約が録画中であればその録画ファイル名などを取得する
 	bool GetRecFilePath(DWORD reserveID, wstring& filePath, DWORD* ctrlID, DWORD* processID) const;
 	//指定EPGイベントは録画済みかどうか
-	bool IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, WORD chkDay) const;
+	bool IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPGDB_SEARCH_KEY_INFO& key) const;
 	//自動予約によって作成された指定イベントの予約を無効にする
 	bool ChgAutoAddNoRec(WORD onid, WORD tsid, WORD sid, WORD eid);
 	//チャンネル情報を取得する
@@ -164,6 +168,11 @@ private:
 	bool epgCapRequested;
 	bool epgCapWork;
 	bool epgCapSetTimeSync;
+	__int64 epgCapTimeSyncBase;
+	__int64 epgCapTimeSyncDelayMin;
+	__int64 epgCapTimeSyncDelayMax;
+	DWORD epgCapTimeSyncTick;
+	DWORD epgCapTimeSyncQuality;
 	int epgCapBasicOnlyFlags;
 	int shutdownModePending;
 	bool reserveModified;
