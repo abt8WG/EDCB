@@ -19,12 +19,22 @@ CEpgDataCap_BonDlg::CEpgDataCap_BonDlg()
 	: m_hWnd(NULL)
 	, m_hKeyboardHook(NULL)
 {
-	m_hIcon = (HICON)LoadImage( GetModuleHandle(NULL), MAKEINTRESOURCE( IDI_ICON_BLUE ), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	m_hIcon2 = (HICON)LoadImage( GetModuleHandle(NULL), MAKEINTRESOURCE( IDI_ICON_BLUE ), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
-	iconRed = (HICON)LoadImage( GetModuleHandle(NULL), MAKEINTRESOURCE( IDI_ICON_RED ), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	iconBlue = (HICON)LoadImage( GetModuleHandle(NULL), MAKEINTRESOURCE( IDI_ICON_BLUE ), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	iconGreen = (HICON)LoadImage( GetModuleHandle(NULL), MAKEINTRESOURCE( IDI_ICON_GREEN ), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	iconGray = (HICON)LoadImage( GetModuleHandle(NULL), MAKEINTRESOURCE( IDI_ICON_GRAY ), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	HMODULE hModule = GetModuleHandle(NULL);
+	HRESULT (WINAPI* pfnLoadIconMetric)(HINSTANCE,PCWSTR,int,HICON*) =
+		(HRESULT (WINAPI*)(HINSTANCE,PCWSTR,int,HICON*))GetProcAddress(GetModuleHandle(L"comctl32.dll"), "LoadIconMetric");
+	if( pfnLoadIconMetric == NULL ||
+	    pfnLoadIconMetric(hModule, MAKEINTRESOURCE(IDI_ICON_BLUE), LIM_SMALL, &m_hIcon) != S_OK ||
+	    pfnLoadIconMetric(hModule, MAKEINTRESOURCE(IDI_ICON_BLUE), LIM_LARGE, &m_hIcon2) != S_OK ||
+	    pfnLoadIconMetric(hModule, MAKEINTRESOURCE(IDI_ICON_RED), LIM_SMALL, &iconRed) != S_OK ||
+	    pfnLoadIconMetric(hModule, MAKEINTRESOURCE(IDI_ICON_GREEN), LIM_SMALL, &iconGreen) != S_OK ||
+	    pfnLoadIconMetric(hModule, MAKEINTRESOURCE(IDI_ICON_GRAY), LIM_SMALL, &iconGray) != S_OK ){
+		m_hIcon = (HICON)LoadImage(hModule, MAKEINTRESOURCE(IDI_ICON_BLUE), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+		m_hIcon2 = (HICON)LoadImage(hModule, MAKEINTRESOURCE(IDI_ICON_BLUE), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
+		iconRed = (HICON)LoadImage(hModule, MAKEINTRESOURCE(IDI_ICON_RED), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+		iconGreen = (HICON)LoadImage(hModule, MAKEINTRESOURCE(IDI_ICON_GREEN), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+		iconGray = (HICON)LoadImage(hModule, MAKEINTRESOURCE(IDI_ICON_GRAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	}
+	iconBlue = m_hIcon;
 
 	taskbarCreated = RegisterWindowMessage(L"TaskbarCreated");
 
@@ -151,20 +161,22 @@ BOOL CEpgDataCap_BonDlg::OnInitDialog()
 	//ウインドウの復元
 	WINDOWPLACEMENT Pos;
 	Pos.length = sizeof(WINDOWPLACEMENT);
-	Pos.flags = 0;
-	if( this->iniMin == FALSE ){
-		Pos.showCmd = SW_SHOW;
-	}else{
-		Pos.showCmd = SW_SHOWMINNOACTIVE;
-	}
-	Pos.rcNormalPosition.left = GetPrivateProfileInt(L"SET_WINDOW", L"left", 0, this->moduleIniPath.c_str());
-	Pos.rcNormalPosition.right = GetPrivateProfileInt(L"SET_WINDOW", L"right", 0, this->moduleIniPath.c_str());
-	Pos.rcNormalPosition.top = GetPrivateProfileInt(L"SET_WINDOW", L"top", 0, this->moduleIniPath.c_str());
-	Pos.rcNormalPosition.bottom = GetPrivateProfileInt(L"SET_WINDOW", L"bottom", 0, this->moduleIniPath.c_str());
-	if( Pos.rcNormalPosition.left != 0 &&
-		Pos.rcNormalPosition.right != 0 &&
-		Pos.rcNormalPosition.top != 0 &&
-		Pos.rcNormalPosition.bottom != 0 ){
+	int left = GetPrivateProfileInt(L"SET_WINDOW", L"left", INT_MAX, this->moduleIniPath.c_str());
+	int top = GetPrivateProfileInt(L"SET_WINDOW", L"top", INT_MAX, this->moduleIniPath.c_str());
+	if( left != INT_MAX && top != INT_MAX && GetWindowPlacement(m_hWnd, &Pos) ){
+		Pos.flags = 0;
+		Pos.showCmd = this->iniMin ? SW_SHOWMINNOACTIVE : SW_SHOW;
+		int width = GetPrivateProfileInt(L"SET_WINDOW", L"width", 0, this->moduleIniPath.c_str());
+		int height = GetPrivateProfileInt(L"SET_WINDOW", L"height", 0, this->moduleIniPath.c_str());
+		if( width > 0 && height > 0 ){
+			Pos.rcNormalPosition.right = left + width;
+			Pos.rcNormalPosition.bottom = top + height;
+		}else{
+			Pos.rcNormalPosition.right += left - Pos.rcNormalPosition.left;
+			Pos.rcNormalPosition.bottom += top - Pos.rcNormalPosition.top;
+		}
+		Pos.rcNormalPosition.left = left;
+		Pos.rcNormalPosition.top = top;
 		SetWindowPlacement(m_hWnd, &Pos);
 	}
 	SetTimer(TIMER_STATUS_UPDATE, 1000, NULL);

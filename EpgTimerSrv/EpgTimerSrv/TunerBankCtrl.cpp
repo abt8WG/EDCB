@@ -1020,15 +1020,13 @@ void CTunerBankCtrl::CloseNWTV()
 	}
 }
 
-bool CTunerBankCtrl::GetRecFilePath(DWORD reserveID, wstring& filePath, DWORD* ctrlID, DWORD* processID) const
+bool CTunerBankCtrl::GetRecFilePath(DWORD reserveID, wstring& filePath) const
 {
 	auto itr = this->reserveMap.find(reserveID);
 	if( itr != this->reserveMap.end() && itr->second.state == TR_REC ){
 		int i = itr->second.ctrlID[0] != 0 ? 0 : 1;
 		if( itr->second.recFilePath[i].empty() == false ){
 			filePath = itr->second.recFilePath[i];
-			*ctrlID = itr->second.ctrlID[i];
-			*processID = this->tunerPid;
 			return true;
 		}
 	}
@@ -1106,13 +1104,15 @@ bool CTunerBankCtrl::OpenTuner(bool minWake, bool noView, bool nwUdp, bool nwTcp
 		for( int i = 0; i < 300; i++ ){
 			Sleep(100);
 			if( WaitForSingleObject(this->hTunerProcess, 0) != WAIT_TIMEOUT ){
-				break;
+				CloseTuner();
+				return false;
 			}else if( ctrlCmd.SendViewSetID(this->tunerID) == CMD_SUCCESS ){
 				ctrlCmd.SetConnectTimeOut(CONNECT_TIMEOUT);
 				//起動ステータスを確認
 				DWORD status;
 				if( ctrlCmd.SendViewGetStatus(&status) == CMD_SUCCESS && status == VIEW_APP_ST_ERR_BON ){
-					break;
+					CloseTuner();
+					return false;
 				}
 				if( standbyRec ){
 					//「予約録画待機中」
@@ -1124,6 +1124,8 @@ bool CTunerBankCtrl::OpenTuner(bool minWake, bool noView, bool nwUdp, bool nwTcp
 				return true;
 			}
 		}
+		TerminateProcess(this->hTunerProcess, 0xFFFFFFFF);
+		_OutputDebugString(L"CTunerBankCtrl::%s: Terminated TunerID=0x%08x\r\n", L"OpenTuner()", this->tunerID);
 		CloseTuner();
 	}
 	return false;
@@ -1136,9 +1138,11 @@ void CTunerBankCtrl::CloseTuner()
 			CWatchBlock watchBlock(&this->watchContext);
 			CSendCtrlCmd ctrlCmd;
 			ctrlCmd.SetPipeSetting(CMD2_VIEW_CTRL_WAIT_CONNECT, CMD2_VIEW_CTRL_PIPE, this->tunerPid);
-			if( ctrlCmd.SendViewAppClose() != CMD_SUCCESS || WaitForSingleObject(this->hTunerProcess, 30000) == WAIT_TIMEOUT ){
+			ctrlCmd.SendViewAppClose();
+			if( WaitForSingleObject(this->hTunerProcess, 30000) == WAIT_TIMEOUT ){
 				//ぶち殺す
 				TerminateProcess(this->hTunerProcess, 0xFFFFFFFF);
+				_OutputDebugString(L"CTunerBankCtrl::%s: Terminated TunerID=0x%08x\r\n", L"CloseTuner()", this->tunerID);
 			}
 		}
 		CBlockLock lock(&this->watchContext.lock);
@@ -1285,7 +1289,7 @@ void CTunerBankCtrl::Watch()
 		if( this->hTunerProcess ){
 			//少なくともhTunerProcessはまだCloseHandle()されていない
 			TerminateProcess(this->hTunerProcess, 0xFFFFFFFF);
-			_OutputDebugString(L"CTunerBankCtrl::Watch(): Terminated TunerID=0x%08x\r\n", this->tunerID);
+			_OutputDebugString(L"CTunerBankCtrl::%s: Terminated TunerID=0x%08x\r\n", L"Watch()", this->tunerID);
 		}
 	}
 }
