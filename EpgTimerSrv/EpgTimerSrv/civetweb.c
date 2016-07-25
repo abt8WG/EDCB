@@ -209,6 +209,7 @@ mg_static_assert(MAX_WORKER_THREADS >= 1,
 #include <windows.h>
 #include <winsock2.h> /* DTL add for SO_EXCLUSIVE */
 #include <ws2tcpip.h>
+#include <objbase.h>
 
 typedef const char *SOCK_OPT_TYPE;
 
@@ -12521,7 +12522,9 @@ worker_thread_run(void *thread_func_param)
 #ifdef _WIN32
 static unsigned __stdcall worker_thread(void *thread_func_param)
 {
+	CoInitialize(NULL);
 	worker_thread_run(thread_func_param);
+	CoUninitialize();
 	return 0;
 }
 #else
@@ -12759,7 +12762,9 @@ master_thread_run(void *thread_func_param)
 #ifdef _WIN32
 static unsigned __stdcall master_thread(void *thread_func_param)
 {
+	CoInitialize(NULL);
 	master_thread_run(thread_func_param);
+	CoUninitialize();
 	return 0;
 }
 #else
