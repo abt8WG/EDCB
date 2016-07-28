@@ -275,7 +275,14 @@ BOOL CTCPServer::CheckCmd(DWORD cmd, DWORD size)
 {
 	// size が cmd に対し適正か確認
 
+	//第2,3バイトは0でなければならない
+	if( HIWORD(cmd) != 0 ){
+		_OutputDebugString(L"Deny TCP cmd:0x%08x\r\n", cmd);
+		return FALSE;
+	}
+	
 	if( size > 64 * 1024 ){
+		// 64KB以上は警告だけしておく
 		_OutputDebugString(L"Warning: Large command size: cmd = %d, size = %d\r\n", cmd, size);
 	}
 

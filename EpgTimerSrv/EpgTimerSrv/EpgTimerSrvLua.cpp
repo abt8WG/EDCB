@@ -562,9 +562,7 @@ int CEpgTimerSrvMain::LuaGetRecFilePath(lua_State* L)
 	CLuaWorkspace ws(L);
 	if( lua_gettop(L) == 1 ){
 		wstring filePath;
-		DWORD ctrlID;
-		DWORD processID;
-		if( ws.sys->reserveManager.GetRecFilePath((DWORD)lua_tointeger(L, 1), filePath, &ctrlID, &processID) ){
+		if( ws.sys->reserveManager.GetRecFilePath((DWORD)lua_tointeger(L, 1), filePath) ){
 			lua_pushstring(L, ws.WtoUTF8(filePath));
 			return 1;
 		}

@@ -1953,10 +1953,8 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		{
 			DWORD val;
 			NWPLAY_TIMESHIFT_INFO resVal;
-			DWORD ctrlID;
-			DWORD processID;
 			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) &&
-			    sys->reserveManager.GetRecFilePath(val, resVal.filePath, &ctrlID, &processID) &&
+			    sys->reserveManager.GetRecFilePath(val, resVal.filePath) &&
 			    sys->streamingManager.OpenTimeShift(resVal.filePath.c_str(), &resVal.ctrlID) ){
 				resParam->data = NewWriteVALUE(resVal, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
