@@ -1492,7 +1492,6 @@ namespace EpgTimer
                 }
                 _FillList(Instance.StatCustColors, 0xFFFFFFFF, num);
 
-
                 //予約簡易表示のプログレスバー色
                 num = 2;
                 if (Instance.InfoWindowItemProgressBarColors.Count < num)
@@ -1523,118 +1522,52 @@ namespace EpgTimer
 
                 if (Instance.ViewButtonList.Count == 0)
                 {
-                    Instance.ViewButtonList.Add("設定");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("再接続");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("検索");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("スタンバイ");
-                    Instance.ViewButtonList.Add("休止");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("EPG取得");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("EPG再読み込み");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("終了");
+                    Instance.ViewButtonList.AddRange(GetViewButtonDefIDs(false));
                 }
                 if (Instance.TaskMenuList.Count == 0)
                 {
-                    Instance.TaskMenuList.Add("設定");
-                    Instance.TaskMenuList.Add("（セパレータ）");
-                    Instance.TaskMenuList.Add("再接続");
-                    Instance.TaskMenuList.Add("（セパレータ）");
-                    Instance.TaskMenuList.Add("スタンバイ");
-                    Instance.TaskMenuList.Add("休止");
-                    Instance.TaskMenuList.Add("（セパレータ）");
-                    Instance.TaskMenuList.Add("終了");
+                    Instance.TaskMenuList.AddRange(GetTaskMenuDefIDs(false));
                 }
                 if (Instance.ReserveListColumn.Count == 0)
                 {
                     var obj = new ReserveItem();
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.StartTime), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.NetworkName), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ServiceName), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.RecMode), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Priority), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Tuijyu), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Comment), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.RecFileName), double.NaN));
+                    Instance.ReserveListColumn.AddRange(GetDefaultColumn(typeof(ReserveView)));
                     Instance.ResColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.ResSortDirection = ListSortDirection.Ascending;
                 }
                 if (Instance.RecInfoListColumn.Count == 0)
                 {
                     var obj = new RecInfoItem();
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.IsProtect), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.StartTime), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.NetworkName), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ServiceName), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Drops), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Scrambles), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Result), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.RecFilePath), double.NaN));
+                    Instance.RecInfoListColumn.AddRange(GetDefaultColumn(typeof(RecInfoView)));
                     Instance.RecInfoColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.RecInfoSortDirection = ListSortDirection.Descending;
                 }
                 if (Instance.AutoAddEpgColumn.Count == 0)
                 {
-                    var obj = new EpgAutoDataItem();
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.NotKey), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.RegExp), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.RecMode), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Priority), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Tuijyu), double.NaN));
+                    Instance.AutoAddEpgColumn.AddRange(GetDefaultColumn(typeof(EpgAutoAddView)));
                 }
                 if (Instance.AutoAddManualColumn.Count == 0)
                 {
-                    var obj = new ManualAutoAddDataItem();
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.DayOfWeek), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.StartTime), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ServiceName), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.RecMode), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Priority), double.NaN));
+                    Instance.AutoAddManualColumn.AddRange(GetDefaultColumn(typeof(ManualAutoAddView)));
                 }
                 if (Instance.EpgListColumn.Count == 0)
                 {
                     var obj = new SearchItem();
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Status), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.StartTime), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.NetworkName), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ServiceName), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), double.NaN));
+                    Instance.EpgListColumn.AddRange(GetDefaultColumn(typeof(EpgListMainView)));
                     Instance.EpgListColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.EpgListSortDirection = ListSortDirection.Ascending;
                 }
                 if (Instance.SearchWndColumn.Count == 0)
                 {
                     var obj = new SearchItem();
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Status), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.StartTime), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ProgramDuration), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.NetworkName), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ServiceName), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ProgramContent), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.JyanruKey), double.NaN));
+                    Instance.SearchWndColumn.AddRange(GetDefaultColumn(typeof(SearchWindow)));
                     Instance.SearchColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.SearchSortDirection = ListSortDirection.Ascending;
                 }
                 if (Instance.InfoSearchWndColumn.Count == 0)
                 {
                     var obj = new InfoSearchItem();
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ViewItemName), double.NaN));
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Status), double.NaN));
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), double.NaN));
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.StartTime), double.NaN));
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ProgramDuration), double.NaN));
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.NetworkName), double.NaN));
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ServiceName), double.NaN));
-                    Instance.InfoSearchWndColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EtcInfo), double.NaN));
+                    Instance.InfoSearchWndColumn.AddRange(GetDefaultColumn(typeof(InfoSearchWindow)));
                     Instance.InfoSearchColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.InfoSearchSortDirection = ListSortDirection.Ascending;
                 }
@@ -1794,34 +1727,160 @@ namespace EpgTimer
             get { return tunerFontSizeService * ViewUtil.ItemFontTunerService.GlyphType.Height; }
         }
 
-        public List<string> GetViewButtonAllItems()
+        private static List<string> viewButtonIDs = new List<string>();
+        public const string ViewButtonSpacer = "（空白）";
+        public const string TaskMenuSeparator = "（セパレータ）";
+        public static void ResisterViewButtonIDs(IEnumerable<string> list)
         {
-            return new List<string>
-            {
-                "（空白）",
-                "設定",
-                "再接続",
-                "再接続(前回)",
-                "検索",
-                "予約簡易検索",
-                "スタンバイ",
-                "休止",
-                "終了",
-                "EPG取得",
-                "EPG再読み込み",
-                "NetworkTV終了",
-                "情報通知ログ",
-                "予約簡易表示",
-                "カスタム１",
-                "カスタム２",
-                "カスタム３"
-            };
+            viewButtonIDs = list == null ? new List<string>() : list.ToList();
+        } 
+        public static List<string> GetViewButtonAllIDs()
+        {
+            return new List<string> { ViewButtonSpacer }.Concat(viewButtonIDs).ToList();
         }
-        public List<string> GetTaskMenuAllItems()
+        public static List<string> GetTaskMenuAllIDs()
         {
-            var taskItem = new List<string> { "（セパレータ）" };
-            taskItem.AddRange(GetViewButtonAllItems().Skip(1));
-            return taskItem;
+            return new List<string> { TaskMenuSeparator }.Concat(viewButtonIDs).ToList();
+        }
+        public static List<string> GetViewButtonDefIDs(bool nwMode)
+        {
+			return new List<string>
+			{
+					"設定",
+					ViewButtonSpacer,
+					"再接続",
+					ViewButtonSpacer,
+					"検索",
+					ViewButtonSpacer,
+					"スタンバイ",
+					"休止",
+					ViewButtonSpacer,
+					"EPG取得",
+					ViewButtonSpacer,
+					"EPG再読み込み",
+					ViewButtonSpacer,
+					"終了",
+			};
+        }
+
+        public static List<string> GetTaskMenuDefIDs(bool nwMode)
+        {
+			return new List<string>
+			{
+				"設定",
+				TaskMenuSeparator,
+				"再接続",
+				TaskMenuSeparator,
+				"スタンバイ",
+				"休止",
+				TaskMenuSeparator,
+				"終了",
+			};
+        }
+
+        public static List<ListColumnInfo> GetDefaultColumn(Type t)
+        {
+            if (t == typeof(ReserveView))
+            {
+                var obj = new ReserveItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecMode) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Priority) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Tuijyu) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Comment) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecFileName) },
+                };
+            }
+            else if (t == typeof(RecInfoView))
+            {
+                var obj = new RecInfoItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.IsProtect) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Drops) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Scrambles) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Result) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecFilePath) },
+                };
+            }
+            else if (t == typeof(EpgAutoAddView))
+            {
+                var obj = new EpgAutoDataItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NotKey) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RegExp) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecMode) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Priority) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Tuijyu) },
+                };
+            }
+            else if (t == typeof(ManualAutoAddView))
+            {
+                var obj = new ManualAutoAddDataItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.DayOfWeek) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecMode) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Priority) },
+                };
+            }
+            else if (t == typeof(EpgListMainView))
+            {
+                var obj = new SearchItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Status) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                };
+            }
+            else if (t == typeof(SearchWindow))
+            {
+                var obj = new SearchItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Status) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramDuration) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramContent) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.JyanruKey) },
+                };
+            }
+            else if (t == typeof(InfoSearchWindow))
+            {
+                var obj = new InfoSearchItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ViewItemName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Status) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramDuration) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramContent) },
+                };
+            }
+            return null;
         }
     }
 }

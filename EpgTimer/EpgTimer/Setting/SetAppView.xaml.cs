@@ -744,14 +744,16 @@ namespace EpgTimer.Setting
             }
         }
 
+        BoxExchangeEditor bxb;
+        BoxExchangeEditor bxt;
         private void listBox_Button_Set()
         {
             //ボタン表示画面の上下ボタンのみ他と同じものを使用する。
-            var bxb = new BoxExchangeEditor(this.listBox_itemBtn, this.listBox_viewBtn, true);
-            var bxt = new BoxExchangeEditor(this.listBox_itemTask, this.listBox_viewTask, true);
+            bxb = new BoxExchangeEditor(this.listBox_itemBtn, this.listBox_viewBtn, true);
+            bxt = new BoxExchangeEditor(this.listBox_itemTask, this.listBox_viewTask, true);
 
             //上部表示ボタン関係
-            bxb.AllowDuplication(StringItem.Items("（空白）"), StringItem.Cloner, StringItem.Comparator);
+            bxb.AllowDuplication(StringItem.Items(Settings.ViewButtonSpacer), StringItem.Cloner, StringItem.Comparator);
             button_btnUp.Click += new RoutedEventHandler(bxb.button_Up_Click);
             button_btnDown.Click += new RoutedEventHandler(bxb.button_Down_Click);
             button_btnAdd.Click += new RoutedEventHandler((sender, e) => button_Add(bxb, buttonItem));
@@ -765,7 +767,7 @@ namespace EpgTimer.Setting
             bxb.targetBoxAllowDragDrop(listBox_viewBtn, (sender, e) => drag_drop(sender, e, button_btnAdd, button_btnIns));
  
             //タスクアイコン関係
-            bxt.AllowDuplication(StringItem.Items("（セパレータ）"), StringItem.Cloner, StringItem.Comparator);
+            bxt.AllowDuplication(StringItem.Items(Settings.TaskMenuSeparator), StringItem.Cloner, StringItem.Comparator);
             button_taskUp.Click += new RoutedEventHandler(bxt.button_Up_Click);
             button_taskDown.Click += new RoutedEventHandler(bxt.button_Down_Click);
             button_taskAdd.Click += new RoutedEventHandler((sender, e) => button_Add(bxt, taskItem));
@@ -778,12 +780,12 @@ namespace EpgTimer.Setting
             bxt.sourceBoxAllowDragDrop(listBox_itemTask, (sender, e) => button_taskDel.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
             bxt.targetBoxAllowDragDrop(listBox_viewTask, (sender, e) => drag_drop(sender, e, button_taskAdd, button_taskIns));
 
-            listBox_viewBtn.Items.AddItems(StringItem.Items(Settings.Instance.ViewButtonList));
-            buttonItem = Settings.Instance.GetViewButtonAllItems();
+            buttonItem = Settings.GetViewButtonAllIDs();
+            listBox_viewBtn.Items.AddItems(StringItem.Items(Settings.Instance.ViewButtonList.Where(item => buttonItem.Contains(item) == true)));
             reLoadButtonItem(bxb, buttonItem);
 
-            listBox_viewTask.Items.AddItems(StringItem.Items(Settings.Instance.TaskMenuList));
-            taskItem = Settings.Instance.GetTaskMenuAllItems();
+            taskItem = Settings.GetTaskMenuAllIDs();
+            listBox_viewTask.Items.AddItems(StringItem.Items(Settings.Instance.TaskMenuList.Where(item => taskItem.Contains(item) == true)));
             reLoadButtonItem(bxt, taskItem);
 
             //iEpg関係、キャンセルアクションだけは付けておく
@@ -824,6 +826,18 @@ namespace EpgTimer.Setting
 
             bx.bxDeleteItems(bx.TargetBox);
             reLoadButtonItem(bx, src);
+        }
+        private void button_btnIni_Click(object sender, RoutedEventArgs e)
+        {
+            listBox_viewBtn.Items.Clear();
+            listBox_viewBtn.Items.AddItems(StringItem.Items(Settings.GetViewButtonDefIDs(CommonManager.Instance.NWMode)));
+            reLoadButtonItem(bxb, buttonItem);
+        }
+        private void button_taskIni_Click(object sender, RoutedEventArgs e)
+        {
+            listBox_viewTask.Items.Clear();
+            listBox_viewTask.Items.AddItems(StringItem.Items(Settings.GetTaskMenuDefIDs(CommonManager.Instance.NWMode)));
+            reLoadButtonItem(bxt, taskItem);
         }
         private void reLoadButtonItem(BoxExchangeEditor bx, List<string> src)
         {

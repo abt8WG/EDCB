@@ -8,8 +8,24 @@ using System.Windows.Controls;
 
 namespace EpgTimer
 {
-    public static class MenuUtil
+	public enum cmdDeleteType
+	{
+		Delete,  //削除
+		Delete2, //予約ごと削除
+		Delete3  //予約のみ削除
+	}
+
+	public static class MenuUtil
     {
+		private enum cmdMode
+		{
+			Add,				// 追加
+			Change,				// 変更
+			Delete,				// 削除
+			DeleteReserveOnly,	// 予約のみ削除
+		}
+
+
         private static CtrlCmdUtil cmd { get { return CommonManager.Instance.CtrlCmd; } }
 
         public static string TrimEpgKeyword(string KeyWord, bool NotToggle = false)//NotToggleはショートカット用
@@ -48,7 +64,8 @@ namespace EpgTimer
 
         public static void CopyContent2Clipboard(ReserveData resInfo, bool NotToggle = false)
         {
-            CopyContent2Clipboard(resInfo.SearchEventInfo(true), NotToggle);
+            EpgEventInfo info = resInfo == null ? null : resInfo.SearchEventInfo(true);
+            CopyContent2Clipboard(info, NotToggle);
         }
 
         public static void CopyContent2Clipboard(RecFileInfo recInfo, bool NotToggle = false)
@@ -398,7 +415,7 @@ namespace EpgTimer
             return false;
         }
 
-        public static bool ChangeMarginValue(List<RecSettingData> infoList, bool start, Control owner = null)
+        public static bool ChangeMarginValue(List<RecSettingData> infoList, bool start, UIElement owner = null)
         {
             try
             {
@@ -443,7 +460,7 @@ namespace EpgTimer
             return false;
         }
 
-        public static bool ChangeBulkSet(List<RecSettingData> infoList, Control owner = null, bool pgAll = false)
+        public static bool ChangeBulkSet(List<RecSettingData> infoList, UIElement owner = null, bool pgAll = false)
         {
             try
             {
@@ -464,7 +481,7 @@ namespace EpgTimer
             return false;
         }
 
-        public static bool ChgGenre(List<EpgSearchKeyInfo> infoList, Control owner = null)
+        public static bool ChgGenre(List<EpgSearchKeyInfo> infoList, UIElement owner = null)
         {
             try
             {
@@ -565,14 +582,14 @@ namespace EpgTimer
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return false;
         }
-        public static bool AutoAddChangeOnOffKeyEnabled(IEnumerable<AutoAddData> itemlist)
+        public static bool AutoAddChangeOnOffKeyEnabled(IEnumerable<AutoAddData> itemlist, bool cautionMany = true)
         {
             try
             {
                 if (AutoAddChangeKeyEnabledCautionMany(itemlist) == false) return false;
 
                 foreach (var item in itemlist) item.IsEnabled = !item.IsEnabled;
-                return AutoAddChange(itemlist, false);
+                return AutoAddChange(itemlist, false, cautionMany);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return false;
@@ -612,7 +629,7 @@ namespace EpgTimer
         }
         public static bool AutoAddAdd(IEnumerable<AutoAddData> itemlist)
         {
-            return AutoAddCmdSend(itemlist, 0);
+            return AutoAddCmdSend(itemlist, cmdMode.Add);
         }
         public static bool AutoAddChange(IEnumerable<AutoAddData> itemlist, bool cautionMany = true)
         {
@@ -625,11 +642,11 @@ namespace EpgTimer
                 //操作前にリストを作成する
                 List<ReserveData> deleteList = NewRes == false ? null : new List<ReserveData>();
                 List<ReserveData> syncList = AutoAddSyncChangeList(itemlist, false, deleteList);
-                return AutoAddCmdSend(itemlist, 1, deleteList, syncList, cautionMany, isViewOrder);
+                return AutoAddCmdSend(itemlist, cmdMode.Change, deleteList, syncList, cautionMany, isViewOrder);
             }
             else
             {
-                return AutoAddCmdSend(itemlist, 1, null, null, cautionMany, isViewOrder);
+                return AutoAddCmdSend(itemlist, cmdMode.Change, null, null, cautionMany, isViewOrder);
             }
         }
         public static bool AutoAddChangeSyncReserve(IEnumerable<AutoAddData> itemlist)
@@ -654,6 +671,11 @@ namespace EpgTimer
                         if (resinfo.RecSetting.RecMode == 5)
                         {
                             rdata.RecSetting.RecMode = 5;
+                        }
+                        if (data.IsManual == true && resinfo.IsManual == true)
+                        {
+                            //プログラム予約の場合は名前も追従させる。
+                            rdata.Title = data.DataTitle;
                         }
                         syncDict.Add(resinfo.ReserveID, rdata);
                     }
@@ -694,11 +716,11 @@ namespace EpgTimer
             switch (delType)
             {
                 case cmdDeleteType.Delete:
-                    return AutoAddCmdSend(itemlist, 2, Settings.Instance.SyncResAutoAddDelete == false ? null : AutoAddSyncDeleteList(itemlist, false));
+                    return AutoAddCmdSend(itemlist, cmdMode.Delete, Settings.Instance.SyncResAutoAddDelete == false ? null : AutoAddSyncDeleteList(itemlist, false));
                 case cmdDeleteType.Delete2:
-                    return AutoAddCmdSend(itemlist, 2, AutoAddSyncDeleteList(itemlist, true));
+                    return AutoAddCmdSend(itemlist, cmdMode.Delete, AutoAddSyncDeleteList(itemlist, true));
                 case cmdDeleteType.Delete3:
-                    return AutoAddCmdSend(itemlist, 3, AutoAddSyncDeleteList(itemlist, true));
+                    return AutoAddCmdSend(itemlist, cmdMode.DeleteReserveOnly, AutoAddSyncDeleteList(itemlist, true));
             }
             return false;
         }
@@ -724,8 +746,7 @@ namespace EpgTimer
             return reslist.FindAll(info => info.IsAutoAdded == true && (epgAutoList[info.ReserveID].Count + manualAutoList[info.ReserveID].Count) == 0);
         }
 
-        //mode 0:追加、1:変更、2:削除
-        private static bool AutoAddCmdSend(IEnumerable<AutoAddData> itemlist, int mode,
+        private static bool AutoAddCmdSend(IEnumerable<AutoAddData> itemlist, cmdMode mode,
             List<ReserveData> delReserveList = null, List<ReserveData> chgReserveList = null, bool cautionMany = true, bool isViewOrder = true)
         {
             try
@@ -733,10 +754,10 @@ namespace EpgTimer
                 var message = "自動予約登録の";// + (new List<string> { "追加", "変更", "削除" }[(int)mode]);
                 switch (mode)
                 {
-                    case 0: message += "追加"; break;
-                    case 1: message += "変更"; break;
-                    case 2: message += "削除"; break;
-                    case 3: message = "予約のみ削除"; break;
+                    case cmdMode.Add:				message += "追加"; break;
+                    case cmdMode.Change:			message += "変更"; break;
+                    case cmdMode.Delete:			message += "削除"; break;
+                    case cmdMode.DeleteReserveOnly:	message = "予約のみ削除"; break;
                     default: return false;
                 }
                 if (cautionMany == true && CautionManyMessage(itemlist.Count(), message) == false) return false;
@@ -747,7 +768,7 @@ namespace EpgTimer
                 if (isViewOrder == true)
                 {
                     //自動予約登録データ変更の前に、並び順を自動保存する。
-                    if ((AutoAddOrderAutoSave(ref epgList, mode != 0) && AutoAddOrderAutoSave(ref manualList, mode != 0)) == false)
+                    if ((AutoAddOrderAutoSave(ref epgList, mode != 0) && AutoAddOrderAutoSave(ref manualList, mode != cmdMode.Add)) == false)
                     {
                         MessageBox.Show("自動登録の並べ替え保存中に問題が発生しました。\r\n処理を中止します。", message, MessageBoxButton.OK, MessageBoxImage.Exclamation);
                         return false;
@@ -756,19 +777,19 @@ namespace EpgTimer
 
                 switch (mode)
                 {
-                    case 0:
+                    case cmdMode.Add:
                         return ReserveCmdSend(epgList, cmd.SendAddEpgAutoAdd, "キーワード予約の追加", false)
                             && ReserveCmdSend(manualList, cmd.SendAddManualAdd, "プログラム自動予約の追加", false);
-                    case 1:
+                    case cmdMode.Change:
                         return (delReserveList == null ? true : ReserveDelete(delReserveList, false))
                             && ReserveCmdSend(epgList, cmd.SendChgEpgAutoAdd, "キーワード予約の変更", false)
                             && ReserveCmdSend(manualList, cmd.SendChgManualAdd, "プログラム自動予約の変更", false)
                             && (chgReserveList == null ? true : ReserveChange(chgReserveList, false));
-                    case 2:
+                    case cmdMode.Delete:
                         return ReserveCmdSend(epgList.Select(item => item.DataID).ToList(), cmd.SendDelEpgAutoAdd, "キーワード予約の削除", false)
                             && ReserveCmdSend(manualList.Select(item => item.DataID).ToList(), cmd.SendDelManualAdd, "プログラム自動予約の削除", false)
                             && (delReserveList == null ? true : ReserveDelete(delReserveList, false));
-                    case 3:
+                    case cmdMode.DeleteReserveOnly:
                         return delReserveList == null ? true : ReserveDelete(delReserveList, false);
                 }
             }
@@ -811,22 +832,22 @@ namespace EpgTimer
             return true;
         }
 
-        public static bool RecinfoChgProtect(List<RecFileInfo> itemlist)
+        public static bool RecinfoChgProtect(List<RecFileInfo> itemlist, bool cautionMany = true)
         {
             try
             {
                 itemlist.ForEach(item => item.ProtectFlag = (byte)(item.ProtectFlag == 0 ? 1 : 0));
-                return ReserveCmdSend(itemlist, cmd.SendChgProtectRecInfo, "録画情報の変更");
+                return ReserveCmdSend(itemlist, cmd.SendChgProtectRecInfo, "録画情報の変更", cautionMany);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return false;
         }
-        public static bool RecinfoDelete(List<RecFileInfo> itemlist)
+        public static bool RecinfoDelete(List<RecFileInfo> itemlist, bool cautionMany = true)
         {
             try
             {
                 List<uint> list = itemlist.Select(item => item.ID).ToList();
-                return ReserveCmdSend(list, cmd.SendDelRecInfo, "録画情報の削除");
+                return ReserveCmdSend(list, cmd.SendDelRecInfo, "録画情報の削除", cautionMany);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return false;
@@ -860,7 +881,7 @@ namespace EpgTimer
             return true;
         }
 
-        public static bool? OpenSearchItemWithDialog(SearchItem item, Control Owner, byte openMode = 0)
+        public static bool? OpenSearchItemWithDialog(SearchItem item, UIElement Owner, byte openMode = 0)
         {
             if (item == null) return null;
 
@@ -874,7 +895,7 @@ namespace EpgTimer
             }
         }
 
-        public static bool? OpenEpgReserveDialog(EpgEventInfo Data, Control Owner, byte epgInfoOpenMode = 0)
+        public static bool? OpenEpgReserveDialog(EpgEventInfo Data, UIElement Owner, byte epgInfoOpenMode = 0)
         {
             try
             {
@@ -888,15 +909,15 @@ namespace EpgTimer
             return null;
         }
 
-        public static bool? OpenChangeReserveDialog(ReserveData Data, Control Owner, byte epgInfoOpenMode = 0)
+        public static bool? OpenChangeReserveDialog(ReserveData Data, UIElement Owner, byte epgInfoOpenMode = 0)
         {
             return OpenChgReserveDialog(Data, Owner, epgInfoOpenMode);
         }
-        public static bool? OpenManualReserveDialog(Control Owner)
+        public static bool? OpenManualReserveDialog(UIElement Owner)
         {
             return OpenChgReserveDialog(null, Owner);
         }
-        public static bool? OpenChgReserveDialog(ReserveData Data, Control Owner, byte epgInfoOpenMode = 0)
+        public static bool? OpenChgReserveDialog(ReserveData Data, UIElement Owner, byte epgInfoOpenMode = 0)
         {
             try
             {
@@ -978,15 +999,15 @@ namespace EpgTimer
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
-        public static bool? OpenAddManualAutoAddDialog(Control Owner)
+        public static bool? OpenAddManualAutoAddDialog(UIElement Owner)
         {
             return OpenManualAutoAddDialog(null, Owner);
         }
-        public static bool? OpenChangeManualAutoAddDialog(ManualAutoAddData Data, Control Owner)
+        public static bool? OpenChangeManualAutoAddDialog(ManualAutoAddData Data, UIElement Owner)
         {
             return OpenManualAutoAddDialog(Data, Owner);
         }
-        public static bool? OpenManualAutoAddDialog(ManualAutoAddData Data, Control Owner)
+        public static bool? OpenManualAutoAddDialog(ManualAutoAddData Data, UIElement Owner)
         {
             try
             {
@@ -1003,7 +1024,7 @@ namespace EpgTimer
             return null;
         }
 
-        public static bool? OpenChangeAutoAddDialog(Type t, uint id, Control Owner)
+        public static bool? OpenChangeAutoAddDialog(Type t, uint id, UIElement Owner)
         {
             AutoAddData autoAdd = AutoAddData.AutoAddList(t, id);
             if (t == typeof(EpgAutoAddData))
@@ -1017,7 +1038,7 @@ namespace EpgTimer
             return null;
         }
 
-        public static bool? OpenRecInfoDialog(RecFileInfo info, Control Owner)
+        public static bool? OpenRecInfoDialog(RecFileInfo info, UIElement Owner)
         {
             try
             {

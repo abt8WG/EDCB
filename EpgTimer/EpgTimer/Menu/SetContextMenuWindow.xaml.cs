@@ -26,7 +26,7 @@ namespace EpgTimer
             new ComboItem(CtxmCode.ManualAutoAddView, "プログラム自動予約登録"),
             new ComboItem(CtxmCode.EpgView, "番組表(共通)"),
             new ComboItem(CtxmCode.SearchWindow, "検索/キーワード予約ダイアログ"),
-            new ComboItem(CtxmCode.InfoSearchWindow, "予約簡易検索ダイアログ"),
+            new ComboItem(CtxmCode.InfoSearchWindow, "予約情報検索ダイアログ"),
             new ComboItem(CtxmCode.EditChgMenu, "[編集]サブメニュー")
         };
 
@@ -42,6 +42,7 @@ namespace EpgTimer
             new List<ICommand>{EpgCmds.JumpReserve},
             new List<ICommand>{EpgCmds.JumpTuner},
             new List<ICommand>{EpgCmds.JumpTable},
+            new List<ICommand>{EpgCmds.JumpListView},
             new List<ICommand>{EpgCmdsEx.ShowAutoAddDialogMenu},
             new List<ICommand>{},//オプション用のダミー行
             new List<ICommand>{EpgCmds.ToAutoadd},
@@ -187,6 +188,7 @@ namespace EpgTimer
 
                 defaultMenu = mm.GetDefaultCtxmSettingForEditor();
                 editMenu = info.ManualMenuItems.Clone();
+                editMenu.ForEach(m => m.Items = m.Items.FindAll(i => defaultMenu.FindData(m.ctxmCode).Items.Contains(i)));
 
                 for (int i = 0; i < SettingTable.Count; i++)
                 {

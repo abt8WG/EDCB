@@ -147,7 +147,7 @@ namespace EpgTimer
                 ButtonGen("再接続", OpenConnectDialog);
                 ButtonGen("再接続(前回)", () => ConnectCmd());
                 ButtonGen("検索", OpenSearchDialog);
-                ButtonGen("予約簡易検索", OpenInfoSearchDialog);
+                ButtonGen("予約情報検索", OpenInfoSearchDialog);
                 ButtonGen("スタンバイ", () => SuspendCmd(1));
                 ButtonGen("休止", () => SuspendCmd(2));
                 ButtonGen("終了", CloseCmd);
@@ -160,13 +160,16 @@ namespace EpgTimer
                 ButtonGen("カスタム２", () => CustumCmd(2));
                 ButtonGen("カスタム３", () => CustumCmd(3));
 
+                //登録したボタン名の保存
+                Settings.ResisterViewButtonIDs(buttonList.Keys);
+
                 //検索ボタンは他と共通でショートカット割り振られているので、その部分はコマンド側で処理する。
                 this.CommandBindings.Add(new CommandBinding(EpgCmds.Search, (sender, e) => CommonButtons_Click("検索")));
-                this.CommandBindings.Add(new CommandBinding(EpgCmds.InfoSearch, (sender, e) => CommonButtons_Click("予約簡易検索")));
+                this.CommandBindings.Add(new CommandBinding(EpgCmds.InfoSearch, (sender, e) => CommonButtons_Click("予約情報検索")));
                 mBinds.AddInputCommand(EpgCmds.Search);
                 mBinds.AddInputCommand(EpgCmds.InfoSearch);
                 SetSearchButtonTooltip(buttonList["検索"]);
-                SetInfoSearchButtonTooltip(buttonList["予約簡易検索"]);
+                SetInfoSearchButtonTooltip(buttonList["予約情報検索"]);
 
                 StatusbarReset();//ステータスバーリセット
 
@@ -345,7 +348,7 @@ namespace EpgTimer
             taskTray.Visible = Settings.Instance.ShowTray || this.Visibility == Visibility.Hidden;
             taskTray.Text = GetTaskTrayReserveInfoText();
             taskTray.SetContextMenu(Settings.Instance.TaskMenuList
-                .Select(s1 => s1.Replace("（セパレータ）", ""))
+                .Select(s1 => s1.Replace(Settings.TaskMenuSeparator, ""))
                 .Where(s2 => s2 == "" || buttonList.ContainsKey(s2) == true)
                 .Select(id => new Tuple<string, string>(id, id == "" ? "" : buttonList[id].Content as string)));
         }
@@ -370,7 +373,7 @@ namespace EpgTimer
             {
                 foreach (string info in Settings.Instance.ViewButtonList)
                 {
-                    if (String.Compare(info, "（空白）") == 0)
+                    if (String.Compare(info, Settings.ViewButtonSpacer) == 0)
                     {
                         stackPanel_button.Children.Add(new Label { Width = 15 });
                     }
@@ -385,7 +388,7 @@ namespace EpgTimer
                 }
             }
             EmphasizeButton(SearchWindow.HasHideWindow, "検索");
-            EmphasizeButton(InfoSearchWindow.HasHideWindow, "予約簡易検索");
+            EmphasizeButton(InfoSearchWindow.HasHideWindow, "予約情報検索");
         }
 
         TabItem TabButtonAdd(string id)
@@ -408,7 +411,7 @@ namespace EpgTimer
 
             //検索ボタン用のツールチップ設定。
             if (id == "検索") SetSearchButtonTooltip(ti);
-            if (id == "予約簡易検索") SetInfoSearchButtonTooltip(ti);
+            if (id == "予約情報検索") SetInfoSearchButtonTooltip(ti);
 
             tabControl_main.Items.Add(ti);
             return ti;
@@ -1779,9 +1782,11 @@ namespace EpgTimer
                     tab = this.tabItem_AutoAdd;
                     this.autoAddView.tabItem_manualAutoAdd.IsSelected = true;
                     break;
-                default://CtxmCode.EpgView
+                case CtxmCode.EpgView:
                     tab = this.tabItem_epg;
                     break;
+                default:
+                    return;
             }
             BlackoutWindow.NowJumpTable = true;
             new BlackoutWindow(this).showWindow(tab.Header.ToString());

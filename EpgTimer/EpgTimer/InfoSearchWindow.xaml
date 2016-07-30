@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:EpgTimer"
         xmlns:user="clr-namespace:EpgTimer.UserCtrlView"
-        Title="予約簡易検索" Height="600" Width="780" WindowStartupLocation="Manual" Closed="Window_Closed" Activated="Window_Activated" Loaded="Window_Loaded" StateChanged="Window_StateChanged">
+        Title="予約情報検索" Height="600" Width="780" WindowStartupLocation="Manual" Closed="Window_Closed" Activated="Window_Activated" Loaded="Window_Loaded" StateChanged="Window_StateChanged">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -47,51 +47,6 @@
                     <GridViewColumn DisplayMemberBinding="{Binding Path=ViewItemName}">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="種別" Uid="ViewItemName" />
-                        </GridViewColumn.Header>
-                    </GridViewColumn>
-                    <GridViewColumn Width="35">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Content="状態" Uid="Status" />
-                        </GridViewColumn.Header>
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Path=Status}" Foreground="{Binding Path=StatusColor}"/>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=EventName}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Content="番組名/ANDキーワード" Uid="EventName" />
-                        </GridViewColumn.Header>
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=StartTime}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Content="日時/次の予約" Uid="StartTime" />
-                        </GridViewColumn.Header>
-                    </GridViewColumn>
-                    <GridViewColumn>
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Content="長さ" Uid="ProgramDuration" />
-                        </GridViewColumn.Header>
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Path=ProgramDuration}" HorizontalAlignment="Right" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=NetworkName}" >
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Content="ネットワーク" Uid="NetworkName" />
-                        </GridViewColumn.Header>
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=ServiceName}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Content="サービス名" Uid="ServiceName" />
-                        </GridViewColumn.Header>
-                    </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=EtcInfo}">
-                        <GridViewColumn.Header>
-                            <GridViewColumnHeader Content="その他情報" Uid="EtcInfo" />
                         </GridViewColumn.Header>
                     </GridViewColumn>
                 </GridView>
