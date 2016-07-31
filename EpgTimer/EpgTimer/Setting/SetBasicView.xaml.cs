@@ -25,8 +25,6 @@ namespace EpgTimer.Setting
 
             IsChangeSettingPath = false;
 
-            listBox_Button_Set();
-
             try
             {
                 // tabItem1 - 保存フォルダ
@@ -242,11 +240,10 @@ namespace EpgTimer.Setting
                 }
 
                 SetBasicView_tabItem4();
+
+                listBox_Button_Set();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         private string TimerSrvFolder { get { return System.IO.Path.GetDirectoryName(SettingPath.TimerSrvIniPath); } }
@@ -581,7 +578,7 @@ namespace EpgTimer.Setting
 
             listBox_recFolder.SelectionChanged += ViewUtil.ListBox_TextBoxSyncSelectionChanged(listBox_recFolder, textBox_recFolder);
 
-            if (CommonManager.Instance.NWMode == false)
+            if (listBox_recFolder.IsEnabled == true)
             {
                 //録画設定関係
                 bxr.AllowDragDrop();
@@ -590,13 +587,17 @@ namespace EpgTimer.Setting
                 button_rec_up.Click += new RoutedEventHandler(bxr.button_Up_Click);
                 button_rec_down.Click += new RoutedEventHandler(bxr.button_Down_Click);
                 button_rec_del.Click += new RoutedEventHandler(bxr.button_Delete_Click);
-				button_rec_add.Click += button_rec_add_Click;
-
+                button_rec_add.Click += button_rec_add_Click;
+            }
+            if (listBox_bon.IsEnabled == true)
+            {
                 //チューナ関係関係
                 bxb.AllowDragDrop();
                 button_bon_up.Click += new RoutedEventHandler(bxb.button_Up_Click);
                 button_bon_down.Click += new RoutedEventHandler(bxb.button_Down_Click);
-
+            }
+            if (ListView_time.IsEnabled == true)
+            {
                 //EPG取得関係
                 bxt.TargetItemsSource = timeList;
                 bxt.AllowDragDrop();
