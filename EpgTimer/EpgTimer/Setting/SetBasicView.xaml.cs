@@ -279,11 +279,15 @@ namespace EpgTimer.Setting
                 textBox_opensslPath.Text = IniFileHandler.GetPrivateProfileString("SET", "OpensslExeFile", opensslExe, SettingPath.TimerSrvIniPath);
 
                 textBox_httpAcl.Text = IniFileHandler.GetPrivateProfileString("SET", "HttpAccessControlList", "+127.0.0.1", SettingPath.TimerSrvIniPath);
-                textBox_httpThreads.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpNumThreads", 3, SettingPath.TimerSrvIniPath).ToString();
+                textBox_httpThreads.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpNumThreads", 5, SettingPath.TimerSrvIniPath).ToString();
                 textBox_httpTimeout.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpRequestTimeoutSec", 120, SettingPath.TimerSrvIniPath).ToString();
                 textBox_httpSSLVersion.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpSslProtocolVersion", 2, SettingPath.TimerSrvIniPath).ToString();
 
-                string document_root = CommonManager.Instance.NWMode ? "" : TimerSrvFolder + "\\HttpPublic";
+				// TODO: 未実装パラメータ
+				//IniFileHandler.GetPrivateProfileString("SET", "HttpSslCipherList", "HIGH:!aNULL:!MD5", SettingPath.TimerSrvIniPath).ToString();
+				//IniFileHandler.GetPrivateProfileInt("SET", "HttpKeepAlive", 0, SettingPath.TimerSrvIniPath).ToString();
+
+				string document_root = CommonManager.Instance.NWMode ? "" : TimerSrvFolder + "\\HttpPublic";
                 textBox_docrootPath.Text = IniFileHandler.GetPrivateProfileString("SET", "HttpPublicFolder", document_root, SettingPath.TimerSrvIniPath);
 
                 checkBox_httpAuth.IsChecked = File.Exists(TimerSrvFolder + "\\glpasswd");
