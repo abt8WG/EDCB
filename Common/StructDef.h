@@ -1,6 +1,20 @@
 #ifndef __STRUCT_DEF_H__
 #define __STRUCT_DEF_H__
 
+//転送ファイルデータ
+typedef struct _FILE_DATA{
+	wstring Name;				//ファイル名
+	DWORD Size;					//ファイルサイズ
+	DWORD Status;				//ファイルステータス(とりあえず未使用)
+	BYTE* Data;					//ファイルデータ
+	_FILE_DATA(void){
+		Name = L"";
+		Size = 0;
+		Status = 0;
+		Data = NULL;
+	};
+} FILE_DATA;
+
 //録画フォルダ情報
 typedef struct _REC_FILE_SET_INFO{
 	wstring recFolder;			//録画フォルダ
@@ -402,6 +416,10 @@ typedef struct _EPGDB_SEARCH_KEY_INFO{
 	//自動予約登録の条件専用
 	BYTE chkRecEnd;					//録画済かのチェックあり
 	WORD chkRecDay;					//録画済かのチェック対象期間
+	BYTE chkRecNoService;				//録画済かのチェックの際、同一サービスのチェックを省略する
+	//番組長検索用
+	WORD chkDurationMin;			//最低番組長(分/0は無制限)
+	WORD chkDurationMax;			//最大番組長(分/0は無制限)
 	_EPGDB_SEARCH_KEY_INFO(void){
 		andKey = L"";
 		notKey = L"";
@@ -413,6 +431,9 @@ typedef struct _EPGDB_SEARCH_KEY_INFO{
 		freeCAFlag = 0;
 		chkRecEnd = 0;
 		chkRecDay = 6;
+		chkRecNoService = 0;
+		chkDurationMin = 0;
+		chkDurationMax = 0;
 	};
 }EPGDB_SEARCH_KEY_INFO;
 
