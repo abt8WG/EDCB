@@ -263,9 +263,14 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 						nid.cbSize = NOTIFYICONDATA_V2_SIZE;
 						nid.hWnd = hwnd;
 						nid.uID = 1;
-						nid.hIcon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(
-							ctx->notifySrvStatus == 1 ? IDI_ICON_RED :
-							ctx->notifySrvStatus == 2 ? IDI_ICON_GREEN : IDI_ICON_BLUE), IMAGE_ICON, 16, 16, LR_SHARED);
+						int iconID = ctx->notifySrvStatus == 1 ? IDI_ICON_RED :
+						             ctx->notifySrvStatus == 2 ? IDI_ICON_GREEN : IDI_ICON_BLUE;
+						HRESULT (WINAPI* pfnLoadIconMetric)(HINSTANCE,PCWSTR,int,HICON*) =
+							(HRESULT (WINAPI*)(HINSTANCE,PCWSTR,int,HICON*))GetProcAddress(GetModuleHandle(L"comctl32.dll"), "LoadIconMetric");
+						if( pfnLoadIconMetric == NULL ||
+						    pfnLoadIconMetric(GetModuleHandle(NULL), MAKEINTRESOURCE(iconID), LIM_SMALL, &nid.hIcon) != S_OK ){
+							nid.hIcon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(iconID), IMAGE_ICON, 16, 16, 0);
+						}
 						if( ctx->notifyActiveTime != LLONG_MAX ){
 							SYSTEMTIME st;
 							ConvertSystemTime(ctx->notifyActiveTime + 30 * I64_1SEC, &st);
@@ -276,6 +281,9 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 						nid.uCallbackMessage = WM_TRAY_PUSHICON;
 						if( Shell_NotifyIcon(NIM_MODIFY, &nid) == FALSE && Shell_NotifyIcon(NIM_ADD, &nid) == FALSE ){
 							SetTimer(hwnd, TIMER_RETRY_ADD_TRAY, 5000, NULL);
+						}
+						if( nid.hIcon ){
+							DestroyIcon(nid.hIcon);
 						}
 					}
 				}else if( itr->notifyID < _countof(ctx->sys->notifyUpdateCount) ){
@@ -1757,11 +1765,9 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			OutputDebugString(L"CMD2_EPG_SRV_NWPLAY_TF_OPEN\r\n");
 			DWORD val;
 			NWPLAY_TIMESHIFT_INFO resVal;
-			DWORD ctrlID;
-			DWORD processID;
 			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) &&
-			    sys->reserveManager.GetRecFilePath(val, resVal.filePath, &ctrlID, &processID) &&
-			    sys->streamingManager.OpenTimeShift(resVal.filePath.c_str(), processID, ctrlID, &resVal.ctrlID) ){
+			    sys->reserveManager.GetRecFilePath(val, resVal.filePath) &&
+			    sys->streamingManager.OpenTimeShift(resVal.filePath.c_str(), &resVal.ctrlID) ){
 				resParam->data = NewWriteVALUE(resVal, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
@@ -2870,9 +2876,7 @@ int CEpgTimerSrvMain::LuaGetRecFilePath(lua_State* L)
 	CLuaWorkspace ws(L);
 	if( lua_gettop(L) == 1 ){
 		wstring filePath;
-		DWORD ctrlID;
-		DWORD processID;
-		if( ws.sys->reserveManager.GetRecFilePath((DWORD)lua_tointeger(L, 1), filePath, &ctrlID, &processID) ){
+		if( ws.sys->reserveManager.GetRecFilePath((DWORD)lua_tointeger(L, 1), filePath) ){
 			lua_pushstring(L, ws.WtoUTF8(filePath));
 			return 1;
 		}
