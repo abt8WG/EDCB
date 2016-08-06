@@ -23,7 +23,6 @@ if aa.dataID==0 then
     freeCAFlag=0,
     chkRecEnd=false,
     chkRecDay=6,
-    chkRecNoService=false,
     chkDurationMin=0,
     chkDurationMax=0,
     contentList={},
@@ -111,7 +110,6 @@ if aa.searchInfo then
     ..'<input type="text" name="chkDurationMax" value="'..(si.chkDurationMax or 0)..'" size="5">分以下<br>\n'
     ..'※それぞれ0分で絞り込み無し<br><br>\n'
   ct=ct..'<input type="checkbox" name="chkRecEnd" value="1"'..(si.chkRecEnd and ' checked="checked"' or '')..'>同一番組名の録画結果があれば無効で登録する<br>\n'
-    ..'<input type="checkbox" name="chkRecNoService" value="1"'..(si.chkRecNoService and ' checked="checked"' or '')..'>全てのサービスで無効にする<br>\n'
     ..'確認対象期間<input type="text" name="chkRecDay" value="'..si.chkRecDay..'" size="5">日前まで<br><br>\n'
     ..'<hr>録画設定<hr>\n'
   presetID=tonumber(mg.get_var(mg.request_info.query_string,'presetID')) or 65535

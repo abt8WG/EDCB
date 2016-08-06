@@ -1864,7 +1864,7 @@ bool CReserveManager::GetRecFilePath(DWORD reserveID, wstring& filePath, DWORD* 
 	return false;
 }
 
-bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPGDB_SEARCH_KEY_INFO& key) const
+bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, WORD chkDay) const
 {
 	CBlockLock lock(&this->managerLock);
 	bool ret = false;
@@ -1884,10 +1884,10 @@ bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPG
 			if( infoEventName.empty() == false && info.StartTimeFlag != 0 ){
 				map<DWORD, PARSE_REC_INFO2_ITEM>::const_iterator itr;
 				for( itr = this->recInfo2Text.GetMap().begin(); itr != this->recInfo2Text.GetMap().end(); itr++ ){
-					if( ( key.chkRecNoService == 1 || itr->second.originalNetworkID == info.original_network_id &&
-						itr->second.transportStreamID == info.transport_stream_id &&
-						itr->second.serviceID == info.service_id ) &&
-						ConvertI64Time(itr->second.startTime) + key.chkRecDay*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
+					if( itr->second.originalNetworkID == info.original_network_id &&
+					    itr->second.transportStreamID == info.transport_stream_id &&
+					    itr->second.serviceID == info.service_id &&
+					    ConvertI64Time(itr->second.startTime) + chkDay*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
 						wstring eventName = itr->second.eventName;
 						if( this->recInfo2RegExp.empty() == false ){
 							_bstr_t rpl = regExp->Replace(_bstr_t(eventName.c_str()), _bstr_t());
