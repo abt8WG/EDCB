@@ -1564,13 +1564,10 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 				if( hFile != INVALID_HANDLE_VALUE ){
 					DWORD dwFileSize = GetFileSize(hFile, NULL);
 					if( dwFileSize != INVALID_FILE_SIZE && dwFileSize != 0 ){
-						BYTE* data = new BYTE[dwFileSize];
+						resParam->data.reset(new BYTE[dwFileSize]);
 						DWORD dwRead;
-						if( ReadFile(hFile, data, dwFileSize, &dwRead, NULL) && dwRead != 0 ){
+						if( ReadFile(hFile, resParam->data.get(), dwFileSize, &dwRead, NULL) && dwRead == dwFileSize ){
 							resParam->dataSize = dwRead;
-							resParam->data = data;
-						}else{
-							delete[] data;
 						}
 					}
 					CloseHandle(hFile);
@@ -1805,7 +1802,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				DWORD reserveID;
-				if( ReadVALUE2(ver, &reserveID, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &reserveID, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					RESERVE_DATA info;
 					if( sys->reserveManager.GetReserveData(reserveID, &info) ){
 						resParam->data = NewWriteVALUE2WithVersion(ver, info, resParam->dataSize);
@@ -1822,7 +1819,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<RESERVE_DATA> list;
-				if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) &&
+				if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) &&
 				    sys->reserveManager.AddReserveData(list) ){
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -1837,7 +1834,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<RESERVE_DATA> list;
-				if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) &&
+				if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) &&
 				    sys->reserveManager.ChgReserveData(list) ){
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -1910,7 +1907,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPG_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					{
 						CBlockLock lock(&sys->settingLock);
 						for( size_t i = 0; i < val.size(); i++ ){
@@ -1939,7 +1936,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPG_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					{
 						CBlockLock lock(&sys->settingLock);
 						for( size_t i = 0; i < val.size(); i++ ){
@@ -1988,7 +1985,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<MANUAL_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					{
 						CBlockLock lock(&sys->settingLock);
 						for( size_t i = 0; i < val.size(); i++ ){
@@ -2017,7 +2014,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<MANUAL_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					{
 						CBlockLock lock(&sys->settingLock);
 						for( size_t i = 0; i < val.size(); i++ ){
@@ -2074,7 +2071,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				REC_FILE_INFO info;
-				if( ReadVALUE2(ver, &info.id, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) &&
+				if( ReadVALUE2(ver, &info.id, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) &&
 				    sys->reserveManager.GetRecFileInfo(info.id, &info) ){
 					resParam->data = NewWriteVALUE2WithVersion(ver, info, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2089,7 +2086,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<REC_FILE_INFO> list;
-				if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->reserveManager.ChgProtectRecFileInfo(list);
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2166,7 +2163,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				DWORD count;
-				if( ReadVALUE2(ver, &count, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &count, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					NOTIFY_SRV_INFO info;
 					if( sys->notifyManager.GetNotify(&info, count) ){
 						resParam->data = NewWriteVALUE2WithVersion(ver, info, resParam->dataSize);
