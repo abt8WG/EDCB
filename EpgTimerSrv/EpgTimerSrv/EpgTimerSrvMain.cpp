@@ -1862,7 +1862,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&CommitedVerForNewCMD, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPGDB_SEARCH_KEY_INFO> key;
-				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->epgDB.SearchEpg(&key, SearchPg2Callback, resParam);
 				}
 			}
@@ -1876,7 +1876,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&CommitedVerForNewCMD, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPGDB_SEARCH_KEY_INFO> key;
-				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->epgDB.SearchEpgByKey(&key, SearchPgByKey2Callback, resParam);
 				}
 			}
@@ -2057,7 +2057,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<DWORD> idList;
-				if( ReadVALUE2(ver, &idList, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &idList, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					resParam->data = NewWriteVALUE2WithVersion(ver,
 						sys->reserveManager.GetRecFileInfoList(idList), resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2101,7 +2101,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
             DWORD readSize;
             if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
                 vector<wstring> list;
-                if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+                if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
                     vector<FILE_DATA> result;
                     vector<wstring>::iterator itr;
                     for( itr = list.begin(); itr != list.end(); itr++ ){
