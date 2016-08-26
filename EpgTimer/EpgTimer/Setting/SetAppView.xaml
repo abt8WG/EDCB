@@ -117,6 +117,12 @@
                                 <TextBlock TextWrapping="Wrap">変更時、予約を一度削除してから再登録する (無効の予約を除く)</TextBlock>
                             </CheckBox>
                         </WrapPanel>
+                        <WrapPanel Margin="0,4,0,0">
+                            <Label Content="録画中の予約削除を" Margin="0,4,0,0" Padding="0" />
+                            <RadioButton Name="radioButton_delReserveDel" Content="削除のみ"  Margin="30,4,0,0" />
+                            <RadioButton Name="radioButton_delReserveEnd" Content="録画済みに追加" Margin="30,4,0,0" />
+                            <RadioButton Name="radioButton_delReserveCancel" Content="キャンセルとして録画済みに追加" Margin="30,4,0,0" />
+                        </WrapPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

@@ -160,7 +160,7 @@ DWORD CSendCtrlCmd::SendPipe(LPCWSTR pipeName_, LPCWSTR eventName_, DWORD timeOu
 		return CMD_ERR;
 	}
 	if( send->dataSize > 0 ){
-		if( WriteFile(pipe, send->data, send->dataSize, &write, NULL ) == FALSE ){
+		if( WriteFile(pipe, send->data.get(), send->dataSize, &write, NULL ) == FALSE ){
 			CloseHandle(pipe);
 			return CMD_ERR;
 		}
@@ -174,8 +174,8 @@ DWORD CSendCtrlCmd::SendPipe(LPCWSTR pipeName_, LPCWSTR eventName_, DWORD timeOu
 	res->param = head[0];
 	res->dataSize = head[1];
 	if( res->dataSize > 0 ){
-		res->data = new BYTE[res->dataSize];
-		if( ReadFileAll(pipe, res->data, res->dataSize) != res->dataSize ){
+		res->data.reset(new BYTE[res->dataSize]);
+		if( ReadFileAll(pipe, res->data.get(), res->dataSize) != res->dataSize ){
 			CloseHandle(pipe);
 			return CMD_ERR;
 		}
@@ -202,7 +202,7 @@ static int RecvAll(SOCKET sock, char* buf, int len, int flags)
 	return n;
 }
 
-DWORD CSendCtrlCmd::Authenticate(SOCKET sock, BYTE** pbdata, DWORD* pndata)
+DWORD CSendCtrlCmd::Authenticate(SOCKET sock, std::unique_ptr<BYTE[]>& data, DWORD* pndata)
 {
 	if (!hmac.IsInitialized()) {
 		return CMD_SUCCESS;
@@ -246,21 +246,20 @@ DWORD CSendCtrlCmd::Authenticate(SOCKET sock, BYTE** pbdata, DWORD* pndata)
 
 	// コマンドヘッダーのHMACを計算する
 	hmac.CalcHmac(nonce, read);
-	hmac.CalcHmac(*pbdata, sizeof(DWORD) * 2);
+	hmac.CalcHmac(data.get(), sizeof(DWORD) * 2);
 	hmac.GetHmac(cmd + sizeof(DWORD) * 2, hmac.GetHashSize());
 
 	if (*pndata > sizeof(DWORD) * 2) {
 		// コマンド本体のHMACを計算する
 		hmac.CalcHmac(nonce, read);
-		hmac.CalcHmac(*pbdata + sizeof(DWORD) * 2, *pndata - sizeof(DWORD) * 2);
+		hmac.CalcHmac(data.get() + sizeof(DWORD) * 2, *pndata - sizeof(DWORD) * 2);
 		hmac.GetHmac(cmd + sizeof(DWORD) * 2 + hmac.GetHashSize(), hmac.GetHashSize());
 	}
 
 	// オリジナルのコマンドパケットを認証応答パケットの後ろに追加する
-	memcpy(cmd + sizeAuthPacket, *pbdata, *pndata);
+	memcpy(cmd + sizeAuthPacket, data.get(), *pndata);
 
-	SAFE_DELETE_ARRAY(*pbdata);
-	*pbdata = cmd;
+	data.reset(cmd);
 	*pndata += sizeAuthPacket;
 	return CMD_SUCCESS;
 }
@@ -309,17 +308,16 @@ DWORD CSendCtrlCmd::SendTCP(wstring ip, DWORD port, DWORD timeOut, CMD_STREAM* s
 	BYTE *data = new BYTE[sizeData];
 	reinterpret_cast<DWORD*>(data)[0] = sendCmd->param;
 	reinterpret_cast<DWORD*>(data)[1] = sendCmd->dataSize;
-	memcpy(data + sizeof(DWORD) * 2, sendCmd->data, sendCmd->dataSize);
-	SAFE_DELETE_ARRAY(sendCmd->data);
-	sendCmd->data = data;
+	memcpy(data + sizeof(DWORD) * 2, sendCmd->data.get(), sendCmd->dataSize);
+	sendCmd->data.reset(data);
 
-	if (Authenticate(sock, &sendCmd->data, &sizeData) != CMD_SUCCESS) {
+	if (Authenticate(sock, sendCmd->data, &sizeData) != CMD_SUCCESS) {
 		closesocket(sock);
 		return CMD_ERR;
 	}
 
 	//送信: 認証応答パケットとコマンドパケットをまとめて送る
-	if (send(sock, reinterpret_cast<char*>(sendCmd->data), sizeData, 0) == SOCKET_ERROR) {
+	if (send(sock, reinterpret_cast<char*>(sendCmd->data.get()), sizeData, 0) == SOCKET_ERROR) {
 		closesocket(sock);
 		return CMD_ERR;
 	}
@@ -333,8 +331,8 @@ DWORD CSendCtrlCmd::SendTCP(wstring ip, DWORD port, DWORD timeOut, CMD_STREAM* s
 	resCmd->param = head[0];
 	resCmd->dataSize = head[1];
 	if( resCmd->dataSize > 0 ){
-		resCmd->data = new BYTE[resCmd->dataSize];
-		if( RecvAll(sock, reinterpret_cast<char*>(resCmd->data), resCmd->dataSize, 0) != static_cast<int>(resCmd->dataSize) ){
+		resCmd->data.reset(new BYTE[resCmd->dataSize]);
+		if( RecvAll(sock, reinterpret_cast<char*>(resCmd->data.get()), resCmd->dataSize, 0) != static_cast<int>(resCmd->dataSize) ){
 			closesocket(sock);
 			return CMD_ERR;
 		}
@@ -360,8 +358,7 @@ DWORD CSendCtrlCmd::SendFileCopy(
 			return CMD_ERR;
 		}
 		*resValSize = res.dataSize;
-		*resVal = new BYTE[res.dataSize];
-		memcpy(*resVal, res.data, res.dataSize);
+		*resVal = res.data.release();
 	}
 	return ret;
 }
@@ -382,8 +379,8 @@ DWORD CSendCtrlCmd::SendGetEpgFile2(
 			return CMD_ERR;
 		}
 		*resValSize = res.dataSize - readSize;
-		*resVal = new BYTE[*resValSize];
-		memcpy(*resVal, res.data + readSize, *resValSize);
+		*resVal = res.data.release();
+		memmove(*resVal, *resVal + readSize, *resValSize);
 	}
 	return ret;
 }
