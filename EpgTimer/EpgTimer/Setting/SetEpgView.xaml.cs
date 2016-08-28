@@ -25,6 +25,8 @@ namespace EpgTimer.Setting
         }
 
         private MenuSettingData ctxmSetInfo;
+        private RadioBtnSelect epgPopupRadioBtns;
+        private RadioBtnSelect tunerPopupRadioBtns;
 
         private string styleFile;
 
@@ -40,8 +42,8 @@ namespace EpgTimer.Setting
                 textBox_dragScroll.Text = Settings.Instance.DragScroll.ToString();
                 textBox_minimumHeight.Text = Settings.Instance.MinimumHeight.ToString();
                 checkBox_epg_popup.IsChecked = Settings.Instance.EpgPopup;
-                checkBox_epg_popup_resOnly.IsEnabled = Settings.Instance.EpgPopup;
-                checkBox_epg_popup_resOnly.IsChecked = Settings.Instance.EpgPopupResOnly;
+                epgPopupRadioBtns = new RadioBtnSelect(radioButton_epg_popup_onOver, radioButton_epg_popup_onClick, radioButton_epg_popup_resOnly);
+                epgPopupRadioBtns.Value = Settings.Instance.EpgPopupMode;
                 checkBox_title_indent.IsChecked = Settings.Instance.EpgTitleIndent;
                 checkBox_singleOpen.IsChecked = Settings.Instance.EpgInfoSingleClick;
                 checkBox_scrollAuto.IsChecked = Settings.Instance.MouseScrollAuto;
@@ -51,6 +53,8 @@ namespace EpgTimer.Setting
                 checkBox_openInfo.IsChecked = (Settings.Instance.EpgInfoOpenMode != 0);
                 checkBox_displayNotifyChange.IsChecked = Settings.Instance.DisplayNotifyEpgChange;
                 checkBox_reserveBackground.IsChecked = Settings.Instance.ReserveRectBackground;
+                checkBox_epgNoDisplayOld.IsChecked = Settings.Instance.EpgNoDisplayOld;
+                textBox_epgNoDisplayOldDays.Text = Settings.Instance.EpgNoDisplayOldDays.ToString();
 
                 textBox_tuner_mouse_scroll.Text = Settings.Instance.TunerScrollSize.ToString();
                 textBox_tuner_width.Text = Settings.Instance.TunerWidth.ToString();
@@ -58,7 +62,8 @@ namespace EpgTimer.Setting
                 textBox_tunerDdragScroll.Text = Settings.Instance.TunerDragScroll.ToString();
                 textBox_tunerMinLineHeight.Text = Settings.Instance.TunerMinimumLine.ToString();
                 checkBox_tuner_popup.IsChecked = Settings.Instance.TunerPopup;
-                checkBox_tuner_popup_recInfo.IsEnabled = Settings.Instance.TunerPopup;
+                tunerPopupRadioBtns = new RadioBtnSelect(radioButton_tuner_popup_onOver, radioButton_tuner_popup_onClick);
+                tunerPopupRadioBtns.Value = Settings.Instance.TunerPopupMode;
                 checkBox_tuner_popup_recInfo.IsChecked = Settings.Instance.TunerPopupRecinfo;
                 checkBox_tuner_title_indent.IsChecked = Settings.Instance.TunerTitleIndent;
                 checkBox_tunerSingleOpen.IsChecked = Settings.Instance.TunerInfoSingleClick;
@@ -277,7 +282,7 @@ namespace EpgTimer.Setting
                 Settings.Instance.DragScroll = MenuUtil.MyToNumerical(textBox_dragScroll, Convert.ToDouble, 1.5);
                 Settings.Instance.EpgTitleIndent = (checkBox_title_indent.IsChecked == true);
                 Settings.Instance.EpgPopup = (checkBox_epg_popup.IsChecked == true);
-                Settings.Instance.EpgPopupResOnly = (checkBox_epg_popup_resOnly.IsChecked == true);
+                Settings.Instance.EpgPopupMode = epgPopupRadioBtns.Value;
                 Settings.Instance.EpgGradation = (checkBox_gradation.IsChecked == true);
                 Settings.Instance.EpgGradationHeader = (checkBox_gradationHeader.IsChecked == true);
 
@@ -286,6 +291,9 @@ namespace EpgTimer.Setting
                 Settings.Instance.MouseScrollAuto = (checkBox_scrollAuto.IsChecked == true);
                 Settings.Instance.DisplayNotifyEpgChange = (checkBox_displayNotifyChange.IsChecked == true);
                 Settings.Instance.ReserveRectBackground = (checkBox_reserveBackground.IsChecked == true);
+                Settings.Instance.EpgNoDisplayOld = (checkBox_epgNoDisplayOld.IsChecked == true);
+                Settings.Instance.EpgNoDisplayOldDays = MenuUtil.MyToNumerical(textBox_epgNoDisplayOldDays, Convert.ToDouble, double.MaxValue, double.MinValue, 1);
+
                 Settings.Instance.TunerScrollSize = MenuUtil.MyToNumerical(textBox_tuner_mouse_scroll, Convert.ToDouble, 240);
                 Settings.Instance.TunerWidth = MenuUtil.MyToNumerical(textBox_tuner_width, Convert.ToDouble, double.MaxValue, 16, 150);//小さいと描画で落ちる
                 Settings.Instance.TunerMinHeight = MenuUtil.MyToNumerical(textBox_tuner_minHeight, Convert.ToDouble, double.MaxValue, 0.1, 2);
@@ -295,6 +303,7 @@ namespace EpgTimer.Setting
                 Settings.Instance.TunerServiceNoWrap = (checkBox_tuner_service_nowrap.IsChecked == true);
                 Settings.Instance.TunerTitleIndent = (checkBox_tuner_title_indent.IsChecked == true);
                 Settings.Instance.TunerPopup = (checkBox_tuner_popup.IsChecked == true);
+                Settings.Instance.TunerPopupMode = tunerPopupRadioBtns.Value;
                 Settings.Instance.TunerPopupRecinfo = (checkBox_tuner_popup_recInfo.IsChecked == true);
                 Settings.Instance.TunerInfoSingleClick = (checkBox_tunerSingleOpen.IsChecked == true);
                 Settings.Instance.TunerColorModeUse = (checkBox_tunerColorModeUse.IsChecked == true);
@@ -638,16 +647,6 @@ namespace EpgTimer.Setting
                 dlg.GetColor(ref item);
                 (btn.Background as SolidColorBrush).Color = item;
             }
-        }
-
-        private void checkBox_epg_popup_Click(object sender, RoutedEventArgs e)
-        {
-            checkBox_epg_popup_resOnly.IsEnabled = (checkBox_epg_popup.IsChecked == true);
-        }
-
-        private void checkBox_tuner_popup_Click(object sender, RoutedEventArgs e)
-        {
-            checkBox_tuner_popup_recInfo.IsEnabled = (checkBox_tuner_popup.IsChecked == true);
         }
 
         private void checkBox_tunerColorModeUse_Click(object sender, RoutedEventArgs e)

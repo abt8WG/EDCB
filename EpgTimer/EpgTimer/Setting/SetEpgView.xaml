@@ -118,12 +118,14 @@
                                             <Label Content="サービス１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                             <TextBox Name="textBox_service_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-                                        <CheckBox Name="checkBox_epg_popup" Margin="9,4" Click="checkBox_epg_popup_Click">
-                                            <TextBlock Text="番組内容をポップアップ表示する" TextWrapping="Wrap"/>
-                                        </CheckBox>
-                                        <CheckBox Name="checkBox_epg_popup_resOnly" Margin="25,0,0,4" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup}">
-                                            <TextBlock Text="予約のある番組のみポップアップする" TextWrapping="Wrap"/>
-                                        </CheckBox>
+                                        <CheckBox Name="checkBox_epg_popup" Content="番組内容のポップアップ表示" Margin="9,4" />
+                                        <WrapPanel Margin="25,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup, UpdateSourceTrigger=PropertyChanged}" >
+                                            <RadioButton Name="radioButton_epg_popup_onOver" Content="マウスオーバー" Margin="0,0,20,4" />
+                                            <RadioButton Name="radioButton_epg_popup_onClick" Content="クリックしたとき" Margin="0,0,20,4" />
+                                            <RadioButton Name="radioButton_epg_popup_resOnly" Margin="0,0,20,4">
+                                                <TextBlock Text="予約のみマウスオーバーで、他はクリックしたとき" TextWrapping="Wrap" />
+                                            </RadioButton>
+                                        </WrapPanel>
                                         <CheckBox Name="checkBox_singleOpen" Margin="9,4">
                                             <TextBlock Text="シングルクリックで予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
@@ -158,6 +160,11 @@
                                             <CheckBox Name="checkBox_gradationHeader" Margin="130,0,0,4">
                                                 <TextBlock Text="サービス・時刻軸" TextWrapping="Wrap" />
                                             </CheckBox>
+                                        </WrapPanel>
+                                        <WrapPanel Margin="4,4,0,0">
+                                            <CheckBox Name="checkBox_epgNoDisplayOld" Content="古い番組データの表示を抑制する" Margin="0,0,20,0" ToolTip="通常はチェック不要です。" />
+                                            <TextBox Name="textBox_epgNoDisplayOldDays" Style="{StaticResource NumberBox}" />
+                                            <Label Content="日前まで表示" Margin="12,0,0,0" />
                                         </WrapPanel>
                                     </StackPanel>
                                 </Grid>
@@ -445,17 +452,19 @@
                                             <Label Content="チューナ１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                             <TextBox Name="textBox_tuner_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-                                        <CheckBox Name="checkBox_tuner_popup" Margin="9,4" Click="checkBox_tuner_popup_Click">
-                                            <TextBlock Text="予約をポップアップ表示する" TextWrapping="Wrap"></TextBlock>
-                                        </CheckBox>
-                                        <CheckBox Name="checkBox_tuner_popup_recInfo" Margin="25,0,0,4">
-                                            <TextBlock Text="ポップアップに優先度と録画モードを表示する" TextWrapping="Wrap" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup}"/>
+                                        <CheckBox Name="checkBox_tuner_popup" Content="予約のポップアップ表示" Margin="9,4" />
+                                        <WrapPanel Margin="25,0">
+                                            <RadioButton Name="radioButton_tuner_popup_onOver"  Content="マウスオーバー" Margin="0,0,20,4" />
+                                            <RadioButton Name="radioButton_tuner_popup_onClick" Content="クリックしたとき" Margin="0,0,20,4" />
+                                        </WrapPanel>
+                                        <CheckBox Name="checkBox_tuner_popup_recInfo" Margin="25,0,0,4" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup, UpdateSourceTrigger=PropertyChanged}">
+                                            <TextBlock Text="ポップアップに優先度と録画モードを表示する" TextWrapping="Wrap"></TextBlock>
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tunerSingleOpen" Margin="9,4">
                                             <TextBlock Text="シングルクリックで予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tunerColorModeUse" Margin="9,4" ToolTip="チェックされていない場合はこの画面の設定色が使われます。" Click="checkBox_tunerColorModeUse_Click">
-                                            <TextBlock Text="サービスのフォント色を優先度で変える('色'タブの設定)" TextWrapping="Wrap" />
+                                            <TextBlock Text="サービスのフォント色を優先度で変える ('色'タブの設定)" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tuner_title_indent" Margin="9,4">
                                             <TextBlock Text="サービス名と番組名の表示位置をあわせる" TextWrapping="Wrap" />

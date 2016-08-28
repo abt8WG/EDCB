@@ -144,7 +144,7 @@ namespace EpgTimer
     }
 
     /// <summary>録画設定情報</summary>
-    public class RecSettingData : ICtrlCmdReadWrite
+    public partial class RecSettingData : ICtrlCmdReadWrite
     {
         /// <summary>BatFilePathとTagを結合/分離する際のセパレーターキャラクター</summary>
         private static readonly char SEPARATOR = '*';

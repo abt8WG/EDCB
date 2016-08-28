@@ -11,7 +11,7 @@
                 <ScrollViewer>
                     <StackPanel Margin="0,8">
                         <GroupBox Header="録画、EPG取得終了後のデフォルト動作" Margin="12,4">
-                            <Grid>
+                            <Grid Name="grid_rec_stanby">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto"/>
                                     <ColumnDefinition/>
@@ -88,41 +88,49 @@
             </TabItem>
             <TabItem Name="tabItem2" Header="予約情報管理">
                 <ScrollViewer>
-                    <StackPanel Margin="8">
-                        <CheckBox Name="checkBox_back_priority" Content="優先度が同じで時間が重なった場合、後の予約を優先する" Margin="0,4,0,0" />
-                        <WrapPanel Margin="0,4,0,0">
-                            <CheckBox Name="checkBox_autoDel" Content="HDDの空きが少ない場合、古い録画ファイルを削除する(削除設定で対象を指定)" Margin="0,4,0,0" />
-                            <Button Name="button_autoDel" Content="削除設定" Margin="30,4,0,0" Click="button_autoDel_Click" VerticalAlignment="Center" />
-                        </WrapPanel>
-                        <WrapPanel Margin="0,4,0,0">
-                            <CheckBox Name="checkBox_recname" Content="録画時のファイル名にPlugInを使用する" Margin="0,4,0,0" />
-                            <StackPanel Margin="30,4,0,0" Orientation="Horizontal">
-                                <ComboBox Name="comboBox_recname" Margin="0,0,10,0" Width="160" />
-                                <Button Name="button_recname" Content="設定" Click="button_recname_Click" />
+                    <StackPanel Margin="0,8">
+                        <GroupBox Header="EpgTimerSrv側設定" Margin="12,4">
+                            <StackPanel>
+                                <CheckBox Name="checkBox_back_priority" Content="優先度が同じで時間が重なった場合、後の予約を優先する" Margin="0,8,0,0" />
+                                <WrapPanel Margin="0,4,0,0">
+                                    <CheckBox Name="checkBox_autoDel" Content="HDDの空きが少ない場合、古い録画ファイルを削除する(削除設定で対象を指定)" Margin="0,4,0,0" />
+                                    <Button Name="button_autoDel" Content="削除設定" Margin="30,4,0,0" Click="button_autoDel_Click" VerticalAlignment="Center" />
+                                </WrapPanel>
+                                <WrapPanel Margin="0,4,0,0">
+                                    <CheckBox Name="checkBox_recname" Content="録画時のファイル名にPlugInを使用する" Margin="0,4,0,0" />
+                                    <StackPanel Margin="30,4,0,0" Orientation="Horizontal">
+                                        <ComboBox Name="comboBox_recname" Margin="0,0,10,0" Width="160" />
+                                        <Button Name="button_recname" Content="設定" Click="button_recname_Click" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <CheckBox Name="checkBox_noChkYen" Content="ファイル名の禁則文字の変換対象から「\」を除外する" Margin="0,8,0,0" />
+                                <WrapPanel Margin="0,4,0,0">
+                                    <Label Content="録画中の予約削除を" Margin="0,4,0,0" Padding="0" />
+                                    <RadioButton Name="radioButton_delReserveDel" Content="削除のみ"  Margin="30,4,0,0" />
+                                    <RadioButton Name="radioButton_delReserveEnd" Content="録画済みに追加" Margin="30,4,0,0" />
+                                    <RadioButton Name="radioButton_delReserveCancel" Content="キャンセルとして録画済みに追加" Margin="30,4,0,0" />
+                                </WrapPanel>
                             </StackPanel>
-                        </WrapPanel>
-                        <CheckBox Name="checkBox_noChkYen" Content="ファイル名の禁則文字の変換対象から「\」を除外する" Margin="0,8,0,0" />
-                        <WrapPanel Margin="0,4,0,0">
-                            <CheckBox Name="checkBox_cautionOnRecChange" Content="録画中または開始直前の予約を変更・削除するとき警告する" Margin="0,4,0,0" />
-                            <StackPanel Margin="30,4,0,0"  Orientation="Horizontal">
-                                <TextBox Name="textBox_cautionOnRecMarginMin" Style="{StaticResource NumberBox}" />
-                                <Label Content="分以内" />
+                        </GroupBox>
+                        <GroupBox Header="EpgTimer側設定" Margin="12,4">
+                            <StackPanel>
+                                <WrapPanel Margin="0,4,0,0">
+                                    <CheckBox Name="checkBox_cautionOnRecChange" Content="録画中または開始直前の予約を変更・削除するとき警告する" Margin="0,4,0,0" />
+                                    <StackPanel Margin="30,4,0,0"  Orientation="Horizontal">
+                                        <TextBox Name="textBox_cautionOnRecMarginMin" Style="{StaticResource NumberBox}" />
+                                        <Label Content="分以内" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel Margin="0,4,0,0">
+                                    <Label Content="自動予約登録の変更・削除に合わせて予約を変更・削除する" Margin="0,4,0,0" Padding="0" ToolTipService.ShowDuration="600000" ToolTip="個別予約は対象外です。また、他の有効な自動予約登録の対象になっている予約は連動削除されません。&#10;＊右クリックメニューの「予約を自動登録に合わせる」「予約ごと削除」では、検索された予約は全て変更・削除されます。&#10;＊自動予約登録から外れた予約は、[各画面の設定][予約一覧・共通]のオプションで強調表示することができます。" />
+                                    <CheckBox Name="checkBox_SyncResAutoAddChange" Content="変更時" Margin="30,4,0,0" />
+                                    <CheckBox Name="checkBox_SyncResAutoAddDelete" Content="削除時" Margin="30,4,0,0" />
+                                    <CheckBox Name="checkBox_SyncResAutoAddChgNewRes" Margin="30,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_SyncResAutoAddChange, UpdateSourceTrigger=PropertyChanged}" ToolTipService.ShowDuration="600000" ToolTip="キーワード予約無効時や検索条件変更時など、対象外となった予約が削除されるので注意が必要です。&#10;また、「録画中または開始直前の予約を変更・削除するとき警告する」が有効の場合はその設定時間、&#10;それ以外の場合は録画開始1分以内の予約は削除せず、通常の変更のみを試みます。">
+                                        <TextBlock TextWrapping="Wrap">変更時、予約を一度削除してから再登録する (無効の予約を除く)</TextBlock>
+                                    </CheckBox>
+                                </WrapPanel>
                             </StackPanel>
-                        </WrapPanel>
-                        <WrapPanel Margin="0,4,0,0">
-                            <Label Content="自動予約登録の変更・削除に合わせて予約を変更・削除する" Margin="0,4,0,0" Padding="0" ToolTipService.ShowDuration="600000" ToolTip="個別予約は対象外です。また、他の有効な自動予約登録の対象になっている予約は連動削除されません。&#10;＊右クリックメニューの「予約を自動登録に合わせる」「予約ごと削除」では、検索された予約は全て変更・削除されます。&#10;＊自動予約登録から外れた予約は、[各画面の設定][予約一覧・共通]のオプションで強調表示することができます。" />
-                            <CheckBox Name="checkBox_SyncResAutoAddChange" Content="変更時" Margin="30,4,0,0" />
-                            <CheckBox Name="checkBox_SyncResAutoAddDelete" Content="削除時" Margin="30,4,0,0" />
-                            <CheckBox Name="checkBox_SyncResAutoAddChgNewRes" Margin="30,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_SyncResAutoAddChange, UpdateSourceTrigger=PropertyChanged}" ToolTipService.ShowDuration="600000" ToolTip="キーワード予約無効時や検索条件変更時など、対象外となった予約が削除されるので注意が必要です。&#10;また、「録画中または開始直前の予約を変更・削除するとき警告する」が有効の場合はその設定時間、&#10;それ以外の場合は録画開始1分以内の予約は削除せず、通常の変更のみを試みます。">
-                                <TextBlock TextWrapping="Wrap">変更時、予約を一度削除してから再登録する (無効の予約を除く)</TextBlock>
-                            </CheckBox>
-                        </WrapPanel>
-                        <WrapPanel Margin="0,4,0,0">
-                            <Label Content="録画中の予約削除を" Margin="0,4,0,0" Padding="0" />
-                            <RadioButton Name="radioButton_delReserveDel" Content="削除のみ"  Margin="30,4,0,0" />
-                            <RadioButton Name="radioButton_delReserveEnd" Content="録画済みに追加" Margin="30,4,0,0" />
-                            <RadioButton Name="radioButton_delReserveCancel" Content="キャンセルとして録画済みに追加" Margin="30,4,0,0" />
-                        </WrapPanel>
+                        </GroupBox>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -145,8 +153,8 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <Label Grid.Column="0" Grid.Row="0" Content="表示ボタン" Margin="4,0" />
-							<Button Grid.Column="0" Grid.Row="0" Name="button_btnIni" Content="初期化" Margin="4,0" HorizontalAlignment="Right" Click="button_btnIni_Click" />
-							<ListBox Grid.Column="0" Grid.Row="1" Name="listBox_viewBtn" SelectionMode="Extended" Margin="4,0,0,0" />
+                            <Button Grid.Column="0" Grid.Row="0" Name="button_btnIni" Content="初期化" Margin="4,0" HorizontalAlignment="Right" Click="button_btnIni_Click" />
+                            <ListBox Grid.Column="0" Grid.Row="1" Name="listBox_viewBtn" SelectionMode="Extended" Margin="4,0,0,0" />
                             <StackPanel Grid.Column="1" Grid.Row="1">
                                 <Button Name="button_btnUp"   Content="↑"   Margin="10,2" />
                                 <Button Name="button_btnAdd"  Content="追加" Margin="10,2" />
@@ -212,91 +220,93 @@
             </TabItem>
             <TabItem Name="tabItem4" Header="その他">
                 <ScrollViewer>
-                    <StackPanel Margin="8">
-                        <WrapPanel>
-                            <StackPanel MinWidth="200" Margin="0,0,20,0">
-                                <CheckBox Name="checkBox_closeMin" Content="×ボタンで最小化する" Margin="0,3,0,0" />
-                                <CheckBox Name="checkBox_minWake" Content="最小化で起動する" Margin="0,3,0,0" />
-                            </StackPanel>
-                            <StackPanel MinWidth="200" Margin="0,0,20,0">
-                                <CheckBox Name="checkBox_showTray" Content="タスクトレイアイコンを表示する" Margin="0,3,0,0" />
-                                <CheckBox Name="checkBox_minHide" Content="最小化時にタスクトレイに格納する" Margin="0,3,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_showTray, UpdateSourceTrigger=PropertyChanged}" />
-                            </StackPanel>
-                            <StackPanel MinWidth="200" Margin="0,0,20,0">
-                                <CheckBox Name="checkBox_applyMulti" Content="多重起動を許す" Margin="0,3,0,0" />
-                            </StackPanel>
-                        </WrapPanel>
-                        <WrapPanel>
-                            <Button Name="button_recDef" Content="録画プリセットを設定" Margin="0,3,20,0" MinWidth="200" Click="button_recDef_Click" />
-                            <Button Name="button_searchDef" Content="検索条件のデフォルト値を設定" Margin="0,3,20,0" MinWidth="200" Click="button_searchDef_Click" />
-                        </WrapPanel>
-                        <WrapPanel Margin="0,3,0,0" >
-                            <CheckBox Name="checkBox_tcpServer" Content="ネットワーク接続を許可する" />
-                            <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
-                                <Label Content="ポート" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                                <TextBox Name="textBox_tcpPort" Style="{StaticResource NumberBox}" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                            </StackPanel>
-                            <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
-                                <Label Content="アクセス制御" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                                <TextBox Name="textBox_tcpAcl" Width="175" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                            </StackPanel>
-                            <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
-                                <Label Content="パスワード" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                                <PasswordBox Name="passwordBox_tcpPassword" Width="175" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                            </StackPanel>
-                            <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
-                                <Label Content="無通信タイムアウト(秒)" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                                <TextBox Name="textBox_tcpResTo" Style="{StaticResource NumberBox}" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
-                            </StackPanel>
-                        </WrapPanel>
-                        <WrapPanel Margin="0,3,0,0" >
-                            <CheckBox Name="checkBox_autoDelRecInfo" Content="録画結果を自動的に削除する" Margin="0,0,10,0" />
-                            <StackPanel Margin="20,0,10,0" Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_autoDelRecInfo}">
-                                <CheckBox Name="checkBox_autoDelRecFile" Content="録画ファイルも削除する" IsEnabled="{Binding Path=IsEnabled, ElementName=checkBox_autoDelRecInfo}" />
-                            </StackPanel>
-                            <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_autoDelRecInfo}">
-                                <Label Content="保持件数" IsEnabled="{Binding Path=IsEnabled, ElementName=checkBox_autoDelRecInfo}" />
-                                <TextBox Name="textBox_autoDelRecInfo" Style="{StaticResource NumberBox}" IsEnabled="{Binding Path=IsEnabled, ElementName=checkBox_autoDelRecInfo}" />
-                            </StackPanel>
-                        </WrapPanel>
-                        <WrapPanel>
-                            <CheckBox Name="checkBox_timeSync" Margin="0,3,10,0" VerticalContentAlignment="Top">
-                                <TextBlock TextWrapping="Wrap">EPG取得時に放送波時間でPC時計を同期する<LineBreak/>※EpgTimerSrv.exeが管理者権限で起動している必要があります</TextBlock>
-                            </CheckBox>
-                            <CheckBox Name="checkBox_noToolTips"   Content="ツールチップの表示を抑制する" Margin="0,3,10,0" VerticalAlignment="Top" />
-                            <WrapPanel VerticalAlignment="Top">
-                                <CheckBox Name="checkBox_noBallonTips" Content="バルーンチップでの動作通知を抑制する" />
-                                <StackPanel Orientation="Horizontal" Margin="20,0">
-                                    <Label Content="バルーンチップを強制的に閉じる" ToolTip="0でタイムアウト無し" Margin="0,0,10,0" />
-                                    <TextBox Name="textBox_ForceHideBalloonTipSec" Style="{StaticResource NumberBox}" />
-                                    <Label Content="秒後" />
-                                </StackPanel>
-                            </WrapPanel>
-                        </WrapPanel>
-                        <WrapPanel>
-                            <StackPanel Margin="0,0,10,0" MinWidth="300">
-                                <CheckBox Name="checkBox_srvResident"       Content="EpgTimerSrvを常駐させる"                         Margin="0,3,0,0" />
-                                <CheckBox Name="checkBox_srvShowTray"       Content="タスクトレイアイコンを表示する"                  Margin="20,3,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_srvResident, UpdateSourceTrigger=PropertyChanged}" />
-                                <CheckBox Name="checkBox_srvNoBalloonTip"   Content="バルーンチップでの動作通知を抑制する"            Margin="20,3,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_srvResident, UpdateSourceTrigger=PropertyChanged}" />
-                                <CheckBox Name="checkBox_srvSaveNotifyLog"  Content="情報通知ログをファイルに保存する(EpgTimerSrv側)" Margin="0,3,0,0" />
-                                <CheckBox Name="checkBox_AutoSaveNotifyLog" Content="情報通知ログをファイルに保存する(EpgTimer側)"    Margin="0,3,0,0" />
-                                <CheckBox Name="checkBox_srvSaveDebugLog"   Content="デバッグ出力をファイルに保存する"                Margin="0,3,0,0" />
-                            </StackPanel>
-                            <StackPanel>
-                                <CheckBox Name="checkBox_wakeReconnect" Content="起動時に前回接続サーバーに接続する"           Margin="0,3,20,0" IsEnabled="False" />
-                                <WrapPanel Name="group_WoLWait" IsEnabled="False" Margin="20,3,0,0">
-                                    <StackPanel VerticalAlignment="Center">
-                                        <CheckBox Name="checkBox_WoLWait"          Content="WoLしてから接続する"             Margin="0,0,20,0" Checked="checkBox_WoLWait_Checked"          ToolTipService.ShowOnDisabled="True" ToolTip="WoL→待機→接続" />
-                                        <CheckBox Name="checkBox_WoLWaitRecconect" Content="接続失敗時にWoLで再接続を試みる"                   Checked="checkBox_WoLWaitRecconect_Checked" ToolTipService.ShowOnDisabled="True" ToolTipService.ShowDuration="20000" ToolTip="WoL→接続(→待機→接続)&#10;とりあえず最初にマジックパケットは投げます。&#10;接続失敗時はEpgTimerNWが一時的に反応しにくくなっているので注意が必要です" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <GroupBox Grid.Column="0" Header="EpgTimerSrv側設定" Margin="8,4,4,4">
+                            <StackPanel Margin="4">
+                                <WrapPanel>
+                                    <Button Name="button_recDef" Content="録画プリセットを設定" Margin="0,3,20,0" Click="button_recDef_Click" />
+                                    <Button Name="button_searchDef" Content="検索条件のデフォルト値を設定" Margin="0,3,20,0" Click="button_searchDef_Click" />
+                                </WrapPanel>
+                                <WrapPanel Margin="0,3,0,0" >
+                                    <CheckBox Name="checkBox_tcpServer" Content="ネットワーク接続を許可する" />
+                                    <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
+                                        <Label Content="ポート" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
+                                        <TextBox Name="textBox_tcpPort" Style="{StaticResource NumberBox}" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
                                     </StackPanel>
-                                    <Border BorderThickness="0,1,1,1" Width="10" Margin="-20,8,-40,8" BorderBrush="Gray" />
-                                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                                        <TextBox Name="textBox_WoLWaitSecond" Style="{StaticResource NumberBox}" />
+                                    <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
+                                        <Label Content="アクセス制御" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
+                                        <TextBox Name="textBox_tcpAcl" Width="175" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
+                                        <Label Content="パスワード" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
+                                        <PasswordBox Name="passwordBox_tcpPassword" Width="175" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding IsChecked, ElementName=checkBox_tcpServer}">
+                                        <Label Content="無通信タイムアウト(秒)" MinWidth="80" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
+                                        <TextBox Name="textBox_tcpResTo" Style="{StaticResource NumberBox}" IsEnabled="{Binding IsEnabled, ElementName=checkBox_tcpServer}" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel Margin="0,3,0,0" >
+                                    <CheckBox Name="checkBox_autoDelRecInfo" Content="録画結果を自動的に削除する" Margin="0,0,10,0" />
+                                    <StackPanel Margin="20,0,10,0" Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_autoDelRecInfo}">
+                                        <CheckBox Name="checkBox_autoDelRecFile" Content="録画ファイルも削除する" IsEnabled="{Binding Path=IsEnabled, ElementName=checkBox_autoDelRecInfo}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="20,0,0,0" Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_autoDelRecInfo}">
+                                        <Label Content="保持件数" IsEnabled="{Binding Path=IsEnabled, ElementName=checkBox_autoDelRecInfo}" />
+                                        <TextBox Name="textBox_autoDelRecInfo" Style="{StaticResource NumberBox}" IsEnabled="{Binding Path=IsEnabled, ElementName=checkBox_autoDelRecInfo}" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel>
+                                    <CheckBox Name="checkBox_timeSync" Margin="0,3,10,0" VerticalContentAlignment="Top">
+                                        <TextBlock TextWrapping="Wrap">EPG取得時に放送波時間でPC時計を同期する<LineBreak/>※EpgTimerSrv.exeが管理者権限で起動している必要があります</TextBlock>
+                                    </CheckBox>
+                                </WrapPanel>
+                                <WrapPanel>
+                                    <StackPanel Margin="0,0,10,0" MinWidth="300">
+                                        <CheckBox Name="checkBox_srvResident"       Content="EpgTimerSrvを常駐させる"                         Margin="0,3,0,0" />
+                                        <CheckBox Name="checkBox_srvShowTray"       Content="タスクトレイアイコンを表示する"                  Margin="20,3,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_srvResident, UpdateSourceTrigger=PropertyChanged}" />
+                                        <CheckBox Name="checkBox_srvNoBalloonTip"   Content="バルーンチップでの動作通知を抑制する"            Margin="20,3,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_srvResident, UpdateSourceTrigger=PropertyChanged}" />
+                                        <CheckBox Name="checkBox_srvSaveNotifyLog"  Content="情報通知ログをファイルに保存する(EpgTimerSrv側)" Margin="0,3,0,0" />
+                                        <CheckBox Name="checkBox_srvSaveDebugLog"   Content="デバッグ出力をファイルに保存する"                Margin="0,3,0,0" />
+                                    </StackPanel>
+                                </WrapPanel>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Grid.Column="1" Header="EpgTimer側設定" Margin="4,4,8,4">
+                            <StackPanel Margin="4">
+                                <WrapPanel>
+                                    <CheckBox Name="checkBox_closeMin" Content="×ボタンで最小化する" Margin="0,3,20,0" />
+                                    <CheckBox Name="checkBox_minWake" Content="最小化で起動する" Margin="0,3,20,0" />
+                                    <CheckBox Name="checkBox_applyMulti" Content="多重起動を許す" Margin="0,3,20,0" />
+                                </WrapPanel>
+                                <WrapPanel>
+                                    <CheckBox Name="checkBox_showTray" Content="タスクトレイアイコンを表示する" Margin="0,3,0,0" />
+                                    <CheckBox Name="checkBox_minHide" Content="最小化時にタスクトレイに格納する" Margin="20,3,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_showTray, UpdateSourceTrigger=PropertyChanged}" />
+                                </WrapPanel>
+                                <CheckBox Name="checkBox_noToolTips" Content="ツールチップの表示を抑制する" Margin="0,3,20,0" />
+                                <WrapPanel>
+                                    <CheckBox Name="checkBox_noBallonTips" Content="バルーンチップでの動作通知を抑制する" Margin="0,3,20,0" />
+                                    <StackPanel Orientation="Horizontal" Margin="20,0" ToolTip="0でタイムアウト無し">
+                                        <Label Content="バルーンチップを強制的に閉じる" Margin="0,0,10,0" />
+                                        <TextBox Name="textBox_ForceHideBalloonTipSec" Style="{StaticResource NumberBox}" />
                                         <Label Content="秒後" />
                                     </StackPanel>
                                 </WrapPanel>
-                                <CheckBox Name="checkBox_suspendClose"  Content="休止／スタンバイ移行時にEpgTimerNWを終了する" Margin="0,3,20,0" IsEnabled="False" />
-                                <CheckBox Name="checkBox_ngAutoEpgLoad" Content="EPGデータを自動的に読み込まない"              Margin="0,3,20,0" IsEnabled="False" />
+                                <WrapPanel>
+                                    <CheckBox Name="checkBox_cautionManyChange" Content="多数の項目を処理するとき警告する" />
+                                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0" IsEnabled="{Binding IsChecked, ElementName=checkBox_cautionManyChange}">
+                                        <TextBox Name="textBox_cautionManyChange" Style="{StaticResource NumberBox}" />
+                                        <Label Content="以上" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel>
+                                    <CheckBox Name="checkBox_saveSearchKeyword" Content="検索/キーワード予約ダイアログで検索語を保存する" />
+                                    <Button Content="検索語をクリア" Margin="20,2" Click="button_clearSerchKeywords" />
+                                </WrapPanel>
                                 <WrapPanel Margin="0,3,0,0">
                                     <StackPanel VerticalAlignment="Center">
                                         <CheckBox Name="checkBox_keepTCPConnect" Content="EpgTimerSrvとの接続維持を試みる"              Margin="0,0,20,0" IsEnabled="False" ToolTip="EpgTimerNW使用時、EpgTimerSrv側の再起動時などに接続維持を試みます" />
@@ -308,20 +318,26 @@
                                         <Label Content="分間隔" />
                                     </StackPanel>
                                 </WrapPanel>
+                                <StackPanel>
+                                    <CheckBox Name="checkBox_wakeReconnect" Content="起動時に前回接続サーバーに接続する"           Margin="0,3,20,0" IsEnabled="False" />
+                                    <WrapPanel Name="group_WoLWait" IsEnabled="False" Margin="20,3,0,0">
+                                        <StackPanel VerticalAlignment="Center">
+                                            <CheckBox Name="checkBox_WoLWait"          Content="WoLしてから接続する"             Margin="0,0,20,0" Checked="checkBox_WoLWait_Checked"          ToolTipService.ShowOnDisabled="True" ToolTip="WoL→待機→接続" />
+                                            <CheckBox Name="checkBox_WoLWaitRecconect" Content="接続失敗時にWoLで再接続を試みる"                   Checked="checkBox_WoLWaitRecconect_Checked" ToolTipService.ShowOnDisabled="True" ToolTipService.ShowDuration="20000" ToolTip="WoL→接続(→待機→接続)&#10;とりあえず最初にマジックパケットは投げます。&#10;接続失敗時はEpgTimerNWが一時的に反応しにくくなっているので注意が必要です" />
+                                        </StackPanel>
+                                        <Border BorderThickness="0,1,1,1" Width="10" Margin="-20,8,-40,8" BorderBrush="Gray" />
+                                        <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                            <TextBox Name="textBox_WoLWaitSecond" Style="{StaticResource NumberBox}" />
+                                            <Label Content="秒後" />
+                                        </StackPanel>
+                                    </WrapPanel>
+                                    <CheckBox Name="checkBox_suspendClose"  Content="休止／スタンバイ移行時にEpgTimerNWを終了する" Margin="0,3,0,0" IsEnabled="False" />
+                                    <CheckBox Name="checkBox_ngAutoEpgLoad" Content="EPGデータを自動的に読み込まない"              Margin="0,3,0,0" IsEnabled="False" />
+                                    <CheckBox Name="checkBox_AutoSaveNotifyLog" Content="情報通知ログをファイルに保存する(EpgTimer側)" Margin="0,3,0,0" />
+                                </StackPanel>
                             </StackPanel>
-                        </WrapPanel>
-                        <WrapPanel>
-                            <CheckBox Name="checkBox_cautionManyChange" Content="多数の項目を処理するとき警告する" />
-                            <StackPanel Orientation="Horizontal" Margin="20,0,0,0" IsEnabled="{Binding IsChecked, ElementName=checkBox_cautionManyChange}">
-                                <TextBox Name="textBox_cautionManyChange" Style="{StaticResource NumberBox}" />
-                                <Label Content="以上" />
-                            </StackPanel>
-                        </WrapPanel>
-                        <WrapPanel>
-                            <CheckBox Name="checkBox_saveSearchKeyword" Content="検索/キーワード予約ダイアログで検索語を保存する" />
-                            <Button Content="検索語をクリア" Margin="20,2" Click="button_clearSerchKeywords" />
-                        </WrapPanel>
-                    </StackPanel>
+                        </GroupBox>
+                    </Grid>
                 </ScrollViewer>
             </TabItem>
             <TabItem Name="tabItem5" Header="カスタムボタン">

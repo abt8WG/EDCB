@@ -729,6 +729,8 @@ namespace EpgTimer
         public bool TunerTitleIndent { get; set; }
         /// <summary>使用予定チューナーの予約をポップアップ表示する</summary>
         public bool TunerPopup { get; set; }
+        /// <summary>予約のポップアップ表示 (マウスオーバー/クリックしたとき)</summary>
+        public int TunerPopupMode { get; set; }
         /// <summary>使用予定チューナーのポップアップに優先度と録画モードを表示する</summary>
         public bool TunerPopupRecinfo { get; set; }
         /// <summary>使用予定チューナーのシングルクリックで予約ダイアログを開く</summary>
@@ -743,10 +745,16 @@ namespace EpgTimer
         public bool EpgPopup { get; set; }
         /// <summary>番組表の予約のある番組のみポップアップする</summary>
         public bool EpgPopupResOnly { get; set; }
+        /// <summary>番組内容のポップアップ表示 (マウスオーバー/クリックしたとき/予約のみマウスオーバーで、他はクリックしたとき)</summary>
+        public int EpgPopupMode { get; set; }
         /// <summary>番組表の番組内容をグラデーション表示する</summary>
         public bool EpgGradation { get; set; }
         /// <summary>番組表のサービス・時刻軸をグラデーション表示する</summary>
         public bool EpgGradationHeader { get; set; }
+        /// <summary>古い番組データの表示を抑制する</summary>
+        public bool EpgNoDisplayOld { get; set; }
+        /// <summary>古い番組データをn日前まで表示</summary>
+        public double EpgNoDisplayOldDays { get; set; }
         /// <summary>番組表の並べ替えする列のヘッダー名</summary>
         public string ResColumnHead { get; set; }
         /// <summary>番組表の並べ替え操作の方向</summary>
@@ -1143,15 +1151,18 @@ namespace EpgTimer
             TunerServiceNoWrap = true;
             TunerTitleIndent = true;
             TunerPopup = false;
+            TunerPopupMode = 0;
             TunerPopupRecinfo = false;
             TunerInfoSingleClick = false;
             TunerColorModeUse = false;
             TunerDisplayOffReserve = false;
             EpgTitleIndent = true;
             EpgPopup = true;
-            EpgPopupResOnly = false;
+            EpgPopupMode = 0;
             EpgGradation = true;
             EpgGradationHeader = true;
+            EpgNoDisplayOld = false;
+            EpgNoDisplayOldDays = 1;
             ResColumnHead = "";
             ResSortDirection = ListSortDirection.Ascending;
             LastWindowState = WindowState.Normal;

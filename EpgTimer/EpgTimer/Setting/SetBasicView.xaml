@@ -32,7 +32,7 @@
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Name="label2" Content="録画用アプリのexe" />
-                            <TextBox Grid.Column="1" Name="textBox_exe" ToolTip="{Binding ElementName=textBox_exe, Path=Text}" />
+                            <TextBox Grid.Column="1" Name="textBox_exe" />
                             <Button Grid.Column="2" Name="button_exe" Content="開く" Margin="12,0,0,0" Click="button_exe_Click" />
                         </Grid>
                         <WrapPanel Margin="12,0,0,4" IsEnabled="{Binding IsEnabled, ElementName=group_exePath}">
@@ -94,7 +94,7 @@
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Content="録画情報保存フォルダ" ToolTip="未指定の場合は録画ファイルと同じ場所に保存されます。" ToolTipService.ShowOnDisabled="True" />
-                            <TextBox Grid.Column="1" Name="textBox_recInfoFolder" ToolTip="{Binding ElementName=textBox_recInfoFolder, Path=Text}" ToolTipService.ShowOnDisabled="True" />
+                            <TextBox Grid.Column="1" Name="textBox_recInfoFolder" />
                             <Button Grid.Column="2" Name="button_recInfoFolder" Content="開く" Margin="12,0,0,0" Click="button_recInfoFolder_Click" />
                         </Grid>
                         <Label Name="label4" Margin="12,8" Foreground="Red">
@@ -152,7 +152,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="EPG取得" Name="tabItem3">
-                <Grid>
+                <Grid Name="grid_epg">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1.5*" MinHeight="220" />
                         <RowDefinition Height="*" MinHeight="120" />
@@ -180,7 +180,7 @@
                                     <GridViewColumn>
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <CheckBox IsChecked="{Binding Path=IsSelected}" />
+                                                <CheckBox IsChecked="{Binding Path=IsSelected}" IsEnabled="{Binding Path=IsEnabled}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -222,7 +222,7 @@
                                     <GridViewColumn>
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <CheckBox IsChecked="{Binding Path=IsSelected}" />
+                                                <CheckBox IsChecked="{Binding Path=IsSelected}" IsEnabled="{Binding Path=IsEnabled}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
