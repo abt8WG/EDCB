@@ -32,7 +32,7 @@
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Name="label2" Content="録画用アプリのexe" />
-                            <TextBox Grid.Column="1" Name="textBox_exe" ToolTip="{Binding ElementName=textBox_exe, Path=Text}" />
+                            <TextBox Grid.Column="1" Name="textBox_exe" />
                             <Button Grid.Column="2" Name="button_exe" Content="開く" Margin="12,0,0,0" Click="button_exe_Click" />
                         </Grid>
                         <WrapPanel Margin="12,0,0,4" IsEnabled="{Binding IsEnabled, ElementName=group_exePath}">
@@ -83,7 +83,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0" Name="textBox_recFolder" />
                             <Button Grid.Column="1" Name="button_rec_open" Content="開く" Margin="12,0,0,0" Click="button_rec_open_Click" HorizontalAlignment="Right" />
-                            <Button Grid.Column="2" Name="button_rec_add" Content="追加" Margin="12,0,0,0" />
+                            <Button Grid.Column="2" Name="button_rec_add" Content="追加" Margin="12,0,0,0" VerticalAlignment="Bottom" />
                         </Grid>
                     </Grid>
                     <StackPanel Grid.Row="2">
@@ -94,7 +94,7 @@
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Content="録画情報保存フォルダ" ToolTip="未指定の場合は録画ファイルと同じ場所に保存されます。" ToolTipService.ShowOnDisabled="True" />
-                            <TextBox Grid.Column="1" Name="textBox_recInfoFolder" ToolTip="{Binding ElementName=textBox_recInfoFolder, Path=Text}" ToolTipService.ShowOnDisabled="True" />
+                            <TextBox Grid.Column="1" Name="textBox_recInfoFolder" />
                             <Button Grid.Column="2" Name="button_recInfoFolder" Content="開く" Margin="12,0,0,0" Click="button_recInfoFolder_Click" />
                         </Grid>
                         <Label Name="label4" Margin="12,8" Foreground="Red">
@@ -152,16 +152,16 @@
                 </Grid>
             </TabItem>
             <TabItem Header="EPG取得" Name="tabItem3">
-                <Grid>
+                <Grid Name="grid_epg">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="1.5*" MinHeight="220" />
-                        <RowDefinition Height="*" MinHeight="120" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
                         <RowDefinition Height="auto" />
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
-                            <ColumnDefinition MinWidth="170" MaxWidth="400" />
+                            <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
@@ -180,7 +180,7 @@
                                     <GridViewColumn>
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <CheckBox IsChecked="{Binding Path=IsSelected}" />
+                                                <CheckBox IsChecked="{Binding Path=IsSelected}" IsEnabled="{Binding Path=IsEnabled}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -196,33 +196,25 @@
                             <Button Name="button_allChk" Content="全チェック" Margin="0,8,0,0" MinWidth="150" Click="button_allChk_Click" HorizontalAlignment="Left" />
                             <Button Name="button_videoChk" Content="映像サービスのみチェック" Margin="0,8,0,0" MinWidth="150" Click="button_videoChk_Click" HorizontalAlignment="Left" />
                             <Button Name="button_allClear" Content="全クリア" Margin="0,8,0,0" MinWidth="150" Click="button_allClear_Click" HorizontalAlignment="Left" />
-                            <TextBlock Name="labe22" Margin="0,15,0,0" TextWrapping="Wrap" Text="基本情報のみ取得するネットワーク" />
-                            <WrapPanel Margin="40,0,0,0">
-                                <CheckBox Name="checkBox_bs" Content="BS" MinWidth="50" Margin="0,0,10,0" />
-                                <CheckBox Name="checkBox_cs1" Content="CS1" MinWidth="50" Margin="0,0,10,0" />
-                                <CheckBox Name="checkBox_cs2" Content="CS2" MinWidth="50" Margin="0,0,10,0" />
-                                <CheckBox Name="checkBox_cs3" Content="CS3" MinWidth="50" Margin="0,0,10,0" />
-                            </WrapPanel>
-                            <TextBlock Name="label23" Margin="0,15,0,0" TextWrapping="Wrap" Text="※詳細情報は取得できないが、短時間で取得可能になります（地デジは対象外）" />
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1" Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
-                            <ColumnDefinition MinWidth="120" MaxWidth="330" />
+                            <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" Name="label24" Content="EPG取得開始時間 (有効にするものにチェック)" Margin="12,0,0,0" />
+                        <Label Grid.Column="0" Grid.Row="0" Content="EPG取得開始時間 (有効にするものにチェック)" Margin="12,0,0,0" />
                         <ListView Grid.Column="0" Grid.Row="1" Name="ListView_time" Margin="32,0,0,0" ItemsSource="{Binding}">
                             <ListView.View>
                                 <GridView x:Name="gridView_time">
                                     <GridViewColumn>
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <CheckBox IsChecked="{Binding Path=IsSelected}" />
+                                                <CheckBox IsChecked="{Binding Path=IsSelected}" IsEnabled="{Binding Path=IsEnabled}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -239,31 +231,37 @@
                                 </GridView>
                             </ListView.View>
                         </ListView>
-                        <Grid Grid.Column="1" Grid.Row="1" Margin="20,0,20,0">
+                        <Grid Grid.Column="1" Grid.Row="1" Margin="20,0">
                             <StackPanel>
-                                <WrapPanel Margin="0,4,0,8">
-                                    <Button Name="button_addTime" Content="追加" Margin="0,0,0,4" Click="button_addTime_Click" />
-                                    <WrapPanel Margin="25,0,0,0">
-                                        <ComboBox Name="comboBox_wday" Margin="0,0,10,4" MinWidth="50" SelectedIndex="0">
-                                            <ComboBoxItem Content="毎日" />
-                                            <ComboBoxItem Content="日" />
-                                            <ComboBoxItem Content="月" />
-                                            <ComboBoxItem Content="火" />
-                                            <ComboBoxItem Content="水" />
-                                            <ComboBoxItem Content="木" />
-                                            <ComboBoxItem Content="金" />
-                                            <ComboBoxItem Content="土" />
-                                        </ComboBox>
-                                        <WrapPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                                <ComboBox Name="comboBox_HH" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
-                                                <Label Name="label25" Content="：" />
-                                            </StackPanel>
-                                            <ComboBox Name="comboBox_MM" Margin="0,0,0,4" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
-                                        </WrapPanel>
-                                    </WrapPanel>
+                                <WrapPanel >
+                                    <ComboBox Name="comboBox_wday" Margin="0,0,10,4" MinWidth="50" SelectedIndex="0">
+                                        <ComboBoxItem Content="毎日" />
+                                        <ComboBoxItem Content="日" />
+                                        <ComboBoxItem Content="月" />
+                                        <ComboBoxItem Content="火" />
+                                        <ComboBoxItem Content="水" />
+                                        <ComboBoxItem Content="木" />
+                                        <ComboBoxItem Content="金" />
+                                        <ComboBoxItem Content="土" />
+                                    </ComboBox>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <ComboBox Name="comboBox_HH" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
+                                        <Label Content="：" />
+                                    </StackPanel>
+                                    <ComboBox Name="comboBox_MM" Margin="0,0,0,4" ItemsSource="{Binding}" Style="{StaticResource NumberComboBox}" />
                                 </WrapPanel>
-                                <Button Name="button_delTime" Content="削除" HorizontalAlignment="Left" />
+                                <TextBlock Text="基本情報のみ取得するネットワーク" TextWrapping="Wrap" MinWidth="200" />
+                                <WrapPanel>
+                                    <CheckBox Name="checkBox_bs" Content="BS" MinWidth="50" Margin="10,0,0,2" />
+                                    <CheckBox Name="checkBox_cs1" Content="CS1" MinWidth="50" Margin="10,0,0,2" />
+                                    <CheckBox Name="checkBox_cs2" Content="CS2" MinWidth="50" Margin="10,0,0,2" />
+                                    <CheckBox Name="checkBox_cs3" Content="CS3" MinWidth="50" Margin="10,0,0,2" />
+                                </WrapPanel>
+                                <TextBlock Text="※詳細情報は取得できないが、短時間で取得可能になります（地デジは対象外）" TextWrapping="Wrap" MinWidth="200" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Name="button_addTime" Content="追加" Margin="0,4,20,0" Click="button_addTime_Click" />
+                                    <Button Name="button_delTime" Content="削除" Margin="0,4,20,0" />
+                                </StackPanel>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -277,15 +275,15 @@
                             <RowDefinition />
                             <RowDefinition />
                         </Grid.RowDefinitions>
-                        <Label   Grid.Column="0" Grid.Row="0" Name="label26" Content="実行抑制条件" Margin="12,8,10,0" />
+                        <Label   Grid.Column="0" Grid.Row="0" Content="実行抑制条件" Margin="12,8,10,0" />
                         <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_ngCapMin" Margin="0,8,0,0" Style="{StaticResource NumberBox}" />
-                        <Label   Grid.Column="2" Grid.Row="0" Name="label27" Margin="0,8,0,0">
-                            <TextBlock TextWrapping="Wrap">分以内に予約がある場合、実行しない　(0で録画時も実行)</TextBlock>
+                        <Label   Grid.Column="2" Grid.Row="0" Margin="0,8,0,0">
+                            <TextBlock Text="分以内に予約がある場合、実行しない (0で録画時も実行)" TextWrapping="Wrap" />
                         </Label>
-                        <Label   Grid.Column="0" Grid.Row="1" Name="label28" Content="使用チューナー条件" Margin="12,8,10,0"  />
+                        <Label   Grid.Column="0" Grid.Row="1" Content="使用チューナー条件" Margin="12,8,10,0" />
                         <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_ngTunerMin"  Margin="0,8,0,0" Style="{StaticResource NumberBox}" />
-                        <Label   Grid.Column="2" Grid.Row="1" Name="label29" Margin="0,8,0,0">
-                            <TextBlock TextWrapping="Wrap">分以内に予約がある場合、使用しない</TextBlock>
+                        <Label   Grid.Column="2" Grid.Row="1" Margin="0,8,0,0">
+                            <TextBlock Text="分以内に予約がある場合、使用しない" TextWrapping="Wrap" />
                         </Label>
                     </Grid>
                 </Grid>
@@ -303,7 +301,7 @@
                         </TextBlock>
                         <WrapPanel Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
                             <StackPanel Margin="0,4,20,0" Orientation="Horizontal">
-                                <Label Content="ポート" MinWidth="100" ToolTip="'s' を付けると HTTPS のポート指定になります。&#13;&#10;'r'をつけると HTTPS にリダイレクトします。&#13;&#10;例: 80r,443s" />
+                                <Label Content="ポート" MinWidth="100" ToolTip="'s' を付けると HTTPS のポート指定になります。&#x0d;&#x0a;'r'をつけると HTTPS にリダイレクトします。&#x0d;&#x0a;例: 80r,443s" />
                                 <TextBox Name="textBox_httpPort" Width="150" TextChanged="textBox_httpPort_TextChanged" />
                             </StackPanel>
                             <StackPanel Name="warn_ssl" Margin="20,4,0,8">

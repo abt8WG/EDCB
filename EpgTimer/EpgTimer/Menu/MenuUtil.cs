@@ -8,23 +8,22 @@ using System.Windows.Controls;
 
 namespace EpgTimer
 {
-	public enum cmdDeleteType
-	{
-		Delete,  //削除
-		Delete2, //予約ごと削除
-		Delete3  //予約のみ削除
-	}
-
-	public static class MenuUtil
+    public enum cmdDeleteType
     {
-		private enum cmdMode
-		{
-			Add,				// 追加
-			Change,				// 変更
-			Delete,				// 削除
-			DeleteReserveOnly,	// 予約のみ削除
-		}
+        Delete,  //削除
+        Delete2, //予約ごと削除
+        Delete3  //予約のみ削除
+    }
 
+    public static class MenuUtil
+    {
+        private enum cmdMode
+        {
+            Add,                // 追加
+            Change,             // 変更
+            Delete,             // 削除
+            DeleteReserveOnly,  // 予約のみ削除
+        }
 
         private static CtrlCmdUtil cmd { get { return CommonManager.Instance.CtrlCmd; } }
 
@@ -393,8 +392,8 @@ namespace EpgTimer
                     {
                         if (info.UseMargineFlag == 0)
                         {
-                            info.StartMargine = info.GetTrueMargin(true);
-                            info.EndMargine = info.GetTrueMargin(false);
+                            info.StartMargine = info.StartMarginActual;
+                            info.EndMargine = info.EndMarginActual;
                         }
 
                         info.UseMargineFlag = 1;
@@ -754,10 +753,10 @@ namespace EpgTimer
                 var message = "自動予約登録の";// + (new List<string> { "追加", "変更", "削除" }[(int)mode]);
                 switch (mode)
                 {
-                    case cmdMode.Add:				message += "追加"; break;
-                    case cmdMode.Change:			message += "変更"; break;
-                    case cmdMode.Delete:			message += "削除"; break;
-                    case cmdMode.DeleteReserveOnly:	message = "予約のみ削除"; break;
+                    case cmdMode.Add:               message += "追加"; break;
+                    case cmdMode.Change:            message += "変更"; break;
+                    case cmdMode.Delete:            message += "削除"; break;
+                    case cmdMode.DeleteReserveOnly: message = "予約のみ削除"; break;
                     default: return false;
                 }
                 if (cautionMany == true && CautionManyMessage(itemlist.Count(), message) == false) return false;

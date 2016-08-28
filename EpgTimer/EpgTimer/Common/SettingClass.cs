@@ -729,6 +729,8 @@ namespace EpgTimer
         public bool TunerTitleIndent { get; set; }
         /// <summary>使用予定チューナーの予約をポップアップ表示する</summary>
         public bool TunerPopup { get; set; }
+        /// <summary>予約のポップアップ表示 (マウスオーバー/クリックしたとき)</summary>
+        public int TunerPopupMode { get; set; }
         /// <summary>使用予定チューナーのポップアップに優先度と録画モードを表示する</summary>
         public bool TunerPopupRecinfo { get; set; }
         /// <summary>使用予定チューナーのシングルクリックで予約ダイアログを開く</summary>
@@ -743,10 +745,16 @@ namespace EpgTimer
         public bool EpgPopup { get; set; }
         /// <summary>番組表の予約のある番組のみポップアップする</summary>
         public bool EpgPopupResOnly { get; set; }
+        /// <summary>番組内容のポップアップ表示 (マウスオーバー/クリックしたとき/予約のみマウスオーバーで、他はクリックしたとき)</summary>
+        public int EpgPopupMode { get; set; }
         /// <summary>番組表の番組内容をグラデーション表示する</summary>
         public bool EpgGradation { get; set; }
         /// <summary>番組表のサービス・時刻軸をグラデーション表示する</summary>
         public bool EpgGradationHeader { get; set; }
+        /// <summary>古い番組データの表示を抑制する</summary>
+        public bool EpgNoDisplayOld { get; set; }
+        /// <summary>古い番組データをn日前まで表示</summary>
+        public double EpgNoDisplayOldDays { get; set; }
         /// <summary>番組表の並べ替えする列のヘッダー名</summary>
         public string ResColumnHead { get; set; }
         /// <summary>番組表の並べ替え操作の方向</summary>
@@ -954,32 +962,32 @@ namespace EpgTimer
         public string SearchColumnHead { get; set; }
         /// <summary>検索の並べ替え操作の方向</summary>
         public ListSortDirection SearchSortDirection { get; set; }
-		/// <summary>検索ウィンドウ用</summary>
-		public HidableWindowSet SearchWndSet { get; set; }
+        /// <summary>検索ウィンドウ用</summary>
+        public HidableWindowSet SearchWndSet { get; set; }
         /// <summary>検索/キーワード予約ダイアログで検索語を保存する</summary>
         public bool SaveSearchKeyword { get; set; }
-		/// <summary>予約簡易検索で表示する列項目のリスト</summary>
-		public List<ListColumnInfo> InfoSearchWndColumn { get; set; }
-		/// <summary>予約簡易検索の並べ替えする列のヘッダー名</summary>
-		public string InfoSearchColumnHead { get; set; }
-		/// <summary>予約簡易検索の並べ替え操作の方向</summary>
-		public ListSortDirection InfoSearchSortDirection { get; set; }
-		/// <summary>予約簡易検索の検索語</summary>
-		public string InfoSearchLastWord { get; set; }
-		/// <summary>予約簡易検索のタイトルのみ検索</summary>
-		public bool InfoSearchTitleOnly { get; set; }
-		/// <summary>予約簡易検索で予約を検索対象にする</summary>
-		public bool InfoSearchReserveInfo { get; set; }
-		/// <summary>予約簡易検索で録画結果を検索対象にする</summary>
-		public bool InfoSearchRecInfo { get; set; }
-		/// <summary>予約簡易検索でキーワード予約を検索対象にする</summary>
-		public bool InfoSearchEpgAutoAddInfo { get; set; }
-		/// <summary>予約簡易検索でプログラム予約を検索対象にする</summary>
-		public bool InfoSearchManualAutoAddInfo { get; set; }
-		/// <summary>予約簡易検索で検索結果のツールチップを表示する</summary>
-		public bool InfoSearchItemTooltip { get; set; }
-		/// <summary>予約簡易検索ウィンドウ</summary>
-		public HidableWindowSet InfoSearchWndSet { get; set; }
+        /// <summary>予約簡易検索で表示する列項目のリスト</summary>
+        public List<ListColumnInfo> InfoSearchWndColumn { get; set; }
+        /// <summary>予約簡易検索の並べ替えする列のヘッダー名</summary>
+        public string InfoSearchColumnHead { get; set; }
+        /// <summary>予約簡易検索の並べ替え操作の方向</summary>
+        public ListSortDirection InfoSearchSortDirection { get; set; }
+        /// <summary>予約簡易検索の検索語</summary>
+        public string InfoSearchLastWord { get; set; }
+        /// <summary>予約簡易検索のタイトルのみ検索</summary>
+        public bool InfoSearchTitleOnly { get; set; }
+        /// <summary>予約簡易検索で予約を検索対象にする</summary>
+        public bool InfoSearchReserveInfo { get; set; }
+        /// <summary>予約簡易検索で録画結果を検索対象にする</summary>
+        public bool InfoSearchRecInfo { get; set; }
+        /// <summary>予約簡易検索でキーワード予約を検索対象にする</summary>
+        public bool InfoSearchEpgAutoAddInfo { get; set; }
+        /// <summary>予約簡易検索でプログラム予約を検索対象にする</summary>
+        public bool InfoSearchManualAutoAddInfo { get; set; }
+        /// <summary>予約簡易検索で検索結果のツールチップを表示する</summary>
+        public bool InfoSearchItemTooltip { get; set; }
+        /// <summary>予約簡易検索ウィンドウ</summary>
+        public HidableWindowSet InfoSearchWndSet { get; set; }
         /// <summary>情報通知をファイルに記録する</summary>
         public short AutoSaveNotifyLog { get; set; }
         /// <summary>タスクトレイアイコンを表示する</summary>
@@ -1143,15 +1151,18 @@ namespace EpgTimer
             TunerServiceNoWrap = true;
             TunerTitleIndent = true;
             TunerPopup = false;
+            TunerPopupMode = 0;
             TunerPopupRecinfo = false;
             TunerInfoSingleClick = false;
             TunerColorModeUse = false;
             TunerDisplayOffReserve = false;
             EpgTitleIndent = true;
             EpgPopup = true;
-            EpgPopupResOnly = false;
+            EpgPopupMode = 0;
             EpgGradation = true;
             EpgGradationHeader = true;
+            EpgNoDisplayOld = false;
+            EpgNoDisplayOldDays = 1;
             ResColumnHead = "";
             ResSortDirection = ListSortDirection.Ascending;
             LastWindowState = WindowState.Normal;
@@ -1744,38 +1755,38 @@ namespace EpgTimer
         }
         public static List<string> GetViewButtonDefIDs(bool nwMode)
         {
-			return new List<string>
-			{
-					"設定",
-					ViewButtonSpacer,
-					"再接続",
-					ViewButtonSpacer,
-					"検索",
-					ViewButtonSpacer,
-					"スタンバイ",
-					"休止",
-					ViewButtonSpacer,
-					"EPG取得",
-					ViewButtonSpacer,
-					"EPG再読み込み",
-					ViewButtonSpacer,
-					"終了",
-			};
+            return new List<string>
+            {
+                "設定",
+                ViewButtonSpacer,
+                "再接続",
+                ViewButtonSpacer,
+                "検索",
+                ViewButtonSpacer,
+                "スタンバイ",
+                "休止",
+                ViewButtonSpacer,
+                "EPG取得",
+                ViewButtonSpacer,
+                "EPG再読み込み",
+                ViewButtonSpacer,
+                "終了",
+            };
         }
 
         public static List<string> GetTaskMenuDefIDs(bool nwMode)
         {
-			return new List<string>
-			{
-				"設定",
-				TaskMenuSeparator,
-				"再接続",
-				TaskMenuSeparator,
-				"スタンバイ",
-				"休止",
-				TaskMenuSeparator,
-				"終了",
-			};
+            return new List<string>
+            {
+                "設定",
+                TaskMenuSeparator,
+                "再接続",
+                TaskMenuSeparator,
+                "スタンバイ",
+                "休止",
+                TaskMenuSeparator,
+                "終了",
+            };
         }
 
         public static List<ListColumnInfo> GetDefaultColumn(Type t)

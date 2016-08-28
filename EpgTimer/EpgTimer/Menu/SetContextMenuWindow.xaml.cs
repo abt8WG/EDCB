@@ -73,7 +73,7 @@ namespace EpgTimer
         {
             InitializeComponent();
             try
-	        {
+            {
                 //個別設定画面用の設定
                 this.comboBoxViewSelect.DisplayMemberPath = CommonUtil.NameOf(() => new ComboItem().Value);
                 this.comboBoxViewSelect.SelectedValuePath = CommonUtil.NameOf(() => new ComboItem().Key);

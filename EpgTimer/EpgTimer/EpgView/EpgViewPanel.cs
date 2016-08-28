@@ -87,7 +87,7 @@ namespace EpgTimer.EpgView
                         width -= 4;
 
                         //分
-                        string min = (info.EventInfo.StartTimeFlag != 1 ? "未定 " : info.EventInfo.start_time.Minute.ToString("d02"));
+                        string min = (info.EventInfo.StartTimeFlag == 0 ? "未定 " : info.EventInfo.start_time.Minute.ToString("d02"));
                         double useHeight = 0;
                         if (RenderText(min, ref textDrawList, ItemFontTitle, sizeMin, width, height, x, y + baselineMin, ref useHeight, colorTitle, m) == false)
                         {

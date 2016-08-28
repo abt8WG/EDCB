@@ -134,8 +134,8 @@ namespace EpgTimer
         //パネルアイテムにマージンを適用。
         public static void ApplyMarginForPanelView(ReserveData resInfo, ref DateTime startTime, ref int duration)
         {
-            int StartMargin = resInfo.RecSetting.GetTrueMargin(true);
-            int EndMargin = resInfo.RecSetting.GetTrueMargin(false);
+            int StartMargin = resInfo.RecSetting.StartMarginActual;
+            int EndMargin = resInfo.RecSetting.EndMarginActual;
 
             if (StartMargin < 0)
             {
@@ -151,8 +151,8 @@ namespace EpgTimer
 
         public static void ApplyMarginForTunerPanelView(ReserveData resInfo, ref DateTime startTime, ref int duration)
         {
-            int StartMargin = resInfo.RecSetting.GetTrueMargin(true);
-            int EndMargin = resInfo.RecSetting.GetTrueMargin(false);
+            int StartMargin = resInfo.RecSetting.StartMarginActual;
+            int EndMargin = resInfo.RecSetting.EndMarginActual;
 
             startTime = resInfo.StartTime.AddSeconds(StartMargin * -1);
             duration = (int)resInfo.DurationSecond + StartMargin + EndMargin;
@@ -383,11 +383,13 @@ namespace EpgTimer
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
+        /*/未使用
         public static void DisableControlChildren(Control ctrl)
         {
-            ctrl.Foreground = Brushes.Gray;
+            ctrl.Foreground = SystemColors.GrayTextBrush;
             ChangeChildren(ctrl, false);
         }
+        /*/
         public static void ChangeChildren(UIElement ele, bool enabled)
         {
             foreach (var child in LogicalTreeHelper.GetChildren(ele))
@@ -441,7 +443,7 @@ namespace EpgTimer
                 if (reserveMode <= 2)
                 {
                     uint sum = (uint)(onlist.Sum(info => info.DurationSecond
-                        + info.RecSetting.GetTrueMargin(true) + info.RecSetting.GetTrueMargin(false)));
+                        + info.RecSetting.StartMarginActual + info.RecSetting.EndMarginActual));
                     text += (reserveMode == 1 ? " 総録画時間:" : " 録画時間:")
                             + CommonManager.ConvertDurationText(sum, false);
                 }
@@ -567,7 +569,7 @@ namespace EpgTimer
             lstBox.Items.Add(text);
         }
 
-		public static KeyEventHandler KeyDown_Escape_Close()
+        public static KeyEventHandler KeyDown_Escape_Close()
         {
             return new KeyEventHandler((sender, e) =>
             {
@@ -674,6 +676,15 @@ namespace EpgTimer
                     }
                 }
             }
+        }
+
+        //あらゆる意味で中途半端だけど、とりあえずこれで。
+        public static void DisableTextBoxWithMenu(TextBox txtBox)
+        {
+            txtBox.Background = SystemColors.ControlBrush;
+            txtBox.Foreground = SystemColors.GrayTextBrush;
+            txtBox.IsEnabled = true;
+            txtBox.IsReadOnly = true;
         }
     }
 }

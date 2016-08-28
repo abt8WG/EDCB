@@ -246,7 +246,7 @@ namespace EpgTimer.TunerReserveViewCtrl
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
     }

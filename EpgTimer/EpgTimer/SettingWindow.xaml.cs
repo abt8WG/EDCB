@@ -34,16 +34,16 @@ namespace EpgTimer
                 setEpgView.SaveSetting();
                 setOtherAppView.SaveSetting();
 
-                // Common.ini や EpgTimerSrv.ini の更新分をサーバー側へ通知する
-                IniSetting.Instance.UpToDate();
-
                 Settings.SaveToXmlFile();
+                ChSet5.SaveFile();
                 if (CommonManager.Instance.NWMode == false)
                 {
-                    ChSet5.SaveFile();
                     Settings.Instance.ReloadOtherOptions();//NWでは別途iniの更新通知後に実行される。
                 }
                 CommonManager.Instance.ReloadCustContentColorList();
+
+                // Common.ini や EpgTimerSrv.ini の更新分をサーバー側へ通知する
+                IniSetting.Instance.UpToDate();
             }
             catch (Exception ex)
             {

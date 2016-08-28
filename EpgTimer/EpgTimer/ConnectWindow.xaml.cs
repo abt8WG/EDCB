@@ -84,7 +84,7 @@ namespace EpgTimer
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
-			DialogResult = true;
+            DialogResult = true;
         }
 
         private void listView_List_SelectionChanged(object sender, SelectionChangedEventArgs e)

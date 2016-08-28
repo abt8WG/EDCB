@@ -66,6 +66,15 @@ namespace EpgTimer
                         return ChSet5.Load(sr);
                     }
                 }
+                else if (CommonManager.Instance.NWMode == false)
+                {
+                    // サーバーが対応していないので直接読む
+                    String filePath = SettingPath.SettingFolderPath + "\\ChSet5.txt";
+                    using (var sr = new StreamReader(filePath, Encoding.Default))
+                    {
+                        return ChSet5.Load(sr);
+                    }
+                }
             }
             catch { }
             return false;
@@ -115,7 +124,6 @@ namespace EpgTimer
         {
             try
             {
-                if (IniFileHandler.CanUpdateInifile == false) return false;
                 if (!HasChanged || chList == null) return false;
                 //
                 string output = "";
@@ -137,6 +145,9 @@ namespace EpgTimer
                     string header = ";<ChSet5.txt>\r\n";
                     if (CommonManager.Instance.CtrlCmd.SendUpdateSetting(header + output) != ErrCode.CMD_SUCCESS)
                     {
+                        if (CommonManager.Instance.NWMode == true)
+                            return false;
+
                         // サーバーが対応していないので直接書く。
                         String filePath = SettingPath.SettingFolderPath + "\\ChSet5.txt";
                         using (var writer = new System.IO.StreamWriter(filePath, false, Encoding.Default))

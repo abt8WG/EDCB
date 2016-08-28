@@ -23,20 +23,24 @@ namespace EpgTimer
         {
             InitializeComponent();
 
-            button_process_del.IsEnabled = IniFileHandler.CanUpdateInifile;
-            label2.IsEnabled = IniFileHandler.CanUpdateInifile;
-            textBox_process.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_process_add.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_process_open.IsEnabled = IniFileHandler.CanUpdateInifile;
-            label3.IsEnabled = IniFileHandler.CanUpdateInifile;
-            textBox_ng_min.IsEnabled = IniFileHandler.CanUpdateInifile;
-            label4.IsEnabled = IniFileHandler.CanUpdateInifile;
-            checkBox_ng_fileStreaming.IsEnabled = IniFileHandler.CanUpdateInifile;
-            checkBox_ng_shareFile.IsEnabled = IniFileHandler.CanUpdateInifile;
-            textBox_ng_usePC_min.IsEnabled = IniFileHandler.CanUpdateInifile;
-            label7.IsEnabled = IniFileHandler.CanUpdateInifile;
-            checkBox_ng_usePC.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_OK.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_process_del.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //label2.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //textBox_process.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_process_add.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_process_open.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //label3.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //textBox_ng_min.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //label4.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //checkBox_ng_fileStreaming.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //checkBox_ng_shareFile.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //textBox_ng_usePC_min.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //label7.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //checkBox_ng_usePC.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_OK.IsEnabled = IniFileHandler.CanUpdateInifile;
+            ViewUtil.ChangeChildren(grid_main, IniFileHandler.CanUpdateInifile);
+            //listBox_process.IsEnabled = true;
+            //ViewUtil.DisableTextBoxWithMenu(textBox_process);
+            //button_cancel.IsEnabled = true;
 
             var bx = new BoxExchangeEditor(null, listBox_process, true);
             listBox_process.SelectionChanged += ViewUtil.ListBox_TextBoxSyncSelectionChanged(listBox_process, textBox_process);
