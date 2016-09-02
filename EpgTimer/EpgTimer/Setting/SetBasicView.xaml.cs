@@ -290,13 +290,15 @@ namespace EpgTimer.Setting
             {
                 // ローカル接続時はファイルやフォルダの存在確認をしておく
                 CheckHttpFiles();
+                CheckLuaFiles();
                 CheckHttpsFiles();
                 CheckDlnaFiles();
             }
             else
             {
                 // ネットワーク接続時は警告を出さない
-                warn_http.Visibility = Visibility.Collapsed;
+                warn_docroot.Visibility = Visibility.Collapsed;
+                warn_lua.Visibility = Visibility.Collapsed;
                 warn_ssldll.Visibility = Visibility.Collapsed;
                 warn_sslcertpem.Visibility = Visibility.Collapsed;
                 warn_dlna.Visibility = Visibility.Collapsed;
@@ -853,9 +855,21 @@ namespace EpgTimer.Setting
 
         private bool CheckHttpFiles()
         {
-            bool bRet = checkBox_httpServer.IsChecked == false || Directory.Exists(textBox_docrootPath.Text) && File.Exists(TimerSrvFolder + "\\lua52.dll");
-            warn_http.IsEnabled = bRet == false;
-            warn_http.Visibility = bRet ? Visibility.Collapsed : Visibility.Visible;
+            bool bRet = Directory.Exists(textBox_docrootPath.Text);
+            if (!bRet)
+            {
+                checkBox_httpServer.IsChecked = false;
+            }
+            warn_docroot.IsEnabled = bRet == false;
+            warn_docroot.Visibility = bRet ? Visibility.Collapsed : Visibility.Visible;
+            return bRet;
+        }
+
+        private bool CheckLuaFiles()
+        {
+            bool bRet= checkBox_httpServer.IsChecked == false || File.Exists(TimerSrvFolder + "\\lua52.dll");
+            warn_lua.IsEnabled = bRet == false;
+            warn_lua.Visibility = bRet ? Visibility.Collapsed : Visibility.Visible;
             return bRet;
         }
 
@@ -891,14 +905,27 @@ namespace EpgTimer.Setting
 
         private void checkBox_httpServer_Click(object sender, RoutedEventArgs e)
         {
-            if (!CheckHttpFiles())
+            bool bHttpError = !CheckHttpFiles();
+            bool bLuaError = !CheckLuaFiles();
+            bool bHttpsError = !CheckHttpFiles();
+
+            textBox_docrootPath.IsEnabled = checkBox_httpServer.IsChecked == true;
+
+            if (bHttpError)
+            {
+                MessageBox.Show("公開フォルダが見つかりません。", "確認");
+                checkBox_httpServer.IsChecked = false;
+                textBox_docrootPath.IsEnabled = bHttpError;
+            }
+            else if (bLuaError)
             {
                 MessageBox.Show("lua52.dll ファイルが見つかりません。", "確認");
                 checkBox_httpServer.IsChecked = false;
+                textBox_docrootPath.IsEnabled = bHttpError;
             }
             else
             {
-                if (!CheckHttpsFiles())
+                if (bHttpsError)
                 {
                     textBox_httpPort.Focus();
                 }
@@ -914,6 +941,11 @@ namespace EpgTimer.Setting
         private void textBox_opensslPath_TextChanged(object sender, TextChangedEventArgs e)
         {
             button_generatePem.IsEnabled = File.Exists(textBox_opensslPath.Text);
+        }
+
+        private void textBox_docrootPath_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CheckHttpFiles();
         }
 
         private void checkBox_httpAuth_Click(object sender, RoutedEventArgs e)
@@ -1008,7 +1040,7 @@ namespace EpgTimer.Setting
 
         private void button_docrootPath_Click(object sender, RoutedEventArgs e)
         {
-            CommonManager.GetFolderNameByDialog(textBox_docrootPath, "document rootフォルダの選択");
+            CommonManager.GetFolderNameByDialog(textBox_docrootPath, "公開フォルダの選択");
         }
 
         private void button_ffmpegPath_Click(object sender, RoutedEventArgs e)

@@ -295,7 +295,7 @@
                             <CheckBox Name="checkBox_httpServer" Content="WebUI を使用する" Margin="0,0,20,0" Click="checkBox_httpServer_Click" />
                             <CheckBox Name="checkBox_httpLog" Content="ログを保存する" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" />
                         </StackPanel>
-                        <TextBlock Name="warn_http" Margin="20,4,0,4" TextWrapping="Wrap" Foreground="Red">
+                        <TextBlock Name="warn_lua" Margin="20,4,0,4" TextWrapping="Wrap" Foreground="Red">
                             WebUI を利用するには EpgTimerSrv.exe と同じフォルダに lua52.dll が必要です。<LineBreak/>
                             入手先：<Hyperlink Click="hyperLink_Click">https://sourceforge.net/projects/luabinaries/files/5.2.4/Windows%20Libraries/Dynamic/</Hyperlink>
                         </TextBlock>
@@ -343,26 +343,28 @@
                                 <TextBox Name="textBox_httpSSLVersion" Style="{StaticResource NumberBox}" />
                             </StackPanel>
                         </WrapPanel>
-                        <Grid Name="grid_paths" Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
+                        <Grid Margin="20,0,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto" MinWidth="100"/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition />
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
                             </Grid.RowDefinitions>
-                            <Label Grid.Row="0" Grid.Column="0" Content="公開フォルダ" Margin="0,4,0,0" />
-                            <TextBox Grid.Row="0" Grid.Column="1" Name="textBox_docrootPath" Margin="0,4,0,0" />
-                            <Button Grid.Row="0" Grid.Column="2" Name="button_docrootPath" Content="開く" Margin="10,4,0,0" Click="button_docrootPath_Click" />
-                            <Label Grid.Row="1" Grid.Column="0" Content="ffmpeg の場所" Margin="0,4,0,0" />
-                            <TextBox Grid.Row="1" Grid.Column="1" Name="textBox_ffmpegPath" Margin="0,4,0,0" />
-                            <Button Grid.Row="1" Grid.Column="2" Name="button_ffmpegPath" Content="開く" Margin="10,4,0,0" Click="button_ffmpegPath_Click" />
-                            <Label Grid.Row="2" Grid.Column="0" Content="readex の場所" Margin="0,4,0,0" ToolTip="{Binding ToolTip, ElementName=textBox_readexPath}"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Name="textBox_readexPath" Margin="0,4,0,0" ToolTip="ini\HttpPublic\video\readtool.zip の中にあります。展開して保存した場所を指定してください。" />
-                            <Button Grid.Row="2" Grid.Column="2" Name="button_readexPath" Content="開く" Margin="10,4,0,0" Click="button_readexPath_Click" />
+                            <Label Grid.Row="0" Grid.Column="0" Content="公開フォルダ" Margin="0,4,0,0" IsEnabled="{Binding Path=IsEnabled, ElementName=textBox_docrootPath}" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Name="textBox_docrootPath" Margin="0,4,0,0" TextChanged="textBox_docrootPath_TextChanged"/>
+                            <Button Grid.Row="0" Grid.Column="2" Name="button_docrootPath" Content="開く" Margin="10,4,0,0" Click="button_docrootPath_Click" IsEnabled="{Binding Path=IsEnabled, ElementName=textBox_docrootPath}" />
+                            <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Name="warn_docroot" Text="公開フォルダが存在しません。" TextWrapping="Wrap" Foreground="Red" Margin="100,0" />
+                            <Label Grid.Row="2" Grid.Column="0" Content="ffmpeg の場所" Margin="0,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Name="textBox_ffmpegPath" Margin="0,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" />
+                            <Button Grid.Row="2" Grid.Column="2" Name="button_ffmpegPath" Content="開く" Margin="10,4,0,0" Click="button_ffmpegPath_Click" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" />
+                            <Label Grid.Row="3" Grid.Column="0" Content="readex の場所" Margin="0,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" ToolTip="{Binding ToolTip, ElementName=textBox_readexPath}"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Name="textBox_readexPath" Margin="0,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" ToolTip="ini\HttpPublic\video\readtool.zip の中にあります。展開して保存した場所を指定してください。" />
+                            <Button Grid.Row="3" Grid.Column="2" Name="button_readexPath" Content="開く" Margin="10,4,0,0" Click="button_readexPath_Click" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}" />
                         </Grid>
                         <WrapPanel Margin="20,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_httpServer}">
                             <CheckBox Name="checkBox_httpAuth" Content="認証を使用する" Margin="-20,0,20,0" Click="checkBox_httpAuth_Click"/>
