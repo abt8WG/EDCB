@@ -1085,7 +1085,7 @@ void CEpgTimerSrvMain::PushRecSettingData(CLuaWorkspace& ws, const REC_SETTING_D
 void CEpgTimerSrvMain::PushEpgSearchKeyInfo(CLuaWorkspace& ws, const EPGDB_SEARCH_KEY_INFO& k)
 {
 	lua_State* L = ws.L;
-#if false // xtne6f版
+#if FALSE // xtne6f版
 	wstring andKey = k.andKey;
 	size_t pos = andKey.compare(0, 7, L"^!{999}") ? 0 : 7;
 	pos += andKey.compare(pos, 7, L"C!{999}") ? 0 : 7;
@@ -1117,7 +1117,7 @@ void CEpgTimerSrvMain::PushEpgSearchKeyInfo(CLuaWorkspace& ws, const EPGDB_SEARC
 	// chkRecNoService サポート
 	LuaHelp::reg_boolean(L, "chkRecNoService", k.chkRecNoService != 0);
 
-#if false // xtne6f版
+#if FALSE // xtne6f版
 	LuaHelp::reg_int(L, "chkDurationMin", durMin);
 	LuaHelp::reg_int(L, "chkDurationMax", durMax);
 #else
@@ -1239,7 +1239,7 @@ void CEpgTimerSrvMain::FetchEpgSearchKeyInfo(CLuaWorkspace& ws, EPGDB_SEARCH_KEY
 	// chkRecNoService サポート
 	k.chkRecNoService = LuaHelp::get_boolean(L, "chkRecNoService");
 
-#if false // xtne6f版
+#if FALSE // xtne6f版
 	int durMin = LuaHelp::get_int(L, "chkDurationMin");
 	int durMax = LuaHelp::get_int(L, "chkDurationMax");
 	if( durMin > 0 || durMax > 0 ){
