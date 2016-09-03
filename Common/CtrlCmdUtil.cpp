@@ -47,6 +47,20 @@ BOOL ReadVALUE( WORD ver, wstring* val, const BYTE* buff, DWORD buffSize, DWORD*
 	return TRUE;
 }
 
+DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const FILE_DATA& val )
+{
+	DWORD pos = buffOffset + sizeof(DWORD);
+	pos += WriteVALUE(ver, buff, pos, val.Name);
+	pos += WriteVALUE(ver, buff, pos, val.Size);
+	pos += WriteVALUE(ver, buff, pos, val.Status);
+	if( val.Size != 0 ){
+		if( buff != NULL ) memcpy(buff + pos, val.Data, val.Size);
+		pos += val.Size;
+	}
+	WriteVALUE(0, buff, buffOffset, pos - buffOffset);
+	return pos - buffOffset;
+}
+
 DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const REC_SETTING_DATA& val )
 {
 	DWORD pos = buffOffset + sizeof(DWORD);
@@ -691,6 +705,11 @@ DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const EPGDB_SEARCH_KEY
 		pos += WriteVALUE(ver, buff, pos, val.chkRecEnd);
 		pos += WriteVALUE(ver, buff, pos, val.chkRecDay);
 	}
+	if( ver >= 5 ){
+		pos += WriteVALUE(ver, buff, pos, val.chkRecNoService);
+		pos += WriteVALUE(ver, buff, pos, val.chkDurationMin);
+		pos += WriteVALUE(ver, buff, pos, val.chkDurationMax);
+	}
 	WriteVALUE(0, buff, buffOffset, pos - buffOffset);
 	return pos - buffOffset;
 }
@@ -723,6 +742,11 @@ BOOL ReadVALUE( WORD ver, EPGDB_SEARCH_KEY_INFO* val, const BYTE* buff, DWORD bu
 		if( ver >= 3 ){
 			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkRecEnd );
 			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkRecDay );
+		}
+		if( ver >= 5 ){
+			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkRecNoService );
+			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkDurationMin );
+			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkDurationMax );
 		}
 	}
 
@@ -1463,9 +1487,10 @@ BOOL ReadVALUE( WORD ver, NOTIFY_SRV_INFO* val, const BYTE* buff, DWORD buffSize
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //旧バージョンコマンド送信用バイナリ作成関数
-BYTE* DeprecatedNewWriteVALUE( const RESERVE_DATA& val, DWORD& writeSize, BYTE* buff )
+std::unique_ptr<BYTE[]> DeprecatedNewWriteVALUE( const RESERVE_DATA& val, DWORD& writeSize, std::unique_ptr<BYTE[]>&& buff_ )
 {
 	using namespace CtrlCmdUtilImpl_;
+	BYTE* buff = buff_.get();
 	DWORD pos = 0;
 	pos += WriteVALUE(0, buff, pos, val.title, true);
 	pos += WriteVALUE(0, buff, pos, val.startTime);
@@ -1493,15 +1518,16 @@ BYTE* DeprecatedNewWriteVALUE( const RESERVE_DATA& val, DWORD& writeSize, BYTE* 
 	pos += WriteVALUE(0, buff, pos, val.recSetting.endMargine);
 	pos += WriteVALUE(0, buff, pos, val.recSetting.serviceMode);
 	if( buff == NULL ){
-		return DeprecatedNewWriteVALUE(val, writeSize, new BYTE[pos]);
+		return DeprecatedNewWriteVALUE(val, writeSize, std::unique_ptr<BYTE[]>(new BYTE[pos]));
 	}
 	writeSize = pos;
-	return buff;
+	return std::move(buff_);
 }
 
-BOOL DeprecatedReadVALUE( RESERVE_DATA* val, const BYTE* buff, DWORD buffSize )
+BOOL DeprecatedReadVALUE( RESERVE_DATA* val, const std::unique_ptr<BYTE[]>& buff_, DWORD buffSize )
 {
 	using namespace CtrlCmdUtilImpl_;
+	const BYTE* buff = buff_.get();
 	if( val == NULL || buff == NULL ){
 		return FALSE;
 	}
@@ -1559,9 +1585,10 @@ BOOL DeprecatedReadVALUE( RESERVE_DATA* val, const BYTE* buff, DWORD buffSize )
 	return TRUE;
 }
 
-BOOL DeprecatedReadVALUE( EPG_AUTO_ADD_DATA* val, const BYTE* buff, DWORD buffSize )
+BOOL DeprecatedReadVALUE( EPG_AUTO_ADD_DATA* val, const std::unique_ptr<BYTE[]>& buff_, DWORD buffSize )
 {
 	using namespace CtrlCmdUtilImpl_;
+	const BYTE* buff = buff_.get();
 	if( val == NULL || buff == NULL ){
 		return FALSE;
 	}
@@ -1657,9 +1684,10 @@ BOOL DeprecatedReadVALUE( EPG_AUTO_ADD_DATA* val, const BYTE* buff, DWORD buffSi
 	return TRUE;
 }
 
-BYTE* DeprecatedNewWriteVALUE( const EPGDB_EVENT_INFO& val, DWORD& writeSize, BYTE* buff )
+std::unique_ptr<BYTE[]> DeprecatedNewWriteVALUE( const EPGDB_EVENT_INFO& val, DWORD& writeSize, std::unique_ptr<BYTE[]>&& buff_ )
 {
 	using namespace CtrlCmdUtilImpl_;
+	BYTE* buff = buff_.get();
 	DWORD pos = 0;
 	pos += WriteVALUE(0, buff, pos, val.original_network_id);
 	pos += WriteVALUE(0, buff, pos, val.transport_stream_id);
@@ -1704,8 +1732,8 @@ BYTE* DeprecatedNewWriteVALUE( const EPGDB_EVENT_INFO& val, DWORD& writeSize, BY
 		pos += WriteVALUE(0, buff, pos, (DWORD)data.event_id);
 	}
 	if( buff == NULL ){
-		return DeprecatedNewWriteVALUE(val, writeSize, new BYTE[pos]);
+		return DeprecatedNewWriteVALUE(val, writeSize, std::unique_ptr<BYTE[]>(new BYTE[pos]));
 	}
 	writeSize = pos;
-	return buff;
+	return std::move(buff_);
 }

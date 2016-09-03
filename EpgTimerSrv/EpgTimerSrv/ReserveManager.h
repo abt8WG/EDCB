@@ -28,13 +28,17 @@ public:
 	//予約情報を取得する
 	bool GetReserveData(DWORD id, RESERVE_DATA* reserveData, bool getRecFileName = false) const;
 	//予約情報を追加する
-	bool AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false);
+	bool AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment = false, bool setReserveStatus = false, const bool noReportNotify = false);
 	//予約情報を変更する
 	bool ChgReserveData(const vector<RESERVE_DATA>& reserveList, bool setReserveStatus = false);
 	//予約情報を削除する
 	void DelReserveData(const vector<DWORD>& idList);
 	//録画済み情報一覧を取得する
-	vector<REC_FILE_INFO> GetRecFileInfoAll() const;
+	vector<REC_FILE_INFO> GetRecFileInfoAll(bool getExtraInfo = true) const;
+	//録画済み情報を指定リストで取得する
+	vector<REC_FILE_INFO> GetRecFileInfoList(const vector<DWORD>& idLis, bool getExtraInfo = true) const;
+	//録画済み情報を取得する
+	bool GetRecFileInfo(DWORD id, REC_FILE_INFO* recInfo, bool getExtraInfo = true) const;
 	//録画済み情報を削除する
 	void DelRecFileInfo(const vector<DWORD>& idList);
 	//録画済み情報のプロテクトを変更する
@@ -66,10 +70,10 @@ public:
 	bool SetNWTVCh(bool nwUdp, bool nwTcp, const SET_CH_INFO& chInfo, const vector<DWORD>& tunerIDList);
 	//ネットワークモードのチューナを閉じる
 	bool CloseNWTV();
-	//予約が録画中であればその録画ファイル名などを取得する
-	bool GetRecFilePath(DWORD reserveID, wstring& filePath, DWORD* ctrlID, DWORD* processID) const;
+	//予約が録画中であればその録画ファイル名を取得する
+	bool GetRecFilePath(DWORD reserveID, wstring& filePath) const;
 	//指定EPGイベントは録画済みかどうか
-	bool IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, WORD chkDay) const;
+	bool IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPGDB_SEARCH_KEY_INFO& key) const;
 	//自動予約によって作成された指定イベントの予約を無効にする
 	bool ChgAutoAddNoRec(WORD onid, WORD tsid, WORD sid, WORD eid);
 	//チャンネル情報を取得する
@@ -103,6 +107,9 @@ private:
 	void CheckAutoDel() const;
 	//チューナ割り当てされていない古い予約を終了処理する
 	void CheckOverTimeReserve();
+	//予約終了を処理する
+	//shutdownMode: 最後に処理した予約の録画後動作を記録
+	void ProcessRecEnd(const vector<CTunerBankCtrl::CHECK_RESULT>& retList, int* shutdownMode = NULL);
 	//EPG取得可能なチューナIDのリストを取得する
 	vector<DWORD> GetEpgCapTunerIDList(__int64 now) const;
 	//EPG取得処理を管理する
@@ -158,12 +165,18 @@ private:
 	bool errEndBatRun;
 	wstring recNamePlugInFileName;
 	bool recNameNoChkYen;
+	int delReserveMode;
 
 	DWORD checkCount;
 	__int64 lastCheckEpgCap;
 	bool epgCapRequested;
 	bool epgCapWork;
 	bool epgCapSetTimeSync;
+	__int64 epgCapTimeSyncBase;
+	__int64 epgCapTimeSyncDelayMin;
+	__int64 epgCapTimeSyncDelayMax;
+	DWORD epgCapTimeSyncTick;
+	DWORD epgCapTimeSyncQuality;
 	int epgCapBasicOnlyFlags;
 	int shutdownModePending;
 	bool reserveModified;
