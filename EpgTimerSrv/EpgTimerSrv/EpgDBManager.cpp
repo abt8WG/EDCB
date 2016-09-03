@@ -55,11 +55,13 @@ BOOL CEpgDBManager::ReloadEpgData()
 
 UINT WINAPI CEpgDBManager::LoadThread_(LPVOID param)
 {
+	CoInitialize(NULL);
 	__try {
 		CEpgDBManager* sys = (CEpgDBManager*)param;
 		return sys->LoadThread();
 	}
 	__except (FilterException(GetExceptionInformation())) { }
+	CoUninitialize();
 	return 0;
 }
 
@@ -292,6 +294,7 @@ BOOL CEpgDBManager::ConvertEpgInfo(const EPGDB_SERVICE_INFO* service, const EPG_
 	// 検索用文字列を再生成するためにクリアしておく。
 	dest->search_event_name.clear();
 	dest->search_text_char.clear();
+	dest->searchIgnore.clear();
 	dest->searchResult.clear();
 
 	return TRUE;
@@ -393,14 +396,12 @@ BOOL CEpgDBManager::SearchEpg(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumPro
 	BOOL ret = TRUE;
 
 	map<ULONGLONG, SEARCH_RESULT_EVENT> resultMap;
-	CoInitialize(NULL);
 	{
 		IRegExpPtr regExp;
 		for( size_t i=0; i<key->size(); i++ ){
 			SearchEvent( &(*key)[i], &resultMap, regExp );
 		}
 	}
-	CoUninitialize();
 
 	vector<SEARCH_RESULT_EVENT> result;
 	map<ULONGLONG, SEARCH_RESULT_EVENT>::iterator itr;
@@ -431,7 +432,6 @@ BOOL CEpgDBManager::SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*en
 	GetSystemTime(&dummyinfo.start_time);//途中にコンバート関数があるので、まともな値を入れておく。
 	dummy.info = &dummyinfo;
 
-	CoInitialize(NULL);
 	{
 		IRegExpPtr regExp;
 		for( size_t i=0; i<key->size(); i++ ){
@@ -446,7 +446,6 @@ BOOL CEpgDBManager::SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*en
 			result.push_back(dummy);
 		}
 	}
-	CoUninitialize();
 
 	//ここはロック状態なのでコールバック先で排他制御すべきでない
 	enumProc(&result, param);
@@ -460,20 +459,14 @@ void CEpgDBManager::SearchEvent(EPGDB_SEARCH_KEY_INFO* key, map<ULONGLONG, SEARC
 		return;
 	}
 
-	struct {
-		map<ULONGLONG, CEpgDBManager::SEARCH_RESULT_EVENT>* resultMap;
-		void operator()(SEARCH_RESULT_EVENT result) {
-			ULONGLONG mapKey = _Create64Key2(
-				result.info->original_network_id,
-				result.info->transport_stream_id,
-				result.info->service_id,
-				result.info->event_id);
-			resultMap->insert(pair<ULONGLONG, CEpgDBManager::SEARCH_RESULT_EVENT>(mapKey, result));
-		}
-	} cb;
-	cb.resultMap = resultMap;
-
-	SearchEvent(key, this->epgMap, cb, regExp);
+	SearchEvent(key, this->epgMap, [&](CEpgDBManager::SEARCH_RESULT_EVENT result) {
+		ULONGLONG mapKey = _Create64Key2(
+			result.info->original_network_id,
+			result.info->transport_stream_id,
+			result.info->service_id,
+			result.info->event_id);
+		resultMap->insert(pair<ULONGLONG, CEpgDBManager::SEARCH_RESULT_EVENT>(mapKey, result));
+	}, regExp);
 }
 
 BOOL CEpgDBManager::IsEqualContent(vector<EPGDB_CONTENT_DATA>* searchKey, vector<EPGDB_CONTENT_DATA>* eventData)
@@ -848,19 +841,21 @@ void CEpgDBManager::ConvertSearchText(wstring& str)
 		0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     // FFF0 - FFFF
 	};
 
+	// str[str.size()] したくなかったため、str.c_str()[str.size()] としていたが loop内の c_str() が無駄なので外出し。
+	const wchar_t *pstr = str.c_str();
 	size_t j = 0;
 	for (size_t i = 0; i < str.size(); i++) {
-		wchar_t wch = str[i];
+		wchar_t wch = pstr[i];
 		if (wch >= 0xFF00 && wch <= 0xFFFF)
 		{
 			wchar_t wch2 = FF0X_table[wch & 0xFF];
 			if (wch2)
 			{
-				if (str.c_str()[i+1] == L'ﾞ' && ((wch >= L'ｶ' && wch <= L'ﾄ') || (wch >= L'ﾊ' && wch <= L'ﾎ')))
+				if (pstr[i+1] == L'ﾞ' && ((wch >= L'ｶ' && wch <= L'ﾄ') || (wch >= L'ﾊ' && wch <= L'ﾎ')))
 				{
 					wch2++; i++;
 				}
-				else if (str.c_str()[i+1] == L'ﾟ' && wch >= L'ﾊ' && wch <= L'ﾎ')
+				else if (pstr[i+1] == L'ﾟ' && wch >= L'ﾊ' && wch <= L'ﾎ')
 				{
 					wch2 += 2; i++;
 				}

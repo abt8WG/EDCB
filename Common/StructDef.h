@@ -316,18 +316,11 @@ typedef struct _REGIST_TCP_INFO{
 typedef struct _CMD_STREAM{
 	DWORD param;	//送信時コマンド、受信時エラーコード
 	DWORD dataSize;	//dataのサイズ（BYTE単位）
-	BYTE* data;		//送受信するバイナリデータ
+	std::unique_ptr<BYTE[]> data;	//送受信するバイナリデータ（dataSize>0のとき必ず非NULL）
 	_CMD_STREAM(void){
 		param = 0;
 		dataSize = 0;
-		data = NULL;
 	}
-	~_CMD_STREAM(void){
-		delete[] data;
-	}
-private:
-	_CMD_STREAM(const _CMD_STREAM &);
-	_CMD_STREAM & operator= (const _CMD_STREAM &);
 } CMD_STREAM;
 
 //EPG基本情報
@@ -420,7 +413,8 @@ typedef struct _EPGDB_EVENT_INFO{
 	// 検索用
 	mutable wstring search_event_name; // ConvertSearchText(shortInfo.event_name) の保存用
 	mutable wstring search_text_char;  // ConvertSearchText(shortInfo.text_char + extInfo.text_char) の保存用
-	mutable std::map<size_t, wstring> searchResult; // searchKey に対する検索結果 matchKey の保存用 
+	mutable std::vector<DWORD> searchIgnore;       // 検索にヒットしない searchKeyHash のリスト
+	mutable std::map<DWORD, wstring> searchResult; // searchKeyHash に対する検索結果 matchKey の保存用
 
 	_EPGDB_EVENT_INFO(void){
 	};
@@ -444,6 +438,7 @@ typedef struct _EPGDB_EVENT_INFO{
 		eventRelayInfo.reset(o.eventRelayInfo ? new EPGDB_EVENTGROUP_INFO(*o.eventRelayInfo) : NULL);
 		search_event_name = o.search_event_name;
 		search_text_char = o.search_text_char;
+		searchIgnore = o.searchIgnore;
 		searchResult = o.searchResult;
 	};
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -516,6 +511,7 @@ typedef struct _EPGDB_SEARCH_KEY_INFO{
 	//番組長検索用
 	WORD chkDurationMin;			//最低番組長(分/0は無制限)
 	WORD chkDurationMax;			//最大番組長(分/0は無制限)
+	mutable DWORD searchKeyHash;			// AUTO_ADD_DATA の検索キーの場合はハッシュ値を入れる。他の検索時は 0
 	_EPGDB_SEARCH_KEY_INFO(void){
 		andKey = L"";
 		notKey = L"";
@@ -530,6 +526,7 @@ typedef struct _EPGDB_SEARCH_KEY_INFO{
 		chkRecNoService = 0;
 		chkDurationMin = 0;
 		chkDurationMax = 0;
+		searchKeyHash = 0;
 	};
 }EPGDB_SEARCH_KEY_INFO;
 

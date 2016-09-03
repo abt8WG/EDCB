@@ -12,7 +12,7 @@
         <CheckBox   Grid.Row="1" Name="checkBox_tryEpgSetting" Content="番組表を一時的に変更する" Margin="29,5,0,10" Visibility="Visible" Click="checkBox_tryEpgSetting_Click" ToolTipService.ShowOnDisabled="True" ToolTip="今だけ番組表の表示を変更し、設定を保存しません。再起動などした際は保存されている設定に戻ります。" />
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,20,10">
             <Button Name="button_OK" Content="    OK    " Margin="0,0,30,0" Click="button_OK_Click" />
-            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" />
+            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" IsCancel="True" />
         </StackPanel>
     </Grid>
 </Window>

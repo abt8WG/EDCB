@@ -42,7 +42,7 @@ namespace EpgTimer
             mc.ResetCommandBindings(this, cmdMenu);
 
             //メニューの作成、ショートカットの登録
-            RefreshMenu();
+            //RefreshMenu();
         }
         public void RefreshMenu()
         {
@@ -72,7 +72,7 @@ namespace EpgTimer
         void tunerReserveView_LeftDoubleClick(object sender, Point cursorPos)
         {
             clickPos = cursorPos;
-            EpgCmds.ShowDialog.Execute(sender, cmdMenu);
+            EpgCmds.ShowDialog.Execute(null, cmdMenu);
         }
 
         /// <summary>右ボタンクリック</summary>
@@ -89,11 +89,11 @@ namespace EpgTimer
 
         protected override void UpdateStatusData(int mode = 0)
         {
-            this.status[1] = vutil.ConvertReserveStatus(reserveList.GetDataList(), "予約数", 3);
+            this.status[1] = ViewUtil.ConvertReserveStatus(reserveList.GetDataList(), "予約数", 3);
         }
         protected override bool ReloadInfoData()
         {
-            if (vutil.ReloadReserveData(this) == false) return false;
+            if (ViewUtil.ReloadReserveData(this) == false) return false;
 
             ReloadReserveViewItem();
             return true;
@@ -147,7 +147,7 @@ namespace EpgTimer
                         //マージンを適用
                         DateTime startTime = reserveInfo.StartTime;
                         Int32 duration = (Int32)reserveInfo.DurationSecond;
-                        vutil.ApplyMarginForTunerPanelView(reserveInfo, ref startTime, ref duration);
+                        ViewUtil.ApplyMarginForTunerPanelView(reserveInfo, ref startTime, ref duration);
 
                         newItem.Height = duration * Settings.Instance.TunerMinHeight / 60;
                         newItem.Width = tunerWidthSingle;
@@ -160,7 +160,7 @@ namespace EpgTimer
                             //マージンを適用
                             DateTime startTimeAdd = addedInfo.StartTime;
                             Int32 durationAdd = (Int32)addedInfo.DurationSecond;
-                            vutil.ApplyMarginForTunerPanelView(addedInfo, ref startTimeAdd, ref durationAdd);
+                            ViewUtil.ApplyMarginForTunerPanelView(addedInfo, ref startTimeAdd, ref durationAdd);
 
                             if (MenuUtil.CulcOverlapLength(startTime, (UInt32)duration, startTimeAdd, (UInt32)durationAdd) > 0)
                             {
@@ -210,7 +210,7 @@ namespace EpgTimer
                     //マージンを適用
                     DateTime startTime = item.ReserveInfo.StartTime;
                     Int32 dummy = 0;
-                    vutil.ApplyMarginForTunerPanelView(item.ReserveInfo, ref startTime, ref dummy);
+                    ViewUtil.ApplyMarginForTunerPanelView(item.ReserveInfo, ref startTime, ref dummy);
 
                     var chkStartTime = new DateTime(startTime.Year, startTime.Month, startTime.Day, startTime.Hour, 0, 0);
                     int index = timeList.BinarySearch(chkStartTime);
@@ -238,7 +238,7 @@ namespace EpgTimer
                 {
                     lineHeight += 2; // 番組名との間隔は 2px にする
                 }
-                vutil.ModifierMinimumHeight<ReserveData, ReserveViewItem>(reserveList, lineHeight + 2); //2ドットは枠の分
+                ViewUtil.ModifierMinimumHeight<ReserveData, ReserveViewItem>(reserveList, lineHeight + 2); //2ドットは枠の分
 
                 //必要時間リストの修正。最低表示行数の適用で下に溢れた分を追加する。
                 if (reserveList.Count != 0 && timeList.Count > 0)

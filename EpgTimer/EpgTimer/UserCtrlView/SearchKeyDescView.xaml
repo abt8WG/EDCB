@@ -44,11 +44,11 @@
                                     <RowDefinition/>
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
-                                <CheckBox Grid.Column="0" Grid.Row="0" Name="checkBox_notContent" Content="NOT扱いとする" Margin="0,4,10,0" />
-                                <Button Grid.Column="1" Grid.Row="0" Name="button_content_clear" Content="全クリア" Margin="0,4,10,0" Click="button_content_clear_Click" />
-                                <Button Grid.Column="2" Grid.Row="0" Name="button_content_del" Content="削除" Margin="0,4,0,0" Click="button_content_del_Click" />
-                                <ComboBox Grid.ColumnSpan="2" Grid.Row="1" Name="comboBox_content" Margin="0,4,10,0" ItemsSource="{Binding}" />
-                                <Button Grid.Column="2" Grid.Row="1" Name="button_content_add" Content="追加" Margin="0,4,0,0" Click="button_content_add_Click" />
+                                <CheckBox Grid.Column="0"     Grid.Row="0" Name="checkBox_notContent"  Content="NOT扱いとする" Margin="0,4,10,0" />
+                                <Button   Grid.Column="1"     Grid.Row="0" Name="button_content_clear" Content="全クリア"      Margin="0,4,10,0" />
+                                <Button   Grid.Column="2"     Grid.Row="0" Name="button_content_del"   Content="削除"          Margin="0,4,0,0" />
+                                <ComboBox Grid.ColumnSpan="2" Grid.Row="1" Name="comboBox_content"                             Margin="0,4,10,0" ItemsSource="{Binding}" />
+                                <Button   Grid.Column="2"     Grid.Row="1" Name="button_content_add"   Content="追加"          Margin="0,4,0,0" Click="button_content_add_Click" />
                             </Grid>
                         </Grid>
                     </Grid>
@@ -147,8 +147,8 @@
                                 <ListBox Grid.Row="0" Name="listBox_date" SelectionMode="Extended" />
                                 <CheckBox Grid.Row="1" Name="checkBox_notDate" Content="NOT扱いとする" Margin="0,4"/>
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Name="button_date_clear" Content="全クリア" Margin="0,0,10,0"  Click="button_date_clear_Click" />
-                                    <Button Name="button_date_del" Content="削除" Click="button_date_del_Click" />
+                                    <Button Name="button_date_clear" Content="全クリア" Margin="0,0,10,0"  />
+                                    <Button Name="button_date_del"   Content="削除" />
                                 </StackPanel>
                             </Grid>
 

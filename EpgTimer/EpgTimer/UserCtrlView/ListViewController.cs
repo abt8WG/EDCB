@@ -7,7 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Windows.Threading;
-
 using System.Reflection;
 
 namespace EpgTimer
@@ -16,12 +15,11 @@ namespace EpgTimer
 
     public class ListViewController<T> where T : class
     {
-        private MenuUtil mutil = CommonManager.Instance.MUtil;
-        private ViewUtil vutil = CommonManager.Instance.VUtil;
-
         public GridViewSelector gvSelector { get; private set; }
         public GridViewSorter gvSorter { get; private set; }
         public List<T> dataList { get; set; }
+
+        private BoxExchangeEdit.BoxExchangeEditor bx = new BoxExchangeEdit.BoxExchangeEditor();
 
         private ListBoxItem ClickTarget = null;
 
@@ -120,72 +118,42 @@ namespace EpgTimer
                 {
                     //コンテキストメニューを開いたとき、アイテムがあればそれを保存する。無ければNULLになる。
                     var lb = (sender as ContextMenu).PlacementTarget as ListBox;
-                    if (lb != null) ClickTarget = lb.PlacementItem();
+                    if (lb != null) ClickTarget = lb.GetPlacementItem() as ListBoxItem;
                 };
                 lv.ContextMenu.Closed += (sender, e) => ClickTarget = null;
             }
 
-            gvSelector = new GridViewSelector(gv, this.columnSaveList);
+            gvSelector = new GridViewSelector(gv,
+                column_SavePath == null ? null as Func<List<ListColumnInfo>> : () => Settings.Instance.GetSettings(column_SavePath) as List<ListColumnInfo>,
+                column_SavePath == null ? null as Func<List<ListColumnInfo>> : () => Settings.GetDefaultColumn(Owner.GetType()));
             gvSorter = new GridViewSorter();
             gvInitialSort();
 
-            //アイテムの無い場所でクリックしたとき、選択を解除する。
-            listView.MouseLeftButtonUp += new MouseButtonEventHandler((sender, e) =>
-            {
-                if (listView.InputHitTest(e.GetPosition(listView)) is ScrollViewer)//本当にこれで良いのだろうか？
-                {
-                    listView.UnselectAll();
-                }
-            });
-
-            //Escapeキーで選択を解除する。
-            listView.KeyDown += new KeyEventHandler((sender, e) =>
-            {
-                if (Keyboard.Modifiers == ModifierKeys.None)
-                {
-                    switch (e.Key)
-                    {
-                        case Key.Escape:
-                            if (listView.SelectedItem != null)
-                            {
-                                listView.UnselectAll();
-                                e.Handled = true;
-                            }
-                            break;
-                    }
-                }
-            });
+            //Escapeキー及びアイテムの無い場所のクリックで、選択を解除する。
+            bx.targetBoxAllowCancelAction(listView);
         }
 
         public void SetSelectedItemDoubleClick(RoutedCommand cmd)
         {
             if (cmd == null) return;
-            SetSelectedItemDoubleClick((sender, e) => cmd.Execute(sender, this.Owner));
+            SetSelectedItemDoubleClick((sender, e) => cmd.Execute(null, listView));
         }
 
         public void SetSelectedItemDoubleClick(MouseButtonEventHandler hdlr)
         {
             if (hdlr == null) return;
-            listView.MouseDoubleClick += new MouseButtonEventHandler((sender, e) =>
-            {
-                var hitItem = listView.PlacementItem(e.GetPosition(listView));
-                if (hitItem != null) hdlr(hitItem, e);
-            });
+            bx.targetBoxAllowDoubleClick(listView, hdlr);
         }
 
         public void SaveViewDataToSettings()
         {
             try
             {
-                gvSelector.SaveSize(this.columnSaveList);
+                gvSelector.SaveSize();
                 Settings.Instance.SetSettings(sort_HeaderSavePath, this.gvSorter.LastHeader);
                 Settings.Instance.SetSettings(sort_DirectionSavePath, this.gvSorter.LastDirection);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
-        }
-        private List<ListColumnInfo> columnSaveList
-        {
-            get { return Settings.Instance.GetSettings(column_SavePath) as List<ListColumnInfo>; }
         }
 
         public bool ReloadInfoData(Func<List<T>, bool> reloadData)
@@ -193,7 +161,7 @@ namespace EpgTimer
             try
             {
                 //更新前の選択情報の保存
-                var oldItems = new ListViewSelectedKeeper(listView, true);
+                var oldItems = new ListViewSelectedKeeper(listView, true, GridViewSorter.GetKeyFunc(typeof(T)));
 
                 listView.ItemsSource = null;
                 dataList.Clear();
@@ -277,7 +245,7 @@ namespace EpgTimer
             {
                 listView.SelectedItem = hitItem;
             }
-            cmd.Execute(listView, this.Owner);
+            cmd.Execute(null, listView);
         }
     }
 }

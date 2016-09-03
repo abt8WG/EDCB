@@ -33,7 +33,7 @@
         </TabControl>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12">
             <Button Name="button_OK" Content="    OK    " Margin="0,0,30,0" Click="button_OK_Click" />
-            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" />
+            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" IsCancel="True" />
        </StackPanel>
     </Grid>
 </Window>

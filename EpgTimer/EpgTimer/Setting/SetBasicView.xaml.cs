@@ -9,23 +9,12 @@ using System.Reflection;
 
 namespace EpgTimer.Setting
 {
-    //BonDriver一覧の表示・設定用クラス
-    public class TunerInfo
-    {
-        public TunerInfo(string bon) { BonDriver = bon; }
-        public String BonDriver { get; set; }
-        public String TunerNum { get; set; }
-        public String EPGNum { get; set; }
-        public bool IsEpgCap { get; set; }
-        public override string ToString() { return BonDriver; }
-    }
-
     /// <summary>
     /// SetBasicView.xaml の相互作用ロジック
     /// </summary>
     public partial class SetBasicView : UserControl
     {
-        private ObservableCollection<EpgCaptime> timeList;
+        private ObservableCollection<EpgCaptime> timeList = new ObservableCollection<EpgCaptime>();
         private List<ServiceViewItem> serviceList;
 
         public bool IsChangeSettingPath { get; private set; }
@@ -35,8 +24,6 @@ namespace EpgTimer.Setting
             InitializeComponent();
 
             IsChangeSettingPath = false;
-
-            listBox_Button_Set();
 
             try
             {
@@ -52,16 +39,15 @@ namespace EpgTimer.Setting
                 }
                 group_recFolder.IsEnabled = IniFileHandler.CanUpdateInifile; // 録画保存フォルダ
 
-                // 読める設定のみ項目に反映させる
-                if (IniFileHandler.CanReadInifile)
-                {
-                    textBox_setPath.Text = SettingPath.SettingFolderPath;
-                    textBox_exe.Text = SettingPath.EdcbExePath;
+                listBox_Button_Set();
 
-                    textBox_recInfoFolder.Text = IniFileHandler.GetPrivateProfileString("SET", "RecInfoFolder", "", SettingPath.CommonIniPath);
+                // 設定関係保存フォルダ
+                textBox_setPath.Text = SettingPath.SettingFolderPath;
 
-                    Settings.Instance.DefRecFolders.ForEach(folder => listBox_recFolder.Items.Add(new UserCtrlView.BGBarListBoxItem(folder)));
-                }
+                //録画用アプリのexe
+                textBox_exe.Text = SettingPath.EdcbExePath;
+
+                //コマンドライン引数
                 if (CommonManager.Instance.NWMode == false)
                 {
                     string viewAppIniPath = SettingPath.ModulePath.TrimEnd('\\') + "\\ViewApp.ini";
@@ -70,15 +56,21 @@ namespace EpgTimer.Setting
                     textBox_cmdViewOff.Text = IniFileHandler.GetPrivateProfileString("APP_CMD_OPT", "ViewOff", "-noview", viewAppIniPath);
                 }
 
+                if (IniFileHandler.CanReadInifile)
+                {
+                    Settings.Instance.DefRecFolders.ForEach(folder => listBox_recFolder.Items.Add(new UserCtrlView.BGBarListBoxItem(folder)));
+                    textBox_recInfoFolder.Text = IniFileHandler.GetPrivateProfileString("SET", "RecInfoFolder", "", SettingPath.CommonIniPath);
+                }
+
+                button_shortCut.Content = SettingPath.ModuleName + ".exe" + (File.Exists(
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), SettingPath.ModuleName + ".lnk")) ? "を解除" : "");
+                button_shortCutSrv.Content = (string)button_shortCutSrv.Content + (File.Exists(
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "EpgTimerSrv.lnk")) ? "を解除" : "");
+
                 // tabItem2 - チューナー
                 // 保存できない項目は IsEnabled = false にする
-                if (IniFileHandler.CanUpdateInifile == false)
-                {
-                    CommonManager.Instance.VUtil.DisableControlChildren(tabItem2);
-                    grid_tuner.IsEnabled = true;
-                    CommonManager.Instance.VUtil.ChangeChildren(grid_tuner, false);
-                }
-                listBox_bon.IsEnabled = IniFileHandler.CanUpdateInifile;
+                ViewUtil.ChangeChildren(grid_tuner, IniFileHandler.CanUpdateInifile);
+                listBox_bon.IsEnabled = IniFileHandler.CanUpdateInifile; // TODO: listBox_bon が grid_tuner の孫なので Enable にならない
 
                 // 読める設定のみ項目に反映させる
                 if (IniFileHandler.CanReadInifile)
@@ -120,31 +112,24 @@ namespace EpgTimer.Setting
                         listBox_bon.SelectedIndex = 0;
                     }
                 }
-                button_shortCut.Content = SettingPath.ModuleName + ".exe" + (File.Exists(
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), SettingPath.ModuleName + ".lnk")) ? "を解除" : "");
-                button_shortCutSrv.Content = (string)button_shortCutSrv.Content + (File.Exists(
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "EpgTimerSrv.lnk")) ? "を解除" : "");
 
                 // tabItem3 - EPG取得
                 // 保存できない項目は IsEnabled = false にする
-                if (IniFileHandler.CanUpdateInifile == false)
-                {
-                    CommonManager.Instance.VUtil.DisableControlChildren(tabItem3);
-                }
-                listView_service.IsEnabled = IniFileHandler.CanUpdateInifile;
+                ViewUtil.ChangeChildren(tabItem3, IniFileHandler.CanUpdateInifile);
+
+                comboBox_HH.DataContext = CommonManager.Instance.HourDictionary.Values;
+                comboBox_HH.SelectedIndex = 0;
+                comboBox_MM.DataContext = CommonManager.Instance.MinDictionary.Values;
+                comboBox_MM.SelectedIndex = 0;
+
+                serviceList = new List<ServiceViewItem>();
 
                 // 読める設定のみ項目に反映させる
-                serviceList = new List<ServiceViewItem>();
                 if (IniFileHandler.CanReadInifile)
                 {
-                    comboBox_HH.DataContext = CommonManager.Instance.HourDictionary.Values;
-                    comboBox_HH.SelectedIndex = 0;
-                    comboBox_MM.DataContext = CommonManager.Instance.MinDictionary.Values;
-                    comboBox_MM.SelectedIndex = 0;
-
                     try
                     {
-                        foreach (ChSet5Item info in ChSet5.Instance.ChList.Values)
+                        foreach (ChSet5Item info in ChSet5.ChList.Values)
                         {
                             ServiceViewItem item = new ServiceViewItem(info);
                             if (info.EpgCapFlag == 1)
@@ -187,8 +172,15 @@ namespace EpgTimer.Setting
                     {
                         checkBox_cs2.IsChecked = false;
                     }
+                    if (IniFileHandler.GetPrivateProfileInt("SET", "CS3BasicOnly", 0, SettingPath.CommonIniPath) == 1)
+                    {
+                        checkBox_cs3.IsChecked = true;
+                    }
+                    else
+                    {
+                        checkBox_cs3.IsChecked = false;
+                    }
 
-                    timeList = new ObservableCollection<EpgCaptime>();
                     int capCount = IniFileHandler.GetPrivateProfileInt("EPG_CAP", "Count", 0, SettingPath.TimerSrvIniPath);
                     if (capCount == 0)
                     {
@@ -198,6 +190,7 @@ namespace EpgTimer.Setting
                         item.BSBasicOnly = checkBox_bs.IsChecked == true;
                         item.CS1BasicOnly = checkBox_cs1.IsChecked == true;
                         item.CS2BasicOnly = checkBox_cs2.IsChecked == true;
+                        item.CS3BasicOnly = checkBox_cs3.IsChecked == true;
                         timeList.Add(item);
                     }
                     else
@@ -214,19 +207,21 @@ namespace EpgTimer.Setting
                             {
                                 item.IsSelected = false;
                             }
-                            // 取得種別(bit0(LSB)=BS,bit1=CS1,bit2=CS2)。負値のときは共通設定に従う
+                            // 取得種別(bit0(LSB)=BS,bit1=CS1,bit2=CS2,bit3=CS3)。負値のときは共通設定に従う
                             int flags = IniFileHandler.GetPrivateProfileInt("EPG_CAP", i.ToString() + "BasicOnlyFlags", -1, SettingPath.TimerSrvIniPath);
                             if (flags >= 0)
                             {
                                 item.BSBasicOnly = (flags & 1) != 0;
                                 item.CS1BasicOnly = (flags & 2) != 0;
                                 item.CS2BasicOnly = (flags & 4) != 0;
+                                item.CS3BasicOnly = (flags & 8) != 0;
                             }
                             else
                             {
                                 item.BSBasicOnly = checkBox_bs.IsChecked == true;
                                 item.CS1BasicOnly = checkBox_cs1.IsChecked == true;
                                 item.CS2BasicOnly = checkBox_cs2.IsChecked == true;
+                                item.CS3BasicOnly = checkBox_cs3.IsChecked == true;
                             }
                             timeList.Add(item);
                         }
@@ -239,10 +234,7 @@ namespace EpgTimer.Setting
 
                 SetBasicView_tabItem4();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         private string TimerSrvFolder { get { return System.IO.Path.GetDirectoryName(SettingPath.TimerSrvIniPath); } }
@@ -254,7 +246,7 @@ namespace EpgTimer.Setting
             // 保存できない項目は IsEnabled = false にする
             if (CommonManager.Instance.NWMode == true)
             {
-                CommonManager.Instance.VUtil.DisableControlChildren(tabItem4);
+                ViewUtil.ChangeChildren(tabItem4, false);
             }
             else
             {
@@ -278,9 +270,13 @@ namespace EpgTimer.Setting
                 textBox_opensslPath.Text = IniFileHandler.GetPrivateProfileString("SET", "OpensslExeFile", opensslExe, SettingPath.TimerSrvIniPath);
 
                 textBox_httpAcl.Text = IniFileHandler.GetPrivateProfileString("SET", "HttpAccessControlList", "+127.0.0.1", SettingPath.TimerSrvIniPath);
-                textBox_httpThreads.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpNumThreads", 3, SettingPath.TimerSrvIniPath).ToString();
+                textBox_httpThreads.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpNumThreads", 5, SettingPath.TimerSrvIniPath).ToString();
                 textBox_httpTimeout.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpRequestTimeoutSec", 120, SettingPath.TimerSrvIniPath).ToString();
                 textBox_httpSSLVersion.Text = IniFileHandler.GetPrivateProfileInt("SET", "HttpSslProtocolVersion", 2, SettingPath.TimerSrvIniPath).ToString();
+
+                // TODO: 未実装パラメータ
+                //IniFileHandler.GetPrivateProfileString("SET", "HttpSslCipherList", "HIGH:!aNULL:!MD5", SettingPath.TimerSrvIniPath).ToString();
+                //IniFileHandler.GetPrivateProfileInt("SET", "HttpKeepAlive", 0, SettingPath.TimerSrvIniPath).ToString();
 
                 string document_root = CommonManager.Instance.NWMode ? "" : TimerSrvFolder + "\\HttpPublic";
                 textBox_docrootPath.Text = IniFileHandler.GetPrivateProfileString("SET", "HttpPublicFolder", document_root, SettingPath.TimerSrvIniPath);
@@ -294,13 +290,15 @@ namespace EpgTimer.Setting
             {
                 // ローカル接続時はファイルやフォルダの存在確認をしておく
                 CheckHttpFiles();
+                CheckLuaFiles();
                 CheckHttpsFiles();
                 CheckDlnaFiles();
             }
             else
             {
                 // ネットワーク接続時は警告を出さない
-                warn_http.Visibility = Visibility.Collapsed;
+                warn_docroot.Visibility = Visibility.Collapsed;
+                warn_lua.Visibility = Visibility.Collapsed;
                 warn_ssldll.Visibility = Visibility.Collapsed;
                 warn_sslcertpem.Visibility = Visibility.Collapsed;
                 warn_dlna.Visibility = Visibility.Collapsed;
@@ -421,6 +419,17 @@ namespace EpgTimer.Setting
                         IniFileHandler.WritePrivateProfileString("SET", "CS2BasicOnly", "0", SettingPath.CommonIniPath);
                     }
                 }
+                if (checkBox_cs3.IsEnabled)
+                {
+                    if (checkBox_cs3.IsChecked == true)
+                    {
+                        IniFileHandler.WritePrivateProfileString("SET", "CS3BasicOnly", "1", SettingPath.CommonIniPath);
+                    }
+                    else
+                    {
+                        IniFileHandler.WritePrivateProfileString("SET", "CS3BasicOnly", "0", SettingPath.CommonIniPath);
+                    }
+                }
 
                 foreach (ServiceViewItem info in serviceList)
                 {
@@ -429,11 +438,11 @@ namespace EpgTimer.Setting
                     {
                         if (info.IsSelected == true)
                         {
-                            ChSet5.Instance.ChList[key].EpgCapFlag = 1;
+                            ChSet5.ChList[key].EpgCapFlag = 1;
                         }
                         else
                         {
-                            ChSet5.Instance.ChList[key].EpgCapFlag = 0;
+                            ChSet5.ChList[key].EpgCapFlag = 0;
                         }
                     }
                     catch
@@ -456,7 +465,7 @@ namespace EpgTimer.Setting
                         {
                             IniFileHandler.WritePrivateProfileString("EPG_CAP", i.ToString() + "Select", "0", SettingPath.TimerSrvIniPath);
                         }
-                        int flags = (item.BSBasicOnly ? 1 : 0) | (item.CS1BasicOnly ? 2 : 0) | (item.CS2BasicOnly ? 4 : 0);
+                        int flags = (item.BSBasicOnly ? 1 : 0) | (item.CS1BasicOnly ? 2 : 0) | (item.CS2BasicOnly ? 4 : 0) | (item.CS3BasicOnly ? 8 : 0);
                         IniFileHandler.WritePrivateProfileString("EPG_CAP", i.ToString() + "BasicOnlyFlags", flags.ToString(), SettingPath.TimerSrvIniPath);
                     }
                 }
@@ -550,28 +559,104 @@ namespace EpgTimer.Setting
         }
         private void button_exe_Click(object sender, RoutedEventArgs e)
         {
-            CommonManager.GetFileNameByDialog(textBox_exe, false, "", ".exe");
+            CommonManager.GetFileNameByDialog(textBox_exe, false, "", ".exe", true);
         }
         private void button_recInfoFolder_Click(object sender, RoutedEventArgs e)
         {
-            CommonManager.GetFolderNameByDialog(textBox_recInfoFolder, "録画情報保存フォルダの選択");
+            CommonManager.GetFolderNameByDialog(textBox_recInfoFolder, "録画情報保存フォルダの選択", true);
         }
 
-
-        //ボタン表示画面の上下ボタンのみ他と同じものを使用する。
-        private BoxExchangeEditor bxr = new BoxExchangeEditor();
-        private BoxExchangeEditor bxb = new BoxExchangeEditor();
         private void listBox_Button_Set()
         {
-            //録画設定関係
-            bxr.TargetBox = this.listBox_recFolder;
-            button_rec_up.Click += new RoutedEventHandler(bxr.button_up_Click);
-            button_rec_down.Click += new RoutedEventHandler(bxr.button_down_Click);
+            //エスケープキャンセルだけは常に有効にする。
+            var bxr = new BoxExchangeEdit.BoxExchangeEditor(null, this.listBox_recFolder, true);
+            var bxb = new BoxExchangeEdit.BoxExchangeEditor(null, this.listBox_bon, true);
+            var bxt = new BoxExchangeEdit.BoxExchangeEditor(null, this.ListView_time, true);
 
-            //チューナ関係関係
-            bxb.TargetBox = this.listBox_bon;
-            button_bon_up.Click += new RoutedEventHandler(bxb.button_up_Click);
-            button_bon_down.Click += new RoutedEventHandler(bxb.button_down_Click);
+            bxr.TargetBox.SelectionChanged += ViewUtil.ListBox_TextBoxSyncSelectionChanged(bxr.TargetBox, textBox_recFolder);
+            bxr.TargetBox.KeyDown += ViewUtil.KeyDown_Enter(button_rec_open);
+            bxr.targetBoxAllowDoubleClick(bxr.TargetBox, (sender, e) => button_rec_open.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
+
+            if (listBox_recFolder.IsEnabled == true)
+            {
+                //録画設定関係
+                bxr.AllowDragDrop();
+                bxr.AllowKeyAction();
+                button_rec_up.Click += new RoutedEventHandler(bxr.button_Up_Click);
+                button_rec_down.Click += new RoutedEventHandler(bxr.button_Down_Click);
+                button_rec_del.Click += new RoutedEventHandler(bxr.button_Delete_Click);
+                button_rec_add.Click += button_rec_add_Click; // ViewUtil.ListBox_TextCheckAdd(listBox_recFolder, textBox_recFolder);
+                textBox_recFolder.KeyDown += ViewUtil.KeyDown_Enter(button_rec_add);
+            }
+            if (listBox_bon.IsEnabled == true)
+            {
+                //チューナ関係関係
+                bxb.AllowDragDrop();
+                button_bon_up.Click += new RoutedEventHandler(bxb.button_Up_Click);
+                button_bon_down.Click += new RoutedEventHandler(bxb.button_Down_Click);
+            }
+            if (ListView_time.IsEnabled == true)
+            {
+                //EPG取得関係
+                bxt.TargetItemsSource = timeList;
+                bxt.AllowDragDrop();
+                bxt.AllowKeyAction();
+                button_delTime.Click += new RoutedEventHandler(bxt.button_Delete_Click);
+
+                new BoxExchangeEdit.BoxExchangeEditor(null, this.listView_service, true);
+            }
+        }
+
+        private void button_rec_add_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(textBox_recFolder.Text) == true) return;
+
+                foreach (var info in listBox_recFolder.Items)
+                {
+                    if (String.Compare(textBox_recFolder.Text, info.ToString(), true) == 0)
+                    {
+                        MessageBox.Show("すでに追加されています");
+                        return;
+                    }
+                }
+
+                // 追加対象のフォルダーの空き容量をサーバーに問い合わせてみる
+                // SendEnumRecFolders にフォルダー名を指定した場合、そのフォルダーの空き容量を返してくる
+                var folders = new List<RecFolderInfo>();
+                if (CommonManager.Instance.CtrlCmd.SendEnumRecFolders(textBox_recFolder.Text, ref folders) != ErrCode.CMD_SUCCESS)
+                {
+                    if (CommonManager.Instance.NW.IsConnected == false)
+                    {
+                        if (System.IO.Directory.Exists(textBox_recFolder.Text))
+                        {
+                            //サーバーが問い合わせに対応していないようなので、フォルダー名だけ登録する
+                            folders.Add(new RecFolderInfo(textBox_recFolder.Text));
+                        }
+                        else
+                        {
+                            MessageBox.Show("フォルダーが存在するか確認してください。");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("EpgTimerNW ではフォルダーの追加は出来ません。");
+                        return;
+                    }
+                }
+                if (folders.Count == 1)
+                {
+                    listBox_recFolder.Items.Add(new UserCtrlView.BGBarListBoxItem(folders[0]));
+                }
+                else
+                {
+                    // SendEnumRecFolders でフォルダーの空き容量が取得できなかった場合
+                    MessageBox.Show("サーバーからアクセスできるフォルダーか確認してください。");
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         private void button_rec_del_Click(object sender, RoutedEventArgs e)
@@ -594,63 +679,7 @@ namespace EpgTimer.Setting
 
         private void button_rec_open_Click(object sender, RoutedEventArgs e)
         {
-            CommonManager.GetFolderNameByDialog(textBox_recFolder, "録画フォルダの選択");
-        }
-
-        private void button_rec_add_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (String.IsNullOrEmpty(textBox_recFolder.Text) == false)
-                {
-                    foreach (var info in listBox_recFolder.Items)
-                    {
-                        if (String.Compare(textBox_recFolder.Text, info.ToString(), true) == 0)
-                        {
-                            MessageBox.Show("すでに追加されています");
-                            return;
-                        }
-                    }
-
-                    // 追加対象のフォルダーの空き容量をサーバーに問い合わせてみる
-                    // SendEnumRecFolders にフォルダー名を指定した場合、そのフォルダーの空き容量を返してくる
-                    var folders = new List<RecFolderInfo>();
-                    if (CommonManager.Instance.CtrlCmd.SendEnumRecFolders(textBox_recFolder.Text, ref folders) != ErrCode.CMD_SUCCESS)
-                    {
-                        if (CommonManager.Instance.NW.IsConnected == false)
-                        {
-                            if (System.IO.Directory.Exists(textBox_recFolder.Text))
-                            {
-                                //サーバーが問い合わせに対応していないようなので、フォルダー名だけ登録する
-                                folders.Add(new RecFolderInfo(textBox_recFolder.Text));
-                            }
-                            else
-                            {
-                                MessageBox.Show("フォルダーが存在するか確認してください。");
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show("EpgTimerNW ではフォルダーの追加は出来ません。");
-                            return;
-                        }
-                    }
-                    if (folders.Count == 1)
-                    {
-                        listBox_recFolder.Items.Add(new UserCtrlView.BGBarListBoxItem(folders[0]));
-                    }
-                    else
-                    {
-                        // SendEnumRecFolders でフォルダーの空き容量が取得できなかった場合
-                        MessageBox.Show("サーバーからアクセスできるフォルダーか確認してください。");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            CommonManager.GetFolderNameByDialog(textBox_recFolder, "録画フォルダの選択", true);
         }
 
         private void button_shortCut_Click(object sender, RoutedEventArgs e)
@@ -814,23 +843,8 @@ namespace EpgTimer.Setting
                     item.BSBasicOnly = checkBox_bs.IsChecked == true;
                     item.CS1BasicOnly = checkBox_cs1.IsChecked == true;
                     item.CS2BasicOnly = checkBox_cs2.IsChecked == true;
+                    item.CS3BasicOnly = checkBox_cs3.IsChecked == true;
                     timeList.Add(item);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
-        }
-
-        private void button_delTime_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (ListView_time.SelectedItem != null)
-                {
-                    EpgCaptime item = ListView_time.SelectedItem as EpgCaptime;
-                    timeList.Remove(item);
                 }
             }
             catch (Exception ex)
@@ -841,9 +855,21 @@ namespace EpgTimer.Setting
 
         private bool CheckHttpFiles()
         {
-            bool bRet = checkBox_httpServer.IsChecked == false || Directory.Exists(textBox_docrootPath.Text) && File.Exists(TimerSrvFolder + "\\lua52.dll");
-            warn_http.IsEnabled = bRet == false;
-            warn_http.Visibility = bRet ? Visibility.Collapsed : Visibility.Visible;
+            bool bRet = Directory.Exists(textBox_docrootPath.Text);
+            if (!bRet)
+            {
+                checkBox_httpServer.IsChecked = false;
+            }
+            warn_docroot.IsEnabled = bRet == false;
+            warn_docroot.Visibility = bRet ? Visibility.Collapsed : Visibility.Visible;
+            return bRet;
+        }
+
+        private bool CheckLuaFiles()
+        {
+            bool bRet= checkBox_httpServer.IsChecked == false || File.Exists(TimerSrvFolder + "\\lua52.dll");
+            warn_lua.IsEnabled = bRet == false;
+            warn_lua.Visibility = bRet ? Visibility.Collapsed : Visibility.Visible;
             return bRet;
         }
 
@@ -879,14 +905,27 @@ namespace EpgTimer.Setting
 
         private void checkBox_httpServer_Click(object sender, RoutedEventArgs e)
         {
-            if (!CheckHttpFiles())
+            bool bHttpError = !CheckHttpFiles();
+            bool bLuaError = !CheckLuaFiles();
+            bool bHttpsError = !CheckHttpFiles();
+
+            textBox_docrootPath.IsEnabled = checkBox_httpServer.IsChecked == true;
+
+            if (bHttpError)
+            {
+                MessageBox.Show("公開フォルダが見つかりません。", "確認");
+                checkBox_httpServer.IsChecked = false;
+                textBox_docrootPath.IsEnabled = bHttpError;
+            }
+            else if (bLuaError)
             {
                 MessageBox.Show("lua52.dll ファイルが見つかりません。", "確認");
                 checkBox_httpServer.IsChecked = false;
+                textBox_docrootPath.IsEnabled = bHttpError;
             }
             else
             {
-                if (!CheckHttpsFiles())
+                if (bHttpsError)
                 {
                     textBox_httpPort.Focus();
                 }
@@ -902,6 +941,11 @@ namespace EpgTimer.Setting
         private void textBox_opensslPath_TextChanged(object sender, TextChangedEventArgs e)
         {
             button_generatePem.IsEnabled = File.Exists(textBox_opensslPath.Text);
+        }
+
+        private void textBox_docrootPath_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CheckHttpFiles();
         }
 
         private void checkBox_httpAuth_Click(object sender, RoutedEventArgs e)
@@ -933,11 +977,9 @@ namespace EpgTimer.Setting
 
         private void button_opensslPath_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.GetFileNameByDialog(textBox_opensslPath.Text, "openssl.exe の場所", ".exe");
-            if (path != null)
+            CommonManager.GetFileNameByDialog(textBox_opensslPath, false, "openssl.exe の場所", ".exe");
+            if (textBox_opensslPath.Text.Length >  0)
             {
-                textBox_opensslPath.Text = path;
-
                 // クローズ時 TextBox が IsEnabled=false の場合があるためここで保存しておく
                 IniFileHandler.WritePrivateProfileString("SET", "OpensslExeFile", textBox_opensslPath.Text, SettingPath.TimerSrvIniPath);
             }
@@ -954,7 +996,7 @@ namespace EpgTimer.Setting
                 cnfFile = System.IO.Path.GetTempFileName();
                 keyFile = System.IO.Path.GetTempFileName();
                 csrFile = System.IO.Path.GetTempFileName();
-            
+
                 // openssl configuation file を用意する
                 StreamWriter cnf = File.CreateText(cnfFile);
                 cnf.WriteLine("[req]");
@@ -998,29 +1040,17 @@ namespace EpgTimer.Setting
 
         private void button_docrootPath_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.GetFolderNameByDialog(textBox_docrootPath.Text, "document rootフォルダの選択");
-            if (path != null)
-            {
-                textBox_docrootPath.Text = path;
-            }
+            CommonManager.GetFolderNameByDialog(textBox_docrootPath, "公開フォルダの選択");
         }
 
         private void button_ffmpegPath_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.GetFileNameByDialog(textBox_ffmpegPath.Text, "ffmpeg.exe の場所", ".exe");
-            if (path != null)
-            {
-                textBox_ffmpegPath.Text = path;
-            }
+            CommonManager.GetFileNameByDialog(textBox_ffmpegPath, false, "ffmpeg.exe の場所", ".exe");
         }
 
         private void button_readexPath_Click(object sender, RoutedEventArgs e)
         {
-            string path = CommonManager.GetFileNameByDialog(textBox_readexPath.Text, "readex.exe の場所", ".exe");
-            if (path != null)
-            {
-                textBox_readexPath.Text = path;
-            }
+            CommonManager.GetFileNameByDialog(textBox_readexPath, false, "readex.exe の場所", ".exe");
         }
 
         private void hyperLink_Click(object sender, RoutedEventArgs e)
@@ -1059,5 +1089,16 @@ namespace EpgTimer.Setting
             dlg.ShowDialog();
             checkBox_httpAuth.IsChecked = File.Exists(TimerSrvFolder + "\\glpasswd");
         }
+    }
+
+    //BonDriver一覧の表示・設定用クラス
+    public class TunerInfo
+    {
+        public TunerInfo(string bon) { BonDriver = bon; }
+        public String BonDriver { get; set; }
+        public String TunerNum { get; set; }
+        public String EPGNum { get; set; }
+        public bool IsEpgCap { get; set; }
+        public override string ToString() { return BonDriver; }
     }
 }

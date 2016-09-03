@@ -49,8 +49,8 @@ namespace EpgTimer.EpgView
                 double sizeNormal = Settings.Instance.FontSize;
                 double indentTitle = Math.Floor(sizeMin * 1.7);
                 double indentNormal = Math.Floor(Settings.Instance.EpgTitleIndent ? indentTitle : 2);
-                SolidColorBrush colorTitle = CommonManager.Instance.CustTitle1Color;
-                SolidColorBrush colorNormal = CommonManager.Instance.CustTitle2Color;
+                Brush colorTitle = CommonManager.Instance.CustTitle1Color;
+                Brush colorNormal = CommonManager.Instance.CustTitle2Color;
 
                 double height1stLine = Math.Max(Settings.Instance.FontHeightTitle, Settings.Instance.FontHeightTitle);
 
@@ -87,7 +87,7 @@ namespace EpgTimer.EpgView
                         width -= 4;
 
                         //分
-                        string min = (info.EventInfo.StartTimeFlag != 1 ? "未定 " : info.EventInfo.start_time.Minute.ToString("d02"));
+                        string min = (info.EventInfo.StartTimeFlag == 0 ? "未定 " : info.EventInfo.start_time.Minute.ToString("d02"));
                         double useHeight = 0;
                         if (RenderText(min, ref textDrawList, ItemFontTitle, sizeMin, width, height, x, y + baselineMin, ref useHeight, colorTitle, m) == false)
                         {
@@ -140,7 +140,7 @@ namespace EpgTimer.EpgView
             }
         }
 
-        protected bool RenderText(String text, ref List<TextDrawItem> textDrawList, ViewUtil.ItemFont itemFont, double fontSize, double maxWidth, double maxHeight, double x, double baseline, ref double useHeight, SolidColorBrush fontColor, Matrix m)
+        protected bool RenderText(String text, ref List<TextDrawItem> textDrawList, ViewUtil.ItemFont itemFont, double fontSize, double maxWidth, double maxHeight, double x, double baseline, ref double useHeight, Brush fontColor, Matrix m)
         {
             double totalHeight = 0;
             double fontHeight = fontSize * itemFont.GlyphType.Height;
@@ -292,7 +292,7 @@ namespace EpgTimer.EpgView
 
     class TextDrawItem
     {
-        public SolidColorBrush FontColor;
+        public Brush FontColor;
         public GlyphRun Text;
     }
 }

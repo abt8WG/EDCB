@@ -39,6 +39,8 @@ namespace EpgTimer
         private Visibility _OnAirOrRecProgressVisibility;
         private Visibility _ProgressBar1Visibility = Visibility.Collapsed;
         private Visibility _ProgressBar2Visibility = Visibility.Collapsed;
+        private Brush _ProgressBarForeground = new SolidColorBrush();
+        private Brush _ProgressBarBackground = new SolidColorBrush();
 
         #endregion
 
@@ -235,6 +237,29 @@ namespace EpgTimer
         {
             get { return _ProgressBar2Visibility; }
             private set { SetProperty(ref _ProgressBar2Visibility, value); }
+        }
+
+        /// <summary>
+        /// プログレスバーの色
+        /// </summary>
+        public Brush ProgressBarForeground
+        {
+            get { return CommonManager.Instance.InfoWindowItemProgressBarColors[0]; }
+        }
+
+        /// <summary>
+        /// プログレスバーの背景色
+        /// </summary>
+        public Brush ProgressBarBackground
+        {
+            get
+            {
+                if (Settings.Instance.InfoWindowItemProgressBarType == 2 && Settings.Instance.InfoWindowItemProgressBarTransparent)
+                {
+                    return ColorDef.SolidBrush(ColorDef.FromName("Transparent"));
+                }
+                return CommonManager.Instance.InfoWindowItemProgressBarColors[1];
+            }
         }
 
         #endregion

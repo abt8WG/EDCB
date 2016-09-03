@@ -884,10 +884,10 @@ SYSTEMTIME GetSystemTimeFromInt64(__int64 i64) {
 	return systime;
 }
 
-void CEitConverter::Feed(CSiSectionEIT& eit, int idx, EPGDB_EVENT_INFO* dest) {
-	this->dest = dest;
+void CEitConverter::Feed(CSiSectionEIT& eit, int idx, EPGDB_EVENT_INFO* dest_) {
+	this->dest = dest_;
 
-	CSiSectionEIT::CEvent& ev = eit.GetEventInfo(idx);
+	CSiSectionEIT::CEvent ev = eit.GetEventInfo(idx);
 
 	dest->original_network_id = eit.GetOriginalNID();
 	dest->transport_stream_id = eit.GetTSID();
@@ -895,16 +895,16 @@ void CEitConverter::Feed(CSiSectionEIT& eit, int idx, EPGDB_EVENT_INFO* dest) {
 	dest->event_id = ev.GetEventID();
 
 	int64_t startTime = ev.GetStartTime();
-	if (dest->StartTimeFlag = (startTime > 0)) {
+	if( (dest->StartTimeFlag = (startTime > 0)) != 0 ){
 		dest->start_time = GetSystemTimeFromInt64(startTime);
 	}
 
 	DWORD duration = ev.GetDuration();
-	if (dest->DurationFlag = (duration > 0)) {
+	if( (dest->DurationFlag = (duration > 0)) != 0 ){
 		dest->durationSec = duration;
 	}
 
-	dest->freeCAFlag = ev.GetFreeCAMode();
+	dest->freeCAFlag = static_cast<BYTE>(ev.GetFreeCAMode());
 
 	// 記述子読み込み
 	CDescDispatch::DispatchBlock(this, ev.GetDescData(), ev.GetDescSize());
@@ -930,17 +930,17 @@ void CEitConverter::OnExtEvent(CDescExtEvent& desc)
 		std::wstring& text;
 		EP3AribStrinbDecoder& arib;
 
-		void OnItemDescription(std::pair<const BYTE*, int>& input)
+		void OnItemDescription(const std::pair<const BYTE*, int>& input)
 		{
 			text += arib.DecodeString(input);
 			text += L"\r\n";
 		}
-		void OnItemText(std::pair<const BYTE*, int>& input)
+		void OnItemText(const std::pair<const BYTE*, int>& input)
 		{
 			text += arib.DecodeString(input);
 			text += L"\r\n";
 		}
-		void OnText(std::pair<const BYTE*, int>& input)
+		void OnText(const std::pair<const BYTE*, int>& input)
 		{
 			text += arib.DecodeString(input);
 			text += L"\r\n";
@@ -976,10 +976,10 @@ void CEitConverter::OnContent(CDescContent& desc)
 	for (int i = 0; i < DataCnt; i++) {
 		EPGDB_CONTENT_DATA item;
 		const auto& data = desc.GetData(i);
-		item.content_nibble_level_1 = data.content_nibble_level_1;
-		item.content_nibble_level_2 = data.content_nibble_level_2;
-		item.user_nibble_1 = data.user_nibble1;
-		item.user_nibble_2 = data.user_nibble2;
+		item.content_nibble_level_1 = data.nibble.content_nibble_level_1;
+		item.content_nibble_level_2 = data.nibble.content_nibble_level_2;
+		item.user_nibble_1 = data.nibble.user_nibble1;
+		item.user_nibble_2 = data.nibble.user_nibble2;
 		dest->contentInfo->nibbleList.push_back(item);
 	}
 }
@@ -996,8 +996,8 @@ void CEitConverter::OnAudioComponent(CDescAudioComponent& desc)
 	item.component_tag = desc.GetComponentTag();
 	item.stream_type = desc.GetStreamType();
 	item.simulcast_group_tag = desc.GetSimulcastGroupTag();
-	item.ES_multi_lingual_flag = desc.GetESMultiLingualFlag();
-	item.main_component_flag = desc.GetMainComponentFlag();
+	item.ES_multi_lingual_flag = static_cast<BYTE>(desc.GetESMultiLingualFlag());
+	item.main_component_flag = static_cast<BYTE>(desc.GetMainComponentFlag());
 	item.quality_indicator = desc.GetQualityIndicator();
 	item.sampling_rate = desc.GetSamplingRate();
 	item.text_char = arib.DecodeString(desc.GetText());
@@ -1015,8 +1015,8 @@ void CEitConverter::OnEventGroup(CDescEventGroup& desc)
 		const auto& data = desc.GetEvent(i);
 		item.original_network_id = dest->original_network_id;
 		item.transport_stream_id = dest->transport_stream_id;
-		item.service_id = data.service_id;
-		item.event_id = data.event_id;
+		item.service_id = data.word_data.service_id;
+		item.event_id = data.word_data.event_id;
 		dest->eventGroupInfo->eventDataList.push_back(item);
 	}
 }
@@ -1112,7 +1112,7 @@ static void DecodeStringCB(const WCHAR* ptr, void* ctx) {
 	*dst = ptr;
 }
 
-std::wstring EP3AribStrinbDecoder::DecodeString(std::pair<const BYTE*, int>& input) {
+std::wstring EP3AribStrinbDecoder::DecodeString(const std::pair<const BYTE*, int>& input) {
 	std::wstring ret;
 	pfnDecodeARIBCharactersEP3(input.first, input.second, DecodeStringCB, &ret);
 	return ret;
@@ -1145,6 +1145,9 @@ void CEitDetector::OnEIT(CSiSectionParser *pSiSectionParser, CMediaData *pSectio
 #pragma endregion
 
 #pragma region CSiSection
+
+#pragma warning(push)
+#pragma warning(disable:4127) // 条件式が定数です。
 
 template<bool m_bTargetExt, bool m_bTR>
 bool CSiSection<m_bTargetExt, m_bTR>::CheckHeader()
@@ -1212,6 +1215,8 @@ DWORD CSiSection<m_bTargetExt, m_bTR>::CalcCRC(void) const
 	}
 	return CCrcCalculator::CalcCrc32(m_pData, DataLength);
 }
+
+#pragma warning(pop)
 
 // 明示的なインスタンス化
 template CSiSection<true, true>;

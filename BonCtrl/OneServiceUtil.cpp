@@ -89,7 +89,7 @@ BOOL COneServiceUtil::SendUdp(
 			wstring key = L"";
 			HANDLE portMutex;
 
-			while(1){
+			for(;;){
 				Format(key, L"%s%d_%d", MUTEX_UDP_PORT_NAME, (*sendList)[i].ip, (*sendList)[i].port );
 				portMutex = CreateMutex(NULL, TRUE, key.c_str());
 		
@@ -144,7 +144,7 @@ BOOL COneServiceUtil::SendTcp(
 			wstring key = L"";
 			HANDLE portMutex;
 
-			while(1){
+			for(;;){
 				Format(key, L"%s%d_%d", MUTEX_TCP_PORT_NAME, (*sendList)[i].ip, (*sendList)[i].port );
 				portMutex = CreateMutex(NULL, TRUE, key.c_str());
 		
@@ -191,7 +191,7 @@ BOOL COneServiceUtil::AddTSBuff(
 			CTSPacketUtil packet;
 			if( packet.Set188TS(data + i, 188) == TRUE ){
 				if( packet.PID == this->pmtPID ){
-					DWORD err = createPmt.AddData(&packet);
+					createPmt.AddData(&packet);
 				}
 			}
 		}
@@ -213,7 +213,7 @@ BOOL COneServiceUtil::AddTSBuff(
 				}else if( packet.PID == this->pmtPID ){
 					//PMT
 					DWORD err = createPmt.AddData(&packet);
-					if( err == NO_ERR || err == ERR_NO_CHAGE ){
+					if( err == NO_ERR || err == CCreatePMTPacket::ERR_NO_CHAGE ){
 						BYTE* pmtBuff = NULL;
 						DWORD pmtBuffSize = 0;
 						if( createPmt.GetPacket(&pmtBuff, &pmtBuffSize) == TRUE ){
@@ -421,7 +421,7 @@ void COneServiceUtil::StopPittariRec()
 	OutputDebugString(L"*:StopPittariRec");
 	BOOL subRec;
 	this->writeFile->GetSaveFilePath(&this->pittariRecFilePath, &subRec);
-	BOOL ret = this->writeFile->EndSave();
+	this->writeFile->EndSave();
 }
 
 //ファイル保存を終了する

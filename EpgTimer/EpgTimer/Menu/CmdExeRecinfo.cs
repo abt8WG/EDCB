@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,34 +9,23 @@ namespace EpgTimer
 {
     public class CmdExeRecinfo : CmdExe<RecFileInfo>
     {
-        public CmdExeRecinfo(Control owner)
+        public CmdExeRecinfo(UIElement owner)
             : base(owner)
         {
             _copyItemData = RecFileInfoEx.CopyTo;
         }
         protected override void mc_ShowDialog(object sender, ExecutedRoutedEventArgs e)
         {
-            IsCommandExecuted = true == mutil.OpenRecInfoDialog(dataList[0], this.Owner);
+            IsCommandExecuted = true == MenuUtil.OpenRecInfoDialog(dataList[0], this.Owner);
         }
         protected override void mc_ProtectChange(object sender, ExecutedRoutedEventArgs e)
         {
-            IsCommandExecuted = mutil.RecinfoChgProtect(dataList);
+            IsCommandExecuted = MenuUtil.RecinfoChgProtect(dataList);
         }
         protected override void mc_Delete(object sender, ExecutedRoutedEventArgs e)
         {
             dataList = dataList.GetNoProtectedList();
-            if (dataList.Count == 0) return;
-
-            if (e.Command == EpgCmds.DeleteAll)
-            {
-                if (CmdExeUtil.CheckAllDeleteCancel(e, dataList.Count) == true)
-                { return; }
-            }
-            else
-            {
-                if (CmdExeUtil.CheckKeyboardDeleteCancel(e, dataList.Select(data => data.Title).ToList()) == true)
-                { return; }
-            }
+            if (mcs_DeleteCheck(e) == false) return;
 
             if (IniFileHandler.GetPrivateProfileInt("SET", "RecInfoDelFile", 0, SettingPath.CommonIniPath) == 1)
             {
@@ -46,7 +34,7 @@ namespace EpgTimer
                 { return; }
             }
 
-            IsCommandExecuted = mutil.RecinfoDelete(dataList);
+            IsCommandExecuted = MenuUtil.RecinfoDelete(dataList);
         }
         protected override void mc_Play(object sender, ExecutedRoutedEventArgs e)
         {
@@ -55,7 +43,7 @@ namespace EpgTimer
         }
         protected override void mc_CopyContent(object sender, ExecutedRoutedEventArgs e)
         {
-            mutil.CopyContent2Clipboard(dataList[0], CmdExeUtil.IsKeyGesture(e));
+            MenuUtil.CopyContent2Clipboard(dataList[0], CmdExeUtil.IsKeyGesture(e));
             IsCommandExecuted = true;
         }
         protected override void mcs_ctxmLoading_switch(ContextMenu ctxm, MenuItem menu)

@@ -8,6 +8,8 @@ using System.Windows.Controls;
 
 namespace EpgTimer
 {
+    using BoxExchangeEdit;
+
     public class ListViewSelectedKeeper
     {
         //リスト番組表で全選択状態でチャンネル選択更新してしまったりしたときなどでも大丈夫なように、
@@ -15,15 +17,14 @@ namespace EpgTimer
         public uint MaxRestoreNum = 100;
 
         public ListBox listBox = null;
-        public ulong? oldItem = null;
         public List<ulong> oldItems = null;
         public bool allSelected = false;
-        protected Func<object, ulong> getKey = null;
+        protected Func<object, ulong> getKey;
 
         public ListViewSelectedKeeper(ListBox list, bool DoStoringNow = false, Func<object, ulong> _key = null)
         {
             listBox = list;
-            getKey = _key;
+            getKey = _key ?? (info => (ulong)info.GetHashCode());
             if (DoStoringNow) StoreListViewSelected();
         }
 
@@ -31,10 +32,8 @@ namespace EpgTimer
         {
             if (listBox != null && listBox.SelectedItem != null)
             {
-                getKey = getKey ?? CtrlCmdDefEx.GetKeyFunc(listBox.SelectedItem.GetType());
-                oldItem = getKey(listBox.SelectedItem);
-                oldItems = listBox.SelectedItems.Cast<object>().Select(data => getKey(data)).ToList();
-                allSelected = (oldItems.Count != 1 && oldItems.Count == listBox.Items.Count);
+                oldItems = listBox.SelectedItems.OfType<object>().Select(data => getKey(data)).ToList();
+                allSelected = (oldItems.Count > 1 && oldItems.Count == listBox.Items.Count);
             }
         }
 
@@ -43,7 +42,7 @@ namespace EpgTimer
             try
             {
                 if (list != null) listBox = list;
-                if (listBox != null && listBox.Items.Count != 0 && oldItem != null && oldItems != null)
+                if (listBox != null && listBox.Items.Count != 0 && oldItems != null && oldItems.Count > 0)
                 {
                     if (this.allSelected == true)
                     {
@@ -59,7 +58,6 @@ namespace EpgTimer
 
                     //選択数が少ないときは逆に遅くなる気もするが、Dictionaryにしておく
                     var listKeys = new Dictionary<ulong, object>();
-                    getKey = getKey ?? CtrlCmdDefEx.GetKeyFunc(listBox.Items[0].GetType());
 
                     foreach (object listItem1 in listBox.Items)
                     {
@@ -71,32 +69,14 @@ namespace EpgTimer
                         catch { }
                     }
 
-                    object setItem;
-                    if (listKeys.TryGetValue((ulong)oldItem, out setItem))
-                    {
-                        listBox.SelectedItem = setItem;
-                    }
-
-                    if (listBox.SelectionMode != SelectionMode.Single)
-                    {
-                        foreach (ulong oldItem1 in oldItems)
-                        {
-                            if (listKeys.TryGetValue(oldItem1, out setItem))
-                            {
-                                //数が多いとき、このAddが致命的に遅い
-                                listBox.SelectedItems.Add(setItem);
-                            }
-                        }
-                    }
+                    var setItems = oldItems.Where(oldItem1 => listKeys.ContainsKey(oldItem1)).Select(item => listKeys[item]);
+                    listBox.SelectedItemsAdd(setItems);
 
                     //画面更新が入るので最後に実行する。SelectedItem==nullのときScrollIntoViewは何もしない。
                     listBox.ScrollIntoView(listBox.SelectedItem);
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
     }

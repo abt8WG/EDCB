@@ -2,39 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace EpgTimer
 {
-    class ChSet5
+    static class ChSet5
     {
-        private Dictionary<UInt64, ChSet5Item> _chList = null;
-        public Dictionary<UInt64, ChSet5Item> ChList
+        private static Dictionary<UInt64, ChSet5Item> chList = null;
+        public static Dictionary<UInt64, ChSet5Item> ChList
         {
             get
             {
-                if (_chList == null)
-                {
-                    _chList = LoadFile();
-                }
-                return _chList;
+                if (chList == null) LoadFile();
+                return chList ?? new Dictionary<UInt64, ChSet5Item>();
             }
-            private set { _chList = value; }
         }
-        public static void Clear() { Instance._chList = null; }
+        public static void Clear() { chList = null; HasChanged = false; }
         
-        private static ChSet5 _instance = null;
-        public static ChSet5 Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = new ChSet5();
-                return _instance;
-            }
-        }
-
-        public ChSet5() { }
-
         public static bool IsVideo(UInt16 ServiceType)
         {
             return ServiceType == 0x01 || ServiceType == 0xA5 || ServiceType == 0xAD;
@@ -68,100 +52,111 @@ namespace EpgTimer
             return IsDttv(ONID) == false && IsBS(ONID) == false && IsCS(ONID) == false;
         }
 
-        private Dictionary<UInt64, ChSet5Item> LoadFile()
+        public static bool LoadFile()
         {
             try
             {
-                Dictionary<UInt64, ChSet5Item> chlist = new Dictionary<UInt64, ChSet5Item>();
-
                 // 直接ファイルを読まずに EpgTimerSrv.exe に問い合わせる
                 byte[] binData;
                 if (CommonManager.Instance.CtrlCmd.SendFileCopy("ChSet5.txt", out binData) == ErrCode.CMD_SUCCESS)
                 {
-                    System.IO.MemoryStream stream = new System.IO.MemoryStream(binData);
-                    System.IO.StreamReader reader = new System.IO.StreamReader(stream, System.Text.Encoding.Default);
-                    while (reader.Peek() >= 0)
+                    using (var stream = new MemoryStream(binData))
+                    using (var sr = new StreamReader(stream, Encoding.Default))
                     {
-                        string buff = reader.ReadLine();
-                        if (buff.IndexOf(";") == 0)
+                        return ChSet5.Load(sr);
+                    }
+                }
+                else if (CommonManager.Instance.NWMode == false)
+                {
+                    // サーバーが対応していないので直接読む
+                    String filePath = SettingPath.SettingFolderPath + "\\ChSet5.txt";
+                    using (var sr = new StreamReader(filePath, Encoding.Default))
+                    {
+                        return ChSet5.Load(sr);
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+        public static bool Load(StreamReader reader)
+        {
+            try
+            {
+                chList = new Dictionary<UInt64, ChSet5Item>();
+                while (reader.Peek() >= 0)
+                {
+                    string buff = reader.ReadLine();
+                    if (buff.IndexOf(";") == 0)
+                    {
+                        //コメント行
+                    }
+                    else
+                    {
+                        string[] list = buff.Split('\t');
+                        var item = new ChSet5Item();
+                        try
                         {
-                            //コメント行
+                            item.ServiceName = list[0];
+                            item.NetworkName = list[1];
+                            item.ONID = Convert.ToUInt16(list[2]);
+                            item.TSID = Convert.ToUInt16(list[3]);
+                            item.SID = Convert.ToUInt16(list[4]);
+                            item.ServiceType = Convert.ToUInt16(list[5]);
+                            item.PartialFlag = Convert.ToByte(list[6]);
+                            item.EpgCapFlag = Convert.ToByte(list[7]);
+                            item.SearchFlag = Convert.ToByte(list[8]);
                         }
-                        else
+                        finally
                         {
-                            string[] list = buff.Split('\t');
-                            ChSet5Item item = new ChSet5Item();
-                            try
-                            {
-                                item.ServiceName = list[0];
-                                item.NetworkName = list[1];
-                                item.ONID = Convert.ToUInt16(list[2]);
-                                item.TSID = Convert.ToUInt16(list[3]);
-                                item.SID = Convert.ToUInt16(list[4]);
-                                item.ServiceType = Convert.ToUInt16(list[5]);
-                                item.PartialFlag = Convert.ToByte(list[6]);
-                                item.EpgCapFlag = Convert.ToByte(list[7]);
-                                item.SearchFlag = Convert.ToByte(list[8]);
-                            }
-                            finally
-                            {
-                                UInt64 key = item.Key;
-                                chlist.Add(key, item);
-                            }
+                            chList.Add(item.Key, item);
                         }
                     }
-
-                    reader.Close();
                 }
-                HasChanged = false;
-                return chlist;
             }
             catch
             {
-                HasChanged = false;
-                return new Dictionary<UInt64, ChSet5Item>();
+                return false;
             }
+            return true;
         }
-
         public static bool SaveFile()
         {
             try
             {
-                if (IniFileHandler.CanUpdateInifile == false)
+                if (!HasChanged || chList == null) return false;
+                //
+                string output = "";
+                foreach (ChSet5Item info in chList.Values)
                 {
-                    return false;
+                    output += string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\r\n",
+                        info.ServiceName,
+                        info.NetworkName,
+                        info.ONID,
+                        info.TSID,
+                        info.SID,
+                        info.ServiceType,
+                        info.PartialFlag,
+                        info.EpgCapFlag,
+                        info.SearchFlag);
                 }
-
-                if (Instance.HasChanged && Instance.ChList != null)
+                if (output.Length > 0)
                 {
-                    string output = "";
-                    foreach (ChSet5Item info in Instance.ChList.Values)
+                    string header = ";<ChSet5.txt>\r\n";
+                    if (CommonManager.Instance.CtrlCmd.SendUpdateSetting(header + output) != ErrCode.CMD_SUCCESS)
                     {
-                        output += string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\r\n",
-                            info.ServiceName,
-                            info.NetworkName,
-                            info.ONID,
-                            info.TSID,
-                            info.SID,
-                            info.ServiceType,
-                            info.PartialFlag,
-                            info.EpgCapFlag,
-                            info.SearchFlag);
-                    }
-                    if (output.Length > 0)
-                    {
-                        string header = ";<ChSet5.txt>\r\n";
-                        if (CommonManager.Instance.CtrlCmd.SendUpdateSetting(header + output) != ErrCode.CMD_SUCCESS)
+                        if (CommonManager.Instance.NWMode == true)
+                            return false;
+
+                        // サーバーが対応していないので直接書く。
+                        String filePath = SettingPath.SettingFolderPath + "\\ChSet5.txt";
+                        using (var writer = new System.IO.StreamWriter(filePath, false, Encoding.Default))
                         {
-                            // サーバーが対応していないので直接書く。
-                            String filePath = SettingPath.SettingFolderPath + "\\ChSet5.txt";
-                            System.IO.StreamWriter writer = (new System.IO.StreamWriter(filePath, false, System.Text.Encoding.Default));
                             writer.Write(output);
-                            writer.Close();
                         }
                     }
                 }
-                Instance.HasChanged = false;
+                HasChanged = false;
             }
             catch
             {
@@ -170,7 +165,7 @@ namespace EpgTimer
             return true;
         }
 
-        public bool HasChanged { get; set; }
+        public static bool HasChanged { get; set; }
     }
 
     public class ChSet5Item
@@ -192,52 +187,52 @@ namespace EpgTimer
         public UInt16 ONID
         {
             get { return onid; }
-            set { ChSet5.Instance.HasChanged |= onid != value; onid = value; }
+            set { ChSet5.HasChanged |= onid != value; onid = value; }
         }
         public UInt16 TSID
         {
             get { return tsid; }
-            set { ChSet5.Instance.HasChanged |= tsid != value; tsid = value; }
+            set { ChSet5.HasChanged |= tsid != value; tsid = value; }
         }
         public UInt16 SID
         {
             get { return sid; }
-            set { ChSet5.Instance.HasChanged |= sid != value; sid = value; }
+            set { ChSet5.HasChanged |= sid != value; sid = value; }
         }
         public UInt16 ServiceType
         {
             get { return serviceType; }
-            set { ChSet5.Instance.HasChanged |= serviceType != value; serviceType = value; }
+            set { ChSet5.HasChanged |= serviceType != value; serviceType = value; }
         }
         public Byte PartialFlag
         {
             get { return partialFlag; }
-            set { ChSet5.Instance.HasChanged |= partialFlag != value; partialFlag = value; }
+            set { ChSet5.HasChanged |= partialFlag != value; partialFlag = value; }
         }
         public String ServiceName
         {
             get { return serviceName; }
-            set { ChSet5.Instance.HasChanged |= serviceName != value; serviceName = value; }
+            set { ChSet5.HasChanged |= serviceName != value; serviceName = value; }
         }
         public String NetworkName
         {
             get { return networkName; }
-            set { ChSet5.Instance.HasChanged |= networkName != value; networkName = value; }
+            set { ChSet5.HasChanged |= networkName != value; networkName = value; }
         }
         public Byte EpgCapFlag
         {
             get { return epgCapFlag; }
-            set { ChSet5.Instance.HasChanged |= epgCapFlag != value; epgCapFlag = value; }
+            set { ChSet5.HasChanged |= epgCapFlag != value; epgCapFlag = value; }
         }
         public Byte SearchFlag
         {
             get { return searchFlag; }
-            set { ChSet5.Instance.HasChanged |= searchFlag != value; searchFlag = value; }
+            set { ChSet5.HasChanged |= searchFlag != value; searchFlag = value; }
         }
         public Byte RemoconID
         {
             get { return remoconID; }
-            set { ChSet5.Instance.HasChanged |= remoconID != value; remoconID = value; }
+            set { ChSet5.HasChanged |= remoconID != value; remoconID = value; }
         }
 
         public bool IsVideo { get { return ChSet5.IsVideo(ServiceType); } }

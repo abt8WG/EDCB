@@ -23,6 +23,8 @@ namespace EpgTimer
         public RecInfoDescWindow()
         {
             InitializeComponent();
+
+            this.KeyDown += ViewUtil.KeyDown_Escape_Close();
         }
 
         public void SetRecInfo(RecFileInfo info)
@@ -40,24 +42,9 @@ namespace EpgTimer
             }
         }        
 
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (Keyboard.Modifiers == ModifierKeys.None)
-            {
-                switch (e.Key)
-                {
-                    case Key.Escape:
-                        this.Close();
-                        break;
-                }
-            }
-            base.OnKeyDown(e);
-        }
-
         private void Window_Closed(object sender, EventArgs e)
         {
-            MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.ListFoucsOnVisibleChanged();
+            ViewUtil.MainWindow.ListFoucsOnVisibleChanged();
         }
     }
 }

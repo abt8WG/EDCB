@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "BatManager.h"
+#include <Objbase.h>
 
 #include "../../Common/SendCtrlCmd.h"
 #include "../../Common/StringUtil.h"
@@ -92,9 +93,10 @@ void CBatManager::StartWork()
 
 UINT WINAPI CBatManager::BatWorkThread(LPVOID param)
 {
+	CoInitialize(NULL);
 	CBatManager* sys = (CBatManager*)param;
 
-	while(1){
+	for(;;){
 		{
 			BAT_WORK_INFO work;
 			{
@@ -188,6 +190,7 @@ UINT WINAPI CBatManager::BatWorkThread(LPVOID param)
 		}
 	}
 
+	CoUninitialize();
 	return 0;
 }
 

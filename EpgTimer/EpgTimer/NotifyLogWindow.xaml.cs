@@ -18,9 +18,11 @@ namespace EpgTimer
         {
             InitializeComponent();
 
+            this.KeyDown += ViewUtil.KeyDown_Escape_Close();
+
             //リストビュー関連の設定
             lstCtrl = new ListViewController<NotifySrvInfoItem>(this);
-            lstCtrl.SetInitialSortKey(CommonUtil.GetMemberName(() => (new NotifySrvInfoItem()).Time), ListSortDirection.Descending);
+            lstCtrl.SetInitialSortKey(CommonUtil.NameOf(() => (new NotifySrvInfoItem()).Time), ListSortDirection.Descending);
             lstCtrl.SetViewSetting(listView_log, gridView_log, false, true);
         }
         private bool ReloadList()
@@ -52,19 +54,6 @@ namespace EpgTimer
                     lstCtrl.dataList.ForEach(info => file.Write(info.FileLogText));
                 }
             }
-        }
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (Keyboard.Modifiers == ModifierKeys.None)
-            {
-                switch (e.Key)
-                {
-                    case Key.Escape:
-                        this.Close();
-                        break;
-                }
-            }
-            base.OnKeyDown(e);
         }
     }
 }

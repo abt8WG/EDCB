@@ -59,6 +59,8 @@ public:
 	typedef std::map<DWORD, REC_EVENT_INFO*> REC_EVENT_MAP;
 	typedef std::map<LONGLONG, REC_EVENT_SERVICE_DATA> SERVICE_EVENT_MAP;
 
+	~CRecEventDB() { Clear(); }
+
 	// DBƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş
 	bool Load(const std::wstring& filePath, const REC_INFO_MAP& recFiles);
 	// ˜^‰æÏ‚İ‚ğ’Ç‰Á

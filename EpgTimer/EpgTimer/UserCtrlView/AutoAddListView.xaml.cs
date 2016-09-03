@@ -15,9 +15,6 @@ namespace EpgTimer
     /// </summary>
     public partial class AutoAddListView : DataViewBase
     {
-        protected MouseButtonEventHandler listViewItem_PreviewMouseLeftButtonDown;
-        protected MouseEventHandler listViewItem_MouseEnter;
-
         public AutoAddListView()
         {
             InitializeComponent();
@@ -47,7 +44,7 @@ namespace EpgTimer
                 var newList = View.lstCtrl.dataList.Select(item => item.Data.CloneObj() as T).ToList();
                 newList.ForEach(item => item.DataID = changeIDTable[item.DataID]);
 
-                bool ret = View.mutil.AutoAddChange(newList, false, false, false, false);
+                bool ret = MenuUtil.AutoAddChange(newList, false, false, false, false);
                 if (ret == true)
                 {
                     //dataListと検索ダイアログへのIDの反映。dataListは既にコピーだが、SaveChange成功後に行う
@@ -85,11 +82,8 @@ namespace EpgTimer
                 //ステータス変更の設定
                 lstCtrl.SetSelectionChangedEventHandler((sender, e) => this.UpdateStatus(1));
 
-                //ドラッグ移動関係、イベント追加はdragMoverでやりたいが、あまり綺麗にならないのでこっちに並べる
+                //ドラッグ移動関係
                 this.dragMover.SetData(this, listView_key, lstCtrl.dataList, new lvDragData(this));
-                listView_key.PreviewMouseLeftButtonUp += new MouseButtonEventHandler(dragMover.listBox_PreviewMouseLeftButtonUp);
-                listViewItem_PreviewMouseLeftButtonDown += new MouseButtonEventHandler(dragMover.listBoxItem_PreviewMouseLeftButtonDown);
-                listViewItem_MouseEnter += new MouseEventHandler(dragMover.listBoxItem_MouseEnter);
 
                 //最初にコマンド集の初期化
                 //mc = (R)Activator.CreateInstance(typeof(R), this);
@@ -118,7 +112,7 @@ namespace EpgTimer
                 mBinds.SetCommandToButton(button_del2, EpgCmds.Delete2);
 
                 //メニューの作成、ショートカットの登録
-                RefreshMenu();
+                //RefreshMenu();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
@@ -150,9 +144,9 @@ namespace EpgTimer
         }
         protected override void UpdateStatusData(int mode = 0)
         {
-            if (mode == 0) this.status[1] = vutil.ConvertAutoAddStatus(lstCtrl.dataList, "自動予約登録数");
+            if (mode == 0) this.status[1] = ViewUtil.ConvertAutoAddStatus(lstCtrl.dataList, "自動予約登録数");
             List<S> sList = lstCtrl.GetSelectedItemsList();
-            this.status[2] = sList.Count == 0 ? "" : vutil.ConvertAutoAddStatus(sList, "　選択中");
+            this.status[2] = sList.Count == 0 ? "" : ViewUtil.ConvertAutoAddStatus(sList, "　選択中");
         }
         public void UpdateListViewSelection(uint autoAddID)
         {
@@ -172,6 +166,15 @@ namespace EpgTimer
                 }
             }
         }
+        protected override void UserControl_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            base.UserControl_IsVisibleChanged(sender, e);
+
+            if (this.IsVisible == false) return;
+
+            ViewUtil.JumpToListItem(BlackoutWindow.SelectedData, listView_key, BlackoutWindow.NowJumpTable);
+            BlackoutWindow.Clear();
+        }
     }
 
     public class EpgAutoAddView : AutoAddViewBaseT<EpgAutoAddData, EpgAutoDataItem>
@@ -181,7 +184,7 @@ namespace EpgTimer
             //固有設定
             mc = new CmdExeEpgAutoAdd(this);//ジェネリックでも処理できるが‥
             viewCode = CtxmCode.EpgAutoAddView;
-            ColumnSavePath = CommonUtil.GetMemberName(() => Settings.Instance.AutoAddEpgColumn);
+            ColumnSavePath = CommonUtil.NameOf(() => Settings.Instance.AutoAddEpgColumn);
 
             //初期化の続き
             base.InitAutoAddView();
@@ -205,7 +208,7 @@ namespace EpgTimer
             //固有設定
             mc = new CmdExeManualAutoAdd(this);
             viewCode = CtxmCode.ManualAutoAddView;
-            ColumnSavePath = CommonUtil.GetMemberName(() => Settings.Instance.AutoAddManualColumn);
+            ColumnSavePath = CommonUtil.NameOf(() => Settings.Instance.AutoAddManualColumn);
 
             //録画設定の表示項目を調整
             ColumnList.Remove(ColumnList.Find(data => (data.Header as GridViewColumnHeader).Uid == "Tuijyu"));

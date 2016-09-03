@@ -8,13 +8,13 @@
 #include "../../Common/TimeUtil.h"
 #include "../../Common/PathUtil.h"
 
-bool CRecEventDB::Load(const std::wstring& filePath, const REC_INFO_MAP& recFiles) {
+bool CRecEventDB::Load(const std::wstring& filePath_, const REC_INFO_MAP& recFiles) {
 	OutputDebugString(L"Start Load RecEventDB\r\n");
 	DWORD time = GetTickCount();
 
 	Clear();
 
-	this->filePath = filePath;
+	this->filePath = filePath_;
 
 	RegistRecFiles(recFiles);
 	LoadDBFile();
@@ -66,7 +66,7 @@ bool CRecEventDB::Save() {
 		for (auto recInfo : GetAll()) {
 #endif
 			buffer.Add((DWORD)recInfo->filePath.size());
-			buffer.AddData((BYTE*)recInfo->filePath.c_str(), recInfo->filePath.size() * sizeof(wchar_t));
+			buffer.AddData((BYTE*)recInfo->filePath.c_str(), static_cast<DWORD>(recInfo->filePath.size() * sizeof(wchar_t)));
 			buffer.Add(recInfo->loadErrorCount);
 			buffer.Add(recInfo->rawData.GetSize());
 			buffer.AddData(recInfo->rawData.GetData(), recInfo->rawData.GetSize());
@@ -226,7 +226,7 @@ bool CRecEventDB::LoadDBFile() {
 bool CRecEventDB::LoadEventInfo(REC_EVENT_INFO* eventInfo, BYTE* cur, BYTE* end) {
 	WORD eventId; if (!ReadFromMemory(&eventId, cur, end)) return false;
 	DWORD patLen; if (!ReadFromMemory(&patLen, cur, end)) return false;
-	BYTE* patData = cur; cur += patLen;
+	cur += patLen;
 	DWORD eitLen; if (!ReadFromMemory(&eitLen, cur, end)) return false;
 	BYTE* eitData = cur; cur += patLen;
 	if (cur > end) return false;

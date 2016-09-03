@@ -8,7 +8,7 @@ namespace EpgTimer.EpgView
 {
     public class EpgViewBase : EpgTimer.UserCtrlView.DataViewBase
     {
-        protected CtrlCmdUtil cmd = CommonManager.Instance.CtrlCmd;
+        protected static CtrlCmdUtil cmd { get { return CommonManager.Instance.CtrlCmd; } }
 
         protected CustomEpgTabInfo setViewInfo = null;
         protected List<UInt64> viewCustServiceList = null;
@@ -29,11 +29,13 @@ namespace EpgTimer.EpgView
 
             //コマンド集の初期化
             mc = new CmdExeReserve(this);
-            mc.EpgInfoOpenMode = Settings.Instance.EpgInfoOpenMode;
 
             //コマンド集にないものを登録
             mc.AddReplaceCommand(EpgCmds.ViewChgSet, (sender, e) => ViewSetting(this, null));
-            mc.AddReplaceCommand(EpgCmds.ViewChgMode, cm_chg_viewMode_Click);
+            mc.AddReplaceCommand(EpgCmds.ViewChgMode, mc_ViewChgMode);
+
+            //コマンド集を振り替えるもの
+            mc.AddReplaceCommand(EpgCmds.JumpTable, mc_JumpTable);
         }
 
         public virtual event ViewSettingClickHandler ViewSettingClick = null;
@@ -45,7 +47,7 @@ namespace EpgTimer.EpgView
         }
 
         /// <summary>右クリックメニュー 表示モードイベント呼び出し</summary>
-        protected void cm_chg_viewMode_Click(object sender, ExecutedRoutedEventArgs e)
+        protected void mc_ViewChgMode(object sender, ExecutedRoutedEventArgs e)
         {
             try
             {
@@ -54,7 +56,7 @@ namespace EpgTimer.EpgView
 
                 //BlackWindowに状態を登録。
                 //コマンド集の機能による各ビューの共用メソッド。
-                mc.ViewChangeModeSupport();
+                BlackoutWindow.SelectedData = mc.GetJumpTabItem();
 
                 CustomEpgTabInfo setInfo = setViewInfo.Clone();
                 setInfo.ViewMode = param.ID;
@@ -62,14 +64,27 @@ namespace EpgTimer.EpgView
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
+        protected void mc_JumpTable(object sender, ExecutedRoutedEventArgs e)
+        {
+            var param = e.Parameter as EpgCmdParam;
+            if (param == null) return;
 
-        public virtual void RefreshMenu() { }
+            param.ID = 0;//実際は設定するまでもなく、初期値0。
+            BlackoutWindow.NowJumpTable = true;
+            new BlackoutWindow(ViewUtil.MainWindow).showWindow(ViewUtil.MainWindow.tabItem_epg.Header.ToString());
+
+            mc_ViewChgMode(sender, e);
+        }
+
+        public virtual void RefreshMenu()
+        {
+            mc.EpgInfoOpenMode = Settings.Instance.EpgInfoOpenMode;
+        }
 
         public virtual CustomEpgTabInfo GetViewMode()
         {
             return setViewInfo == null ? null : setViewInfo.Clone();
         }
-
         public virtual void SetViewMode(CustomEpgTabInfo setInfo)
         {
             setViewInfo = setInfo.Clone();
@@ -101,7 +116,7 @@ namespace EpgTimer.EpgView
         }
         protected bool ReloadReserveData()
         {
-            if (vutil.ReloadReserveData() == false) return false;
+            if (ViewUtil.ReloadReserveData() == false) return false;
             ReloadReserveViewItem();
             return true;
         }
@@ -138,7 +153,12 @@ namespace EpgTimer.EpgView
                 {
                     //番組情報の検索
                     var list = new List<EpgEventInfo>();
-                    ErrCode err = cmd.SendSearchPg(CommonUtil.ToList(setViewInfo.SearchKey), ref list);
+                    EpgSearchKeyInfo setKey = setViewInfo.SearchKey.Clone();
+                    if (setViewInfo.SearchServiceFromView == true)
+                    {
+                        setKey.serviceList = setViewInfo.ViewServiceList.Select(sv => (long)sv).ToList();
+                    }
+                    ErrCode err = cmd.SendSearchPg(CommonUtil.ToList(setKey), ref list);
                     if (CommonManager.CmdErrMsgTypical(err, "EPGデータの取得") == false) return false;
 
                     //サービス毎のリストに変換
@@ -149,17 +169,27 @@ namespace EpgTimer.EpgView
                         EpgServiceEventInfo serviceInfo;
                         if (serviceEventList.TryGetValue(id, out serviceInfo) == false)
                         {
-                            if (ChSet5.Instance.ChList.ContainsKey(id) == false)
+                            if (ChSet5.ChList.ContainsKey(id) == false)
                             {
                                 //サービス情報ないので無効
                                 continue;
                             }
                             serviceInfo = new EpgServiceEventInfo();
-                            serviceInfo.serviceInfo = CommonManager.ConvertChSet5To(ChSet5.Instance.ChList[id]);
+                            serviceInfo.serviceInfo = CommonManager.ConvertChSet5To(ChSet5.ChList[id]);
 
                             serviceEventList.Add(id, serviceInfo);
                         }
                         serviceInfo.eventList.Add(eventInfo);
+                    }
+                }
+
+                if (Settings.Instance.EpgNoDisplayOld == true)
+                {
+                    foreach (var key in serviceEventList.Keys.ToList())//ここでは要ToList()
+                    {
+                        EpgServiceEventInfo info = serviceEventList[key];
+                        var list = info.eventList.OfAvailable(false, DateTime.Now.AddDays(-Settings.Instance.EpgNoDisplayOldDays)).ToList();
+                        serviceEventList[key] = new EpgServiceEventInfo { serviceInfo = info.serviceInfo, eventList = list };
                     }
                 }
 

@@ -11,7 +11,7 @@
         <my:SearchKey Grid.Row="0" x:Name="searchKey" />
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,4,12,12" HorizontalAlignment="Right">
             <Button Name="button_OK" Content="    OK    " Margin="0,0,30,0" Click="button_OK_Click" />
-            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" />
+            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" IsCancel="True" />
         </StackPanel>
     </Grid>
 </Window>

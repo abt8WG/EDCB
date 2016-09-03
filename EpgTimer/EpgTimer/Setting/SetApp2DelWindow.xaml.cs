@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace EpgTimer
 {
+    using BoxExchangeEdit;
+
     /// <summary>
     /// SetApp2DelWindow.xaml の相互作用ロジック
     /// </summary>
@@ -24,38 +19,42 @@ namespace EpgTimer
         {
             InitializeComponent();
 
-            button_add.IsEnabled = IniFileHandler.CanUpdateInifile;
-            textBox_ext.IsEnabled = IniFileHandler.CanUpdateInifile;
-            label2.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_del.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_chk_del.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_chk_add.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_chk_open.IsEnabled = IniFileHandler.CanUpdateInifile;
-            textBox_chk_folder.IsEnabled = IniFileHandler.CanUpdateInifile;
-            button_OK.IsEnabled = IniFileHandler.CanUpdateInifile;
-        }
+            //button_add.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //textBox_ext.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //label2.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_del.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_chk_del.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_chk_add.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_chk_open.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //textBox_chk_folder.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_OK.IsEnabled = IniFileHandler.CanUpdateInifile;
+            ViewUtil.ChangeChildren(grid_main, IniFileHandler.CanUpdateInifile);
+            //listBox_ext.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //ViewUtil.DisableTextBoxWithMenu(textBox_ext);
+            //listBox_chk_folder.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //ViewUtil.DisableTextBoxWithMenu(textBox_chk_folder);
+            //button_chk_open.IsEnabled = IniFileHandler.CanUpdateInifile;
+            //button_cancel.IsEnabled = IniFileHandler.CanUpdateInifile;
 
-        private void button_del_Click(object sender, RoutedEventArgs e)
-        {
-            if (listBox_ext.SelectedItem != null)
+            var bxe = new BoxExchangeEditor(null, listBox_ext, true);
+            var bxc = new BoxExchangeEditor(null, listBox_chk_folder, true);
+            listBox_ext.SelectionChanged += ViewUtil.ListBox_TextBoxSyncSelectionChanged(listBox_ext, textBox_ext);
+            bxc.TargetBox.SelectionChanged += ViewUtil.ListBox_TextBoxSyncSelectionChanged(bxc.TargetBox, textBox_chk_folder);
+            bxc.TargetBox.KeyDown += ViewUtil.KeyDown_Enter(button_chk_open);
+            bxc.targetBoxAllowDoubleClick(bxc.TargetBox, (sender, e) => button_chk_open.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
+            if (CommonManager.Instance.NWMode == false)
             {
-                listBox_ext.Items.RemoveAt(listBox_ext.SelectedIndex);
-            }
-        }
+                bxe.AllowKeyAction();
+                bxe.AllowDragDrop();
+                button_del.Click += new RoutedEventHandler(bxe.button_Delete_Click);
+                button_add.Click += ViewUtil.ListBox_TextCheckAdd(listBox_ext, textBox_ext);
+                bxc.AllowKeyAction();
+                bxc.AllowDragDrop();
+                button_chk_del.Click += new RoutedEventHandler(bxc.button_Delete_Click);
+                button_chk_add.Click += ViewUtil.ListBox_TextCheckAdd(listBox_chk_folder, textBox_chk_folder);
 
-        private void button_add_Click(object sender, RoutedEventArgs e)
-        {
-            if (String.IsNullOrEmpty(textBox_ext.Text) == false)
-            {
-                foreach (String info in listBox_ext.Items)
-                {
-                    if (String.Compare(textBox_ext.Text, info, true) == 0)
-                    {
-                        MessageBox.Show("すでに追加されています");
-                        return;
-                    }
-                }
-                listBox_ext.Items.Add(textBox_ext.Text);
+                textBox_ext.KeyDown += ViewUtil.KeyDown_Enter(button_add);
+                textBox_chk_folder.KeyDown += ViewUtil.KeyDown_Enter(button_chk_add);
             }
         }
 
@@ -63,78 +62,24 @@ namespace EpgTimer
         {
             DialogResult = true;
 
-            extList.Clear();
-            foreach (string info in listBox_ext.Items)
-            {
-                extList.Add(info);
-            }
-            delChkFolderList.Clear();
-            foreach (string info in listBox_chk_folder.Items)
-            {
-                delChkFolderList.Add(info);
-            }
-
+            extList = listBox_ext.Items.OfType<string>().ToList();
+            delChkFolderList = listBox_chk_folder.Items.OfType<string>().ToList();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            foreach (string info in extList)
-            {
-                listBox_ext.Items.Add(info);
-            }
-            foreach (string info in delChkFolderList)
-            {
-                listBox_chk_folder.Items.Add(info);
-            }
-        }
-
-        private void button_chk_del_Click(object sender, RoutedEventArgs e)
-        {
-            if (listBox_chk_folder.SelectedItem != null)
-            {
-                listBox_chk_folder.Items.RemoveAt(listBox_chk_folder.SelectedIndex);
-            }
+            listBox_ext.Items.AddItems(extList);
+            listBox_chk_folder.Items.AddItems(delChkFolderList);
         }
 
         private void button_chk_open_Click(object sender, RoutedEventArgs e)
         {
-            CommonManager.GetFolderNameByDialog(textBox_chk_folder, "自動削除対象フォルダの選択");
-        }
-
-        private void button_chk_add_Click(object sender, RoutedEventArgs e)
-        {
-            if (String.IsNullOrEmpty(textBox_chk_folder.Text) == false)
-            {
-                foreach (String info in listBox_chk_folder.Items)
-                {
-                    if (String.Compare(textBox_chk_folder.Text, info, true) == 0)
-                    {
-                        MessageBox.Show("すでに追加されています");
-                        return;
-                    }
-                }
-                listBox_chk_folder.Items.Add(textBox_chk_folder.Text);
-            }
+            CommonManager.GetFolderNameByDialog(textBox_chk_folder, "自動削除対象フォルダの選択", true);
         }
 
         private void button_cancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
         }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (Keyboard.Modifiers == ModifierKeys.None)
-            {
-                switch (e.Key)
-                {
-                    case Key.Escape:
-                        this.button_cancel.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                        break;
-                }
-            }
-            base.OnKeyDown(e);
-        }
-
     }
 }

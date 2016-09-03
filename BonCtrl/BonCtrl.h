@@ -15,6 +15,14 @@
 class CBonCtrl
 {
 public:
+	//チャンネルスキャン、EPG取得のステータス用
+	enum JOB_STATUS {
+		ST_STOP,		//停止中
+		ST_WORKING,		//実行中
+		ST_COMPLETE,	//完了
+		ST_CANCEL,		//キャンセルされた
+	};
+
 	CBonCtrl(void);
 	~CBonCtrl(void);
 
@@ -329,14 +337,14 @@ public:
 
 	//チャンネルスキャンの状態を取得する
 	//戻り値：
-	// エラーコード
+	// ステータス
 	//引数：
 	// space		[OUT]スキャン中の物理CHのspace
 	// ch			[OUT]スキャン中の物理CHのch
 	// chName		[OUT]スキャン中の物理CHの名前
 	// chkNum		[OUT]チェック済みの数
 	// totalNum		[OUT]チェック対象の総数
-	DWORD GetChScanStatus(
+	JOB_STATUS GetChScanStatus(
 		DWORD* space,
 		DWORD* ch,
 		wstring* chName,
@@ -374,10 +382,10 @@ public:
 
 	//EPG取得のステータスを取得する
 	//戻り値：
-	// エラーコード
+	// ステータス
 	//引数：
 	// info			[OUT]取得中のサービス
-	DWORD GetEpgCapStatus(
+	JOB_STATUS GetEpgCapStatus(
 		EPGCAP_SERVICE_INFO* info
 		);
 
@@ -386,9 +394,7 @@ public:
 	// enableLive	[IN]視聴中に取得する
 	// enableRec	[IN]録画中に取得する
 	// enableRec	[IN]EPG取得するチャンネル一覧
-	// BSBasic		[IN]BSで１チャンネルから基本情報のみ取得するかどうか
-	// CS1Basic		[IN]CS1で１チャンネルから基本情報のみ取得するかどうか
-	// CS2Basic		[IN]CS2で１チャンネルから基本情報のみ取得するかどうか
+	// *Basic		[IN]１チャンネルから基本情報のみ取得するかどうか
 	// backStartWaitSec	[IN]Ch切り替え、録画開始後、バックグラウンドでのEPG取得を開始するまでの秒数
 	void SetBackGroundEpgCap(
 		BOOL enableLive,
@@ -396,6 +402,7 @@ public:
 		BOOL BSBasic,
 		BOOL CS1Basic,
 		BOOL CS2Basic,
+		BOOL CS3Basic,
 		DWORD backStartWaitSec
 		);
 
@@ -429,7 +436,7 @@ protected:
 	wstring chSt_chName;
 	DWORD chSt_chkNum;
 	DWORD chSt_totalNum;
-	DWORD chSt_err;
+	JOB_STATUS chSt_err;
 	typedef struct _CHK_CH_INFO{
 		DWORD space;
 		DWORD ch;
@@ -442,7 +449,7 @@ protected:
 	HANDLE epgCapStopEvent;
 	vector<EPGCAP_SERVICE_INFO> epgCapChList;
 	EPGCAP_SERVICE_INFO epgSt_ch;
-	DWORD epgSt_err;
+	JOB_STATUS epgSt_err;
 
 	HANDLE epgCapBackThread;
 	HANDLE epgCapBackStopEvent;
@@ -452,6 +459,7 @@ protected:
 	BOOL epgCapBackBSBasic;
 	BOOL epgCapBackCS1Basic;
 	BOOL epgCapBackCS2Basic;
+	BOOL epgCapBackCS3Basic;
 	DWORD epgCapBackStartWaitSec;
 	DWORD tsBuffMaxCount;
 	int writeBuffMaxCount;
@@ -462,7 +470,7 @@ protected:
 		BOOL chScan = FALSE
 		);
 
-	static void GetEpgDataFilePath(WORD ONID, WORD TSID, wstring& epgDataFilePath, BOOL BSBasic, BOOL CS1Basic, BOOL CS2Basic);
+	static void GetEpgDataFilePath(WORD ONID, WORD TSID, wstring& epgDataFilePath);
 
 	static void RecvCallback(void* param, BYTE* data, DWORD size, DWORD remain);
 	static UINT WINAPI AnalyzeThread(LPVOID param);

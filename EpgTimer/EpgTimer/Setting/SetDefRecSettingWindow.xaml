@@ -13,7 +13,7 @@
         <my:RecSettingView Grid.Row="1" x:Name="recSettingView" />
         <StackPanel Grid.Row="2" Name="stackPanel1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12">
             <Button Content="閉じる" Name="button_ok" Click="button_ok_Click" Margin="0,0,30,0" />
-            <Button Content="キャンセル" Name="button_cancel" Click="button_cancel_Click" Visibility="Visible"/>
+            <Button Content="キャンセル" Name="button_cancel" Click="button_cancel_Click" Visibility="Visible" IsCancel="True" />
         </StackPanel>
     </Grid>
 </Window>

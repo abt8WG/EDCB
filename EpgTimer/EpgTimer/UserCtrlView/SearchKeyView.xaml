@@ -14,7 +14,6 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition />
-                <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
@@ -22,10 +21,8 @@
             </Grid.RowDefinitions>
             <Label    Grid.Column="0" Grid.Row="0" Content="検索キーワード" />
             <ComboBox Grid.Column="1" Grid.Row="0" Name="ComboBox_andKey" Margin="10,4" IsEditable="True" IsTextSearchEnabled="False" TextBoxBase.TextChanged="ComboBox_TextChanged" />
-            <Button   Grid.Column="2" Grid.Row="0" Name="button_andIn" Content="改行入力" Margin="10,4" Click="button_dialogIn_Click" DataContext="{Binding ElementName=ComboBox_andKey}" />
             <Label    Grid.Column="0" Grid.Row="1" Content="NOTキーワード" />
             <ComboBox Grid.Column="1" Grid.Row="1" Name="ComboBox_notKey" Margin="10,4" IsEditable="True" IsTextSearchEnabled="False" TextBoxBase.TextChanged="ComboBox_TextChanged" />
-            <Button   Grid.Column="2" Grid.Row="1" Name="button_notIn" Content="改行入力" Margin="10,4" Click="button_dialogIn_Click" DataContext="{Binding ElementName=ComboBox_notKey}" />
         </Grid>
         <my:SearchKeyDescView Grid.Row="1" x:Name="searchKeyDescView" />
     </Grid>

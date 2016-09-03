@@ -94,6 +94,7 @@
     <Compile Include="Common\CallerInfo.cs" />
     <Compile Include="Common\BoxExchangeEditor.cs" />
     <Compile Include="Common\ExceptionLogger.cs" />
+    <Compile Include="DefineClass\Converter.cs" />
     <Compile Include="DefineClass\InfoWindowBase.cs" />
     <Compile Include="DefineClass\InfoWindowViewModel.cs" />
     <Compile Include="DefineClass\ReserveItemLive.cs" />
@@ -109,16 +110,23 @@
     <Compile Include="UserCtrlView\BGBarListBoxItem.xaml.cs">
       <DependentUpon>BGBarListBoxItem.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Common\StatusManager.cs" />
     <Compile Include="CtrlCmdDefEx\EpgEventInfoEx.cs" />
     <Compile Include="CtrlCmdDefEx\RecSettingDataEx.cs" />
     <Compile Include="CtrlCmdDefEx\ReserveDataEx.cs" />
     <Compile Include="CtrlCmdDefEx\RecFileInfoEx.cs" />
+    <Compile Include="DefineClass\RadioBtnSelect.cs" />
+    <Compile Include="DefineClass\GridViewSorterItem.cs" />
+    <Compile Include="DefineClass\StringItem.cs" />
+    <Compile Include="DefineClass\DataListItemBase.cs" />
     <Compile Include="DefineClass\DateTime28.cs" />
     <Compile Include="DefineClass\RecSettingItem.cs" />
     <Compile Include="DefineClass\NWPresetItem.cs" />
+    <Compile Include="DefineClass\InfoSearchItem.cs" />
     <Compile Include="UserCtrlView\AutoAddListView.xaml.cs">
       <DependentUpon>AutoAddListView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserCtrlView\SearchWindowBase.cs" />
     <Compile Include="UserCtrlView\DataViewBase.cs" />
     <Compile Include="UserCtrlView\ListViewController.cs" />
     <Compile Include="Menu\MenuSettingData.cs" />
@@ -250,9 +258,6 @@
     <Compile Include="EpgView\EpgWeekMainView.xaml.cs">
       <DependentUpon>EpgWeekMainView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="KeyWordWindow.xaml.cs">
-      <DependentUpon>KeyWordWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Setting\SetDefSearchSettingWindow.xaml.cs">
       <DependentUpon>SetDefSearchSettingWindow.xaml</DependentUpon>
     </Compile>
@@ -296,6 +301,9 @@
     <Compile Include="Revision.cs" />
     <Compile Include="UserCtrlView\StatusView.xaml.cs">
       <DependentUpon>StatusView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfoSearchWindow.xaml.cs">
+      <DependentUpon>InfoSearchWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="AddManualAutoAddWindow.xaml">
       <SubType>Designer</SubType>
@@ -449,10 +457,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="KeyWordWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -549,6 +553,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UserCtrlView\UiLayoutStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfoSearchWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

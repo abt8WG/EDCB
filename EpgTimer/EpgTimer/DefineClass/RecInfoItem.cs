@@ -13,10 +13,8 @@ using System.Windows.Shapes;
 
 namespace EpgTimer
 {
-    public class RecInfoItem
+    public class RecInfoItem : DataListItemBase
     {
-        private MenuUtil mutil = CommonManager.Instance.MUtil;
-
         public RecInfoItem() { }
         public RecInfoItem(RecFileInfo item)
         {
@@ -24,23 +22,7 @@ namespace EpgTimer
         }
 
         public RecFileInfo RecInfo { get; set; }
-
-        public static string GetValuePropertyName(string key)
-        {
-            var obj = new RecInfoItem();
-            if (key == CommonUtil.GetMemberName(() => obj.StartTime))
-            {
-                return CommonUtil.GetMemberName(() => obj.StartTimeValue);
-            }
-            else if (key == CommonUtil.GetMemberName(() => obj.ProgramDuration))
-            {
-                return CommonUtil.GetMemberName(() => obj.ProgramDurationValue);
-            }
-            else
-            {
-                return key;
-            }
-        }
+        public override ulong KeyID { get { return RecInfo == null ? 0 : RecInfo.ID; } }
 
         public bool IsProtect
         {
@@ -184,17 +166,14 @@ namespace EpgTimer
                 return RecInfo.RecFilePath;
             }
         }
-        public SolidColorBrush ForeColor
+        public override Brush BackColor
         {
             get
             {
-                return CommonManager.Instance.ListDefForeColor;
-            }
-        }
-        public SolidColorBrush BackColor
-        {
-            get
-            {
+                //番組表へジャンプ時の強調表示
+                if (NowJumpingTable != 0) return base.BackColor;
+
+                //通常表示
                 if (RecInfo != null)
                 {
                     long drops = Settings.Instance.RecinfoErrCriticalDrops == false ? RecInfo.Drops : RecInfo.DropsCritical;
@@ -215,45 +194,52 @@ namespace EpgTimer
                 return CommonManager.Instance.RecEndDefBackColor;
             }
         }
-        public TextBlock ToolTipView
+        public override string ConvertInfoText()
+        {
+            if (RecInfo == null) return "";
+            //
+            String view = CommonManager.ConvertTimeText(RecInfo.StartTime, RecInfo.DurationSecond, false, false, false) + "\r\n";
+            view += ServiceName + "(" + NetworkName + ")" + "\r\n";
+            view += EventName + "\r\n\r\n";
+
+            view += "録画結果 : " + Result + "\r\n";
+            view += "録画ファイルパス : " + RecFilePath + "\r\n";
+            view += ConvertDropText() + "\r\n";
+            view += ConvertScrambleText()+ "\r\n\r\n";
+
+            view += CommonManager.Convert64PGKeyString(RecInfo.Create64PgKey());
+
+            return view;
+        }
+        public string DropInfoText
         {
             get
             {
-                if (Settings.Instance.NoToolTip == true) return null;
+                if (RecInfo == null) return "";
                 //
-                return mutil.GetTooltipBlockStandard(RecInfoText);
+                return ConvertDropText("D:") + " " + ConvertScrambleText("S:");
             }
         }
-        public override string ToString()
+        private string ConvertDropText(string title = "Drops : ")
         {
-            return CommonManager.Instance.ConvertTextSearchString(this.EventName);
-        }
-        public string RecInfoText
-        {
-            get
+            if (Settings.Instance.RecinfoErrCriticalDrops == true)
             {
-                String view = "";
-                if (RecInfo != null)
-                {
-                    view = CommonManager.ConvertTimeText(RecInfo.StartTime, RecInfo.DurationSecond, false, false, false) + "\r\n";
-
-                    view += ServiceName;
-                    view += "(" + CommonManager.ConvertNetworkNameText(RecInfo.OriginalNetworkID) + ")" + "\r\n";
-                    view += EventName + "\r\n";
-                    view += "\r\n";
-                    view += "録画結果 : " + RecInfo.Comment + "\r\n";
-                    view += "録画ファイルパス : " + RecInfo.RecFilePath + "\r\n";
-                    view += "\r\n";
-
-                    view += "OriginalNetworkID : " + RecInfo.OriginalNetworkID.ToString() + " (0x" + RecInfo.OriginalNetworkID.ToString("X4") + ")\r\n";
-                    view += "TransportStreamID : " + RecInfo.TransportStreamID.ToString() + " (0x" + RecInfo.TransportStreamID.ToString("X4") + ")\r\n";
-                    view += "ServiceID : " + RecInfo.ServiceID.ToString() + " (0x" + RecInfo.ServiceID.ToString("X4") + ")\r\n";
-                    view += "EventID : " + RecInfo.EventID.ToString() + " (0x" + RecInfo.EventID.ToString("X4") + ")\r\n";
-                    view += "\r\n";
-                    view += "Drops : " + RecInfo.Drops.ToString() + "\r\n";
-                    view += "Scrambles : " + RecInfo.Scrambles.ToString() + "\r\n";
-                }
-                return view;
+                return "*" + title + RecInfo.DropsCritical.ToString();
+            }
+            else
+            {
+                return title + RecInfo.Drops.ToString();
+            }
+        }
+        private string ConvertScrambleText(string title = "Scrambles : ")
+        {
+            if (Settings.Instance.RecinfoErrCriticalDrops == true)
+            {
+                return "*" + title + RecInfo.ScramblesCritical.ToString();
+            }
+            else
+            {
+                return title + RecInfo.Scrambles.ToString();
             }
         }
         public String ReserveInfo

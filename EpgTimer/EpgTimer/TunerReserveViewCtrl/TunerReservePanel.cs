@@ -20,7 +20,7 @@ namespace EpgTimer.TunerReserveViewCtrl
             this.UseLayoutRounding = true;
         }
 
-        protected bool RenderText(String text, DrawingContext dc, ViewUtil.ItemFont itemFont, SolidColorBrush brush, double fontSize, double maxWidth, double maxHeight, double x, double baseline, ref double useHeight, bool nowrap = false)
+        protected bool RenderText(String text, DrawingContext dc, ViewUtil.ItemFont itemFont, Brush brush, double fontSize, double maxWidth, double maxHeight, double x, double baseline, ref double useHeight, bool nowrap = false)
         {
             if (x <= 0 || maxWidth <= 0)
             {
@@ -156,8 +156,8 @@ namespace EpgTimer.TunerReserveViewCtrl
                 double sizeNormal = Settings.Instance.TunerFontSize;
                 double indentTitle = sizeMin * 1.7;
                 double indentNormal = Settings.Instance.TunerTitleIndent ? indentTitle : 2;
-                SolidColorBrush colorTitle = CommonManager.Instance.CustTunerServiceColor;
-                SolidColorBrush colorNormal = CommonManager.Instance.CustTunerTextColor;
+                Brush colorTitle = CommonManager.Instance.CustTunerServiceColor;
+                Brush colorNormal = CommonManager.Instance.CustTunerTextColor;
 
                 double heightMin = Settings.Instance.TunerFontHeight;
                 double heightTitle = Settings.Instance.TunerFontHeightService;
@@ -246,7 +246,7 @@ namespace EpgTimer.TunerReserveViewCtrl
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
     }

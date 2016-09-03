@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "EpgTimerSrvMain.h"
 #include "HttpServer.h"
+#include "../../Common/PathUtil.h"
 #include "../../Common/TimeUtil.h"
 
 int CEpgTimerSrvMain::InitLuaCallback(lua_State* L)
@@ -118,7 +119,8 @@ int CEpgTimerSrvMain::LuaConvert(lua_State* L)
 			}else if( _stricmp(from, "cp932") == 0 ){
 				AtoW(src, wsrc);
 			}else{
-				return 0;
+				lua_pushnil(L);
+				return 1;
 			}
 			if( _stricmp(to, "utf-8") == 0 ){
 				lua_pushstring(L, ws.WtoUTF8(wsrc));
@@ -132,7 +134,8 @@ int CEpgTimerSrvMain::LuaConvert(lua_State* L)
 			}
 		}
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 int CEpgTimerSrvMain::LuaGetPrivateProfile(lua_State* L)
@@ -278,7 +281,8 @@ int CEpgTimerSrvMain::LuaGetServiceList(lua_State* L)
 		}
 		return 1;
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 void CEpgTimerSrvMain::LuaGetEventMinMaxTimeCallback(const vector<EPGDB_EVENT_INFO>* pval, void* param)
@@ -313,7 +317,8 @@ int CEpgTimerSrvMain::LuaGetEventMinMaxTime(lua_State* L)
 			return 1;
 		}
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 struct EnumEventParam {
@@ -414,7 +419,8 @@ int CEpgTimerSrvMain::LuaEnumEventInfo(lua_State* L)
 			}
 		}
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 void CEpgTimerSrvMain::LuaSearchEpgCallback(vector<CEpgDBManager::SEARCH_RESULT_EVENT>* pval, void* param)
@@ -485,7 +491,8 @@ int CEpgTimerSrvMain::LuaSearchEpg(lua_State* L)
 			return 1;
 		}
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 int CEpgTimerSrvMain::LuaAddReserveData(lua_State* L)
@@ -546,7 +553,8 @@ int CEpgTimerSrvMain::LuaGetReserveData(lua_State* L)
 			return 1;
 		}
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 int CEpgTimerSrvMain::LuaGetRecFilePath(lua_State* L)
@@ -554,14 +562,13 @@ int CEpgTimerSrvMain::LuaGetRecFilePath(lua_State* L)
 	CLuaWorkspace ws(L);
 	if( lua_gettop(L) == 1 ){
 		wstring filePath;
-		DWORD ctrlID;
-		DWORD processID;
-		if( ws.sys->reserveManager.GetRecFilePath((DWORD)lua_tointeger(L, 1), filePath, &ctrlID, &processID) ){
+		if( ws.sys->reserveManager.GetRecFilePath((DWORD)lua_tointeger(L, 1), filePath) ){
 			lua_pushstring(L, ws.WtoUTF8(filePath));
 			return 1;
 		}
 	}
-	return 0;
+	lua_pushnil(L);
+	return 1;
 }
 
 int CEpgTimerSrvMain::LuaGetRecFileInfo(lua_State* L)
@@ -579,7 +586,10 @@ int CEpgTimerSrvMain::LuaGetRecFileInfoProc(lua_State* L, bool getExtraInfo)
 	CLuaWorkspace ws(L);
 	bool getAll = lua_gettop(L) == 0;
 	vector<REC_FILE_INFO> list;
+
+	//
 	ws.sys->UpdateRecFileInfo();
+
 	if( getAll ){
 		lua_newtable(L);
 		list = ws.sys->reserveManager.GetRecFileInfoAll(getExtraInfo);
@@ -587,7 +597,8 @@ int CEpgTimerSrvMain::LuaGetRecFileInfoProc(lua_State* L, bool getExtraInfo)
 		DWORD id = (DWORD)lua_tointeger(L, 1);
 		list.resize(1);
 		if( ws.sys->reserveManager.GetRecFileInfo(id, &list.front(), getExtraInfo) == false ){
-			return 0;
+			lua_pushnil(L);
+			return 1;
 		}
 	}
 	for( size_t i = 0; i < list.size(); i++ ){
@@ -772,9 +783,6 @@ int CEpgTimerSrvMain::LuaAddOrChgAutoAdd(lua_State* L)
 {
 	CLuaWorkspace ws(L);
 	if( lua_gettop(L) == 1 && lua_istable(L, -1) ){
-		//vector<EPG_AUTO_ADD_DATA> val;
-		//val.push_back(EPG_AUTO_ADD_DATA());
-		//EPG_AUTO_ADD_DATA& item = val.back();
 		EPG_AUTO_ADD_DATA item;
 		item.dataID = LuaHelp::get_int(L, "dataID");
 		lua_getfield(L, -1, "searchInfo");
@@ -1046,7 +1054,10 @@ void CEpgTimerSrvMain::PushRecSettingData(CLuaWorkspace& ws, const REC_SETTING_D
 	LuaHelp::reg_int(L, "serviceMode", (int)rs.serviceMode);
 	LuaHelp::reg_boolean(L, "pittariFlag", rs.pittariFlag != 0);
 	LuaHelp::reg_string(L, "batFilePath", ws.WtoUTF8(rs.batFilePath));
+
+	// recTag サポート
 	LuaHelp::reg_string(L, "recTag", ws.WtoUTF8(rs.recTag));
+
 	LuaHelp::reg_int(L, "suspendMode", rs.suspendMode);
 	LuaHelp::reg_boolean(L, "rebootFlag", rs.rebootFlag != 0);
 	if( rs.useMargineFlag ){
@@ -1074,7 +1085,25 @@ void CEpgTimerSrvMain::PushRecSettingData(CLuaWorkspace& ws, const REC_SETTING_D
 void CEpgTimerSrvMain::PushEpgSearchKeyInfo(CLuaWorkspace& ws, const EPGDB_SEARCH_KEY_INFO& k)
 {
 	lua_State* L = ws.L;
+#if false // xtne6f版
+	wstring andKey = k.andKey;
+	size_t pos = andKey.compare(0, 7, L"^!{999}") ? 0 : 7;
+	pos += andKey.compare(pos, 7, L"C!{999}") ? 0 : 7;
+	int durMin = 0;
+	int durMax = 0;
+	if( andKey.compare(pos, 4, L"D!{1") == 0 ){
+		LPWSTR endp;
+		DWORD dur = wcstoul(andKey.c_str() + pos + 3, &endp, 10);
+		if( endp - (andKey.c_str() + pos + 3) == 9 && endp[0] == L'}' ){
+			andKey.erase(pos, 13);
+			durMin = dur / 10000 % 10000;
+			durMax = dur % 10000;
+		}
+	}
+	LuaHelp::reg_string(L, "andKey", ws.WtoUTF8(andKey));
+#else
 	LuaHelp::reg_string(L, "andKey", ws.WtoUTF8(k.andKey));
+#endif
 	LuaHelp::reg_string(L, "notKey", ws.WtoUTF8(k.notKey));
 	LuaHelp::reg_boolean(L, "regExpFlag", k.regExpFlag != 0);
 	LuaHelp::reg_boolean(L, "titleOnlyFlag", k.titleOnlyFlag != 0);
@@ -1084,9 +1113,17 @@ void CEpgTimerSrvMain::PushEpgSearchKeyInfo(CLuaWorkspace& ws, const EPGDB_SEARC
 	LuaHelp::reg_int(L, "freeCAFlag", k.freeCAFlag);
 	LuaHelp::reg_boolean(L, "chkRecEnd", k.chkRecEnd != 0);
 	LuaHelp::reg_int(L, "chkRecDay", k.chkRecDay);
+
+	// chkRecNoService サポート
 	LuaHelp::reg_boolean(L, "chkRecNoService", k.chkRecNoService != 0);
+
+#if false // xtne6f版
+	LuaHelp::reg_int(L, "chkDurationMin", durMin);
+	LuaHelp::reg_int(L, "chkDurationMax", durMax);
+#else
 	LuaHelp::reg_int(L, "chkDurationMin", k.chkDurationMin);
 	LuaHelp::reg_int(L, "chkDurationMax", k.chkDurationMax);
+#endif
 	lua_pushstring(L, "contentList");
 	lua_newtable(L);
 	for( size_t i = 0; i < k.contentList.size(); i++ ){
@@ -1152,7 +1189,10 @@ void CEpgTimerSrvMain::FetchRecSettingData(CLuaWorkspace& ws, REC_SETTING_DATA& 
 	rs.serviceMode = (BYTE)LuaHelp::get_int(L, "serviceMode");
 	rs.pittariFlag = LuaHelp::get_boolean(L, "pittariFlag");
 	UTF8toW(LuaHelp::get_string(L, "batFilePath"), rs.batFilePath);
+
+	// recTag サポート
 	UTF8toW(LuaHelp::get_string(L, "recTag"), rs.recTag);
+
 	rs.suspendMode = (BYTE)LuaHelp::get_int(L, "suspendMode");
 	rs.rebootFlag = LuaHelp::get_boolean(L, "rebootFlag");
 	rs.useMargineFlag = LuaHelp::isnil(L, "startMargin") == false;
@@ -1195,9 +1235,24 @@ void CEpgTimerSrvMain::FetchEpgSearchKeyInfo(CLuaWorkspace& ws, EPGDB_SEARCH_KEY
 	k.freeCAFlag = (BYTE)LuaHelp::get_int(L, "freeCAFlag");
 	k.chkRecEnd = LuaHelp::get_boolean(L, "chkRecEnd");
 	k.chkRecDay = (WORD)LuaHelp::get_int(L, "chkRecDay");
+
+	// chkRecNoService サポート
 	k.chkRecNoService = LuaHelp::get_boolean(L, "chkRecNoService");
+
+#if false // xtne6f版
+	int durMin = LuaHelp::get_int(L, "chkDurationMin");
+	int durMax = LuaHelp::get_int(L, "chkDurationMax");
+	if( durMin > 0 || durMax > 0 ){
+		wstring dur;
+		Format(dur, L"D!{%d}", (10000 + min(max(durMin, 0), 9999)) * 10000 + min(max(durMax, 0), 9999));
+		size_t pos = k.andKey.compare(0, 7, L"^!{999}") ? 0 : 7;
+		pos += k.andKey.compare(pos, 7, L"C!{999}") ? 0 : 7;
+		k.andKey.insert(pos, dur);
+	}
+#else
 	k.chkDurationMin = (WORD)LuaHelp::get_int(L, "chkDurationMin");
 	k.chkDurationMax = (WORD)LuaHelp::get_int(L, "chkDurationMax");
+#endif
 	lua_getfield(L, -1, "contentList");
 	if( lua_istable(L, -1) ){
 		for( int i = 0;; i++ ){

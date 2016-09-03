@@ -6,8 +6,8 @@
 
 class CCryptUtil
 {
-	static const int base64_encode[66];
-	static const int base64_decode[256];
+	static const char base64_encode[66];
+	static const char base64_decode[256];
 
 	HCRYPTPROV m_hProv;
 	HCRYPTHASH m_hHash;
@@ -117,7 +117,7 @@ private:
 			return FALSE;
 		}
 
-		int length = 0;
+		size_t length = 0;
 		for (auto itr = base64_string.begin(); itr != base64_string.end(); itr++) {
 			if (base64_decode[*itr & 0xFF] >= 0)
 				length++;
@@ -143,7 +143,7 @@ private:
 				break;
 			*buf++ = base64_decode[i2] << 6 | base64_decode[i3];
 		}
-		*pcbOut = (DWORD)(buf - *ppOut);
+		*pcbOut = static_cast<DWORD>(buf - *ppOut);
 		return TRUE;
 	}
 };

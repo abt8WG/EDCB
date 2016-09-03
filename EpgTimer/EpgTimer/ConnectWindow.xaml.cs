@@ -12,8 +12,7 @@ namespace EpgTimer
     /// </summary>
     public partial class ConnectWindow : Window
     {
-        private MenuUtil mutil = CommonManager.Instance.MUtil;
-        private const string DefPresetStr = "前回の接続";
+        private const string DefPresetStr = "前回接続時";
 
         private bool IsAvailableServer;
         private bool IsTouchedPreset;
@@ -51,48 +50,11 @@ namespace EpgTimer
                     Settings.Instance.NWMode = true;
                 }
                 listView_List.SelectedIndex = Settings.Instance.NWMode == true ? pos : 0;
+
+                this.KeyDown += ViewUtil.KeyDown_Escape_Close();
+                listView_List.KeyDown += ViewUtil.KeyDown_Enter(button_connect);
             }
             catch { }
-        }
-
-        private void SetSetting(NWPresetItem data)
-        {
-            if (data != null)
-            {
-                textBox_Name.Text = data.Name == DefPresetStr ? "" : data.Name;
-                textBox_srvIP.Text = data.NWServerIP;
-                textBox_srvPort.Text = data.NWServerPort.ToString();
-                checkBox_clientPort.IsChecked = data.NWWaitPort != 0;
-                textBox_clientPort.Text = data.NWWaitPort == 0 ? "4520" : data.NWWaitPort.ToString();
-                textBox_mac.Text = data.NWMacAdd;
-                textBox_Password.Password = new System.Net.NetworkCredential(string.Empty, data.NWPassword.SecureString).Password; // セキュアなコピーではない
-            }
-            else
-            {
-                textBox_Name.Text = "";
-                textBox_srvIP.Text = "";
-                textBox_srvPort.Text = "";
-                checkBox_clientPort.IsChecked = false;
-                textBox_clientPort.Text = "";
-                textBox_mac.Text = "";
-                textBox_Password.Password = "";
-            }
-        }
-
-        private NWPresetItem GetSetting()
-        {
-            var preset = new NWPresetItem();
-            preset.Name = textBox_Name.Text.Trim();
-            preset.NWServerIP = textBox_srvIP.Text.Trim();
-            preset.NWServerPort = mutil.MyToNumerical(textBox_srvPort, Convert.ToUInt32, Settings.Instance.NWServerPort);
-            preset.NWWaitPort = checkBox_clientPort.IsChecked == false ? 0 : mutil.MyToNumerical(textBox_clientPort, Convert.ToUInt32, Settings.Instance.NWWaitPort);
-            preset.NWMacAdd = textBox_mac.Text.Trim();
-            preset.NWPassword = new SerializableSecureString(textBox_Password.SecurePassword);
-            if (preset.Name.Length == 0)
-            {
-                preset.Name = preset.NWServerIP;
-            }
-            return preset;
         }
 
         private void UpdateNWPreset()
@@ -121,12 +83,7 @@ namespace EpgTimer
                     Settings.Instance.NWPassword = data.NWPassword;
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-                return;
-            }
-
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             DialogResult = true;
         }
 
@@ -178,7 +135,6 @@ namespace EpgTimer
             }
         }
 
-
         private void listView_List_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             ListView lv = sender as ListView;
@@ -222,6 +178,50 @@ namespace EpgTimer
             }
 
             return macAddress;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            button_connect.Focus();
+        }
+
+        private void SetSetting(NWPresetItem data)
+        {
+            if (data != null)
+            {
+                textBox_Name.Text = data.Name == DefPresetStr ? "" : data.Name;
+                textBox_srvIP.Text = data.NWServerIP;
+                textBox_srvPort.Text = data.NWServerPort.ToString();
+                checkBox_clientPort.IsChecked = data.NWWaitPort != 0;
+                textBox_clientPort.Text = data.NWWaitPort == 0 ? "4520" : data.NWWaitPort.ToString();
+                textBox_mac.Text = data.NWMacAdd;
+                textBox_Password.Password = new System.Net.NetworkCredential(string.Empty, data.NWPassword.SecureString).Password; // セキュアなコピーではない
+            }
+            else
+            {
+                textBox_Name.Text = "";
+                textBox_srvIP.Text = "";
+                textBox_srvPort.Text = "";
+                checkBox_clientPort.IsChecked = false;
+                textBox_clientPort.Text = "";
+                textBox_mac.Text = "";
+                textBox_Password.Password = "";
+            }
+        }
+        private NWPresetItem GetSetting()
+        {
+            var preset = new NWPresetItem();
+            preset.Name = textBox_Name.Text.Trim();
+            preset.NWServerIP = textBox_srvIP.Text.Trim();
+            preset.NWServerPort = MenuUtil.MyToNumerical(textBox_srvPort, Convert.ToUInt32, Settings.Instance.NWServerPort);
+            preset.NWWaitPort = checkBox_clientPort.IsChecked == false ? 0 : MenuUtil.MyToNumerical(textBox_clientPort, Convert.ToUInt32, Settings.Instance.NWWaitPort);
+            preset.NWMacAdd = textBox_mac.Text.Trim();
+            preset.NWPassword = new SerializableSecureString(textBox_Password.SecurePassword);
+            if (preset.Name.Length == 0)
+            {
+                preset.Name = preset.NWServerIP;
+            }
+            return preset;
         }
 
         private void btn_add_Click(object sender, RoutedEventArgs e)
@@ -279,25 +279,6 @@ namespace EpgTimer
                 UpdateNWPreset();
                 listView_List.SelectedIndex = Math.Min(pos, ConnectionList.Count - 1);
             }
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (Keyboard.Modifiers == ModifierKeys.None)
-            {
-                switch (e.Key)
-                {
-                    case Key.Escape:
-                        this.Close();
-                        break;
-                }
-            }
-            base.OnKeyDown(e);
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            button_connect.Focus();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

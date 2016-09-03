@@ -50,8 +50,8 @@
                                 <RowDefinition Height="auto" />
                             </Grid.RowDefinitions>
                             <Label    Grid.Column="0" Grid.Row="0" Name="label3" Content="視聴に使用するBonDriver" Margin="4" />
-                            <ListBox  Grid.Column="0" Grid.Row="1" Name="listBox_bon" Margin="40,4,0,4" />
-                            <Button   Grid.Column="1" Grid.Row="1" Name="button_del" Content="削除" Margin="20,4,0,4" Click="button_del_Click" VerticalAlignment="Top" />
+                            <ListBox  Grid.Column="0" Grid.Row="1" Name="listBox_bon" Margin="40,4,0,4" SelectionMode="Extended" />
+                            <Button   Grid.Column="1" Grid.Row="1" Name="button_del" Content="削除" Margin="20,4,0,4" VerticalAlignment="Top" />
                             <ComboBox Grid.Column="0" Grid.Row="2" Name="comboBox_bon" Margin="40,4,0,4" />
                             <Button   Grid.Column="1" Grid.Row="2" Name="button_add" Content="追加" Margin="20,4,0,4" Click="button_add_Click" />
                         </Grid>

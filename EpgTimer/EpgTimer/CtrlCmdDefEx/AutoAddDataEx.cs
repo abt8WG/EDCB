@@ -19,20 +19,24 @@ namespace EpgTimer
         public bool CheckResHit(ReserveData data)
         {
             if (data == null) return false;
-            return this.GetReserveList().FirstOrDefault(info => info.ReserveID == data.ReserveID) != null;
+            return this.GetReserveList().Any(info => info.ReserveID == data.ReserveID) == true;
         }*/
         public abstract bool CheckPgHit(IAutoAddTargetData data);
 
         public static AutoAddData AutoAddList(Type t, uint id)
         {
-            if (t == typeof(EpgAutoAddData))
+            try
             {
-                return CommonManager.Instance.DB.EpgAutoAddList[id];
+                if (t == typeof(EpgAutoAddData))
+                {
+                    return CommonManager.Instance.DB.EpgAutoAddList[id];
+                }
+                else if (t == typeof(ManualAutoAddData))
+                {
+                    return CommonManager.Instance.DB.ManualAutoAddList[id];
+                }
             }
-            else if (t == typeof(ManualAutoAddData))
-            {
-                return CommonManager.Instance.DB.ManualAutoAddList[id];
-            }
+            catch {}
             return null;
         }
 
@@ -60,6 +64,10 @@ namespace EpgTimer
         {
             return IsEnabled == null ? mlist.ToList() : mlist.Where(data => data.IsEnabled == IsEnabled).ToList();
         }
+        public static List<AutoAddData> Clone(this IEnumerable<AutoAddData> src)
+        {
+            return src.Select(data => data.CloneObj()).Cast<AutoAddData>().ToList();
+        }
     }
 
     public partial class EpgAutoAddData : AutoAddData
@@ -72,7 +80,7 @@ namespace EpgTimer
         public override bool CheckPgHit(IAutoAddTargetData data)
         {
             if (data == null) return false;
-            return this.GetSearchList().FirstOrDefault(info => info.EventInfo.Create64PgKey() == data.Create64PgKey()) != null;
+            return this.GetSearchList().Any(info => info.EventInfo.Create64PgKey() == data.Create64PgKey());
         }
 
         public override object CloneObj() { return EpgAutoAddDataEx.Clone(this); }
@@ -93,8 +101,8 @@ namespace EpgTimer
             dest.addCount = src.addCount;
             dest.dataID = src.dataID;
             dest.recSetting = src.recSetting.Clone();       //RecSettingData
-            dest.searchInfo = src.searchInfo.Clone();       //EpgSearchKeyInfo
-            dest.recFileList = src.recFileList.ToList();    //List<RecFileBasicInfo>
+            dest.searchInfo = src.searchInfo.Clone();       //EpgSearchKeyInfo
+            dest.recFileList = src.recFileList.ToList();    //List<RecFileBasicInfo>
             dest.reserveList = src.reserveList.ToList();    //List<ReserveBasicData>
         }
 

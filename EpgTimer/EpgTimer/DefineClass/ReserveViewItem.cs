@@ -12,7 +12,7 @@ namespace EpgTimer
         public ReserveViewItem(ReserveData info) : base(info) { }
         public ReserveData ReserveInfo { get { return _data; } set { _data = value; } }
 
-        public SolidColorBrush ForeColorPriTuner
+        public Brush ForeColorPriTuner
         {
             get
             {
@@ -21,11 +21,11 @@ namespace EpgTimer
                 return CommonManager.Instance.CustTunerServiceColorPri[ReserveInfo.RecSetting.Priority - 1];
             }
         }
-        public SolidColorBrush BackColorTuner
+        public Brush BackColorTuner
         {
             get
             {
-                return CommonManager.Instance.VUtil.ReserveErrBrush(ReserveInfo);
+                return ViewUtil.ReserveErrBrush(ReserveInfo);
             }
         }
         public String StatusTuner
@@ -50,7 +50,7 @@ namespace EpgTimer
                 return "";
             }
         }
-        public SolidColorBrush BorderBrushTuner
+        public Brush BorderBrushTuner
         {
             get
             {

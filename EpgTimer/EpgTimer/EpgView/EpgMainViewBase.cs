@@ -42,6 +42,7 @@ namespace EpgTimer.EpgView
         }
         public override void RefreshMenu()
         {
+            base.RefreshMenu();
             mBinds.ResetInputBindings(this);
             mm.CtxmGenerateContextMenu(cmdMenu, CtxmCode.EpgView, false);
         }
@@ -65,33 +66,10 @@ namespace EpgTimer.EpgView
             horizontalViewScroll.Margin = new Thickness(0, 0, SystemParameters.VerticalScrollBarWidth, 0);
         }
 
-        /// <summary>保持情報のクリア</summary>
-#if false
-        public override bool ClearInfo()
-        {
-            base.ClearInfo();
-
-            nowViewTimer.Stop();
-            if (nowLine != null)
-            {
-                programView.canvas.Children.Remove(nowLine);
-            }
-            nowLine = null;
-
-            programView.ClearInfo();
-            timeView.ClearInfo();
-            timeList.Clear();
-            programList.Clear();
-            reserveList.Clear();
-
-            return true;
-        }
-#endif
-
         protected override void UpdateStatusData(int mode = 0)
         {
             this.status[1] = string.Format("番組数:{0}", programList.Count)
-                + vutil.ConvertReserveStatus(reserveList.GetDataList(), "　予約");
+                + ViewUtil.ConvertReserveStatus(reserveList.GetDataList(), "　予約");
         }
 
         /// <summary>現在ライン表示用タイマーイベント呼び出し</summary>
@@ -155,7 +133,7 @@ namespace EpgTimer.EpgView
         protected void epgProgramView_LeftDoubleClick(object sender, Point cursorPos)
         {
             clickPos = cursorPos;
-            EpgCmds.ShowDialog.Execute(sender, cmdMenu);
+            EpgCmds.ShowDialog.Execute(null, cmdMenu);
         }
         
         /// <summary>右ボタンクリック</summary>
@@ -238,7 +216,7 @@ namespace EpgTimer.EpgView
         protected virtual void NowLineGenerate()
         {
             nowLine = new Line();
-            Canvas.SetZIndex(nowLine, 20);
+            Canvas.SetZIndex(nowLine, 15);
             nowLine.Stroke = Brushes.Red;
             nowLine.StrokeThickness = 3;
             nowLine.Opacity = 0.7;

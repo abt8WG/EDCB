@@ -18,7 +18,7 @@ public:
 	//引数：
 	// tcpFlag		[IN] TRUE：TCP/IPモード、FALSE：名前付きパイプモード
 	void SetSendMode(
-		BOOL tcpFlag
+		BOOL tcpFlag_
 		);
 #endif
 
@@ -28,16 +28,16 @@ public:
 	// eventName	[IN]排他制御用Eventの名前
 	// pipeName		[IN]接続パイプの名前
 	void SetPipeSetting(
-		LPCWSTR eventName,
-		LPCWSTR pipeName
+		LPCWSTR eventName_,
+		LPCWSTR pipeName_
 		);
 
 	//名前付きパイプモード時の接続先を設定（接尾にプロセスIDを伴うタイプ）
 	//引数：
 	// pid			[IN]プロセスID
 	void SetPipeSetting(
-		LPCWSTR eventName,
-		LPCWSTR pipeName,
+		LPCWSTR eventName_,
+		LPCWSTR pipeName_,
 		DWORD pid
 		);
 
@@ -1129,8 +1129,8 @@ protected:
 	DWORD connectTimeOut;
 	wstring eventName;
 	wstring pipeName;
-	wstring ip;
-	DWORD port;
+	wstring sendIP;
+	DWORD sendPort;
 #ifndef SEND_CTRL_CMD_NO_TCP
 	CCryptUtil hmac;
 #endif
@@ -1139,11 +1139,11 @@ protected:
 
 protected:
 	static DWORD SendPipe(CSendCtrlCmd *t, CMD_STREAM* send, CMD_STREAM* res);
-	DWORD SendPipe(LPCWSTR pipeName, LPCWSTR eventName, DWORD timeOut, CMD_STREAM* send, CMD_STREAM* res);
+	DWORD SendPipe(LPCWSTR pipeName_, LPCWSTR eventName_, DWORD timeOut, CMD_STREAM* send, CMD_STREAM* res);
 #ifndef SEND_CTRL_CMD_NO_TCP
 	static DWORD SendTCP(CSendCtrlCmd *t, CMD_STREAM* sendCmd, CMD_STREAM* resCmd);
 	DWORD SendTCP(wstring ip, DWORD port, DWORD timeOut, CMD_STREAM* sendCmd, CMD_STREAM* resCmd);
-	DWORD Authenticate(SOCKET sock, BYTE** pbdata, DWORD* pndata);
+	DWORD Authenticate(SOCKET sock, std::unique_ptr<BYTE[]>&data, DWORD* pndata);
 #endif
 
 	DWORD SendCmdStream(CMD_STREAM* send, CMD_STREAM* res);
@@ -1220,7 +1220,7 @@ DWORD CSendCtrlCmd::ReceiveCmdData2(DWORD param, T* resVal)
 		WORD ver = 0;
 		DWORD readSize = 0;
 		if( ReadVALUE(&ver, res.data, res.dataSize, &readSize) == FALSE ||
-			ReadVALUE2(ver, resVal, res.data + readSize, res.dataSize - readSize, NULL) == FALSE ){
+			ReadVALUE2(ver, resVal, res.data.get() + readSize, res.dataSize - readSize, NULL) == FALSE ){
 			ret = CMD_ERR;
 		}
 	}
@@ -1251,7 +1251,7 @@ DWORD CSendCtrlCmd::SendAndReceiveCmdData2(DWORD param, const T& val, U* resVal)
 		WORD ver = 0;
 		DWORD readSize = 0;
 		if( ReadVALUE(&ver, res.data, res.dataSize, &readSize) == FALSE ||
-			ReadVALUE2(ver, resVal, res.data + readSize, res.dataSize - readSize, NULL) == FALSE ){
+			ReadVALUE2(ver, resVal, res.data.get() + readSize, res.dataSize - readSize, NULL) == FALSE ){
 			ret = CMD_ERR;
 		}
 	}

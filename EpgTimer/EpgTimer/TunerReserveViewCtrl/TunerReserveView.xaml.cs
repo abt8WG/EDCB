@@ -17,8 +17,11 @@ namespace EpgTimer.TunerReserveViewCtrl
         protected override double DragScroll { get { return Settings.Instance.TunerDragScroll; } }
         protected override bool IsMouseScrollAuto { get { return Settings.Instance.TunerMouseScrollAuto; } }
         protected override double ScrollSize { get { return Settings.Instance.TunerScrollSize; } }
-        protected override bool IsPopupEnabled { get { return Settings.Instance.TunerPopup; } }
-        protected override FrameworkElement PopUp { get { return popupItem; } }
+        protected override bool IsPopEnabled { get { return Settings.Instance.TunerPopup == true; } }
+        protected override bool PopOnOver { get { return Settings.Instance.TunerPopupMode == 0; } }
+        protected override bool PopOnClick { get { return Settings.Instance.TunerPopupMode == 1; } }
+        protected override FrameworkElement Popup { get { return popupItem; } }
+        protected override double PopWidth { get { return Settings.Instance.TunerWidth; } }
 
         public TunerReserveView()
         {
@@ -34,14 +37,14 @@ namespace EpgTimer.TunerReserveViewCtrl
             {
                 canvas.Height = Math.Ceiling(height + 1);//右端のチューナ列の線を描画するため+1。他の+1も同じ。
                 canvas.Width = Math.Ceiling(width + 1);
-                reserveViewPanel.ItemFontNormal = CommonManager.Instance.VUtil.ItemFontTunerNormal.PrepareCache();
-                reserveViewPanel.ItemFontTitle = CommonManager.Instance.VUtil.ItemFontTunerService.PrepareCache();
+                reserveViewPanel.ItemFontNormal = ViewUtil.ItemFontTunerNormal.PrepareCache();
+                reserveViewPanel.ItemFontTitle = ViewUtil.ItemFontTunerService.PrepareCache();
                 reserveViewPanel.Height = canvas.Height;
                 reserveViewPanel.Width = canvas.Width;
                 reserveViewPanel.Items = reserveList;
                 reserveViewPanel.InvalidateVisual();
 
-                PopUpWork(true);
+                PopUpWork();
             }
             catch (Exception ex)
             {
@@ -49,7 +52,7 @@ namespace EpgTimer.TunerReserveViewCtrl
             }
         }
 
-        protected override ViewPanelItemBase GetPopupItem(Point cursorPos)
+        protected override ViewPanelItemBase GetPopupItem(Point cursorPos, bool onClick)
         {
             if (reserveViewPanel.Items == null) return null;
 
@@ -73,8 +76,8 @@ namespace EpgTimer.TunerReserveViewCtrl
             var fontTitle = new FontFamily(Settings.Instance.TunerFontNameService);
             var fontNormal = new FontFamily(Settings.Instance.TunerFontName);
             FontWeight weightTitle = Settings.Instance.TunerFontBoldService == true ? FontWeights.Bold : FontWeights.Normal;
-            SolidColorBrush colorTitle = Settings.Instance.TunerColorModeUse == true ? viewInfo.ForeColorPriTuner : CommonManager.Instance.CustTunerServiceColor;
-            SolidColorBrush colorNormal = CommonManager.Instance.CustTunerTextColor;
+            Brush colorTitle = Settings.Instance.TunerColorModeUse == true ? viewInfo.ForeColorPriTuner : CommonManager.Instance.CustTunerServiceColor;
+            Brush colorNormal = CommonManager.Instance.CustTunerTextColor;
 
             //録画中は枠をかえる
             popupItem.BorderBrush = viewInfo.BorderBrushTuner;

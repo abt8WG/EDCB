@@ -9,9 +9,12 @@ using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace EpgTimer
 {
+    using UserCtrlView;
+
     // EpgTimerNW では参照も更新もしない
     // CtlCmd 経由で取得、更新するよう書き換えるのが望ましい。
     class IniFileHandler
@@ -306,6 +309,9 @@ namespace EpgTimer
                             else if (section.Length > 0)
                             {
                                 string[] list = buff.Split(new char[] { '=' }, 2);
+                                if (list.Length != 2) {
+                                    continue;
+                                }
                                 this[section].addPair(list[0], list[1]);
                             }
                         }
@@ -582,61 +588,61 @@ namespace EpgTimer
         public string FontName
         {
             get { return fontName; }
-            set { fontName = value; CommonManager.Instance.VUtil.ItemFontNormal = null; }
+            set { fontName = value; ViewUtil.ItemFontNormal = null; }
         }
         /// <summary>番組表のタイトル名以外に使うフォントサイズ</summary>
         public double FontSize
         {
             get { return fontSize; }
-            set { fontSize = value; CommonManager.Instance.VUtil.ItemFontNormal = null; }
+            set { fontSize = value; ViewUtil.ItemFontNormal = null; }
         }
         /// <summary>番組表のタイトル名に使うフォント名</summary>
         public string FontNameTitle
         {
             get { return fontNameTitle; }
-            set { fontNameTitle = value; CommonManager.Instance.VUtil.ItemFontTitle = null; }
+            set { fontNameTitle = value; ViewUtil.ItemFontTitle = null; }
         }
         /// <summary>番組表のタイトル名に使うフォントサイズ</summary>
         public double FontSizeTitle
         {
             get { return fontSizeTitle; }
-            set { fontSizeTitle = value; CommonManager.Instance.VUtil.ItemFontTitle = null; }
+            set { fontSizeTitle = value; ViewUtil.ItemFontTitle = null; }
         }
         /// <summary>番組表のタイトル名に太字を使う</summary>
         public bool FontBoldTitle
         {
             get { return fontBoldTitle; }
-            set { fontBoldTitle = value; CommonManager.Instance.VUtil.ItemFontTitle = null; }
+            set { fontBoldTitle = value; ViewUtil.ItemFontTitle = null; }
         }
         /// <summary>使用予定チューナーのサービス名に使うフォント名</summary>
         public string TunerFontNameService
         {
             get { return tunerFontNameService; }
-            set { tunerFontNameService = value; CommonManager.Instance.VUtil.ItemFontTunerService = null; }
+            set { tunerFontNameService = value; ViewUtil.ItemFontTunerService = null; }
         }
         /// <summary>使用予定チューナーのサービス名に使うフォントサイズ</summary>
         public double TunerFontSizeService
         {
             get { return tunerFontSizeService; }
-            set { tunerFontSizeService = value; CommonManager.Instance.VUtil.ItemFontTunerService = null; }
+            set { tunerFontSizeService = value; ViewUtil.ItemFontTunerService = null; }
         }
         /// <summary>使用予定チューナーのサービス名に太字を使う</summary>
         public bool TunerFontBoldService
         {
             get { return tunerFontBoldService; }
-            set { tunerFontBoldService = value; CommonManager.Instance.VUtil.ItemFontTunerService = null; }
+            set { tunerFontBoldService = value; ViewUtil.ItemFontTunerService = null; }
         }
         /// <summary>使用予定チューナーのサービス名以外に使うフォント名</summary>
         public string TunerFontName
         {
             get { return tunerFontName; }
-            set { tunerFontName = value; CommonManager.Instance.VUtil.ItemFontTunerNormal = null; }
+            set { tunerFontName = value; ViewUtil.ItemFontTunerNormal = null; }
         }
         /// <summary>使用予定チューナーのサービス名以外に使うフォントサイズ</summary>
         public double TunerFontSize
         {
             get { return tunerFontSize; }
-            set { tunerFontSize = value; CommonManager.Instance.VUtil.ItemFontTunerNormal = null; }
+            set { tunerFontSize = value; ViewUtil.ItemFontTunerNormal = null; }
         }
 
         /// <summary>番組表でカスタマイズ表示を行う</summary>
@@ -723,6 +729,8 @@ namespace EpgTimer
         public bool TunerTitleIndent { get; set; }
         /// <summary>使用予定チューナーの予約をポップアップ表示する</summary>
         public bool TunerPopup { get; set; }
+        /// <summary>予約のポップアップ表示 (マウスオーバー/クリックしたとき)</summary>
+        public int TunerPopupMode { get; set; }
         /// <summary>使用予定チューナーのポップアップに優先度と録画モードを表示する</summary>
         public bool TunerPopupRecinfo { get; set; }
         /// <summary>使用予定チューナーのシングルクリックで予約ダイアログを開く</summary>
@@ -737,10 +745,16 @@ namespace EpgTimer
         public bool EpgPopup { get; set; }
         /// <summary>番組表の予約のある番組のみポップアップする</summary>
         public bool EpgPopupResOnly { get; set; }
+        /// <summary>番組内容のポップアップ表示 (マウスオーバー/クリックしたとき/予約のみマウスオーバーで、他はクリックしたとき)</summary>
+        public int EpgPopupMode { get; set; }
         /// <summary>番組表の番組内容をグラデーション表示する</summary>
         public bool EpgGradation { get; set; }
         /// <summary>番組表のサービス・時刻軸をグラデーション表示する</summary>
         public bool EpgGradationHeader { get; set; }
+        /// <summary>古い番組データの表示を抑制する</summary>
+        public bool EpgNoDisplayOld { get; set; }
+        /// <summary>古い番組データをn日前まで表示</summary>
+        public double EpgNoDisplayOldDays { get; set; }
         /// <summary>番組表の並べ替えする列のヘッダー名</summary>
         public string ResColumnHead { get; set; }
         /// <summary>番組表の並べ替え操作の方向</summary>
@@ -948,18 +962,32 @@ namespace EpgTimer
         public string SearchColumnHead { get; set; }
         /// <summary>検索の並べ替え操作の方向</summary>
         public ListSortDirection SearchSortDirection { get; set; }
-        /// <summary>検索ウィンドウの左端の位置</summary>
-        public double SearchWndLeft { get; set; }
-        /// <summary>検索ウィンドウの上端の位置</summary>
-        public double SearchWndTop { get; set; }
-        /// <summary>検索ウィンドウの幅</summary>
-        public double SearchWndWidth { get; set; }
-        /// <summary>検索ウィンドウの高さ</summary>
-        public double SearchWndHeight { get; set; }
-        /// <summary>検索ウィンドウをメインウィンドウの前面に表示する</summary>
-        public bool SearchWndPinned { get; set; }
+        /// <summary>検索ウィンドウ用</summary>
+        public HidableWindowSet SearchWndSet { get; set; }
         /// <summary>検索/キーワード予約ダイアログで検索語を保存する</summary>
         public bool SaveSearchKeyword { get; set; }
+        /// <summary>予約簡易検索で表示する列項目のリスト</summary>
+        public List<ListColumnInfo> InfoSearchWndColumn { get; set; }
+        /// <summary>予約簡易検索の並べ替えする列のヘッダー名</summary>
+        public string InfoSearchColumnHead { get; set; }
+        /// <summary>予約簡易検索の並べ替え操作の方向</summary>
+        public ListSortDirection InfoSearchSortDirection { get; set; }
+        /// <summary>予約簡易検索の検索語</summary>
+        public string InfoSearchLastWord { get; set; }
+        /// <summary>予約簡易検索のタイトルのみ検索</summary>
+        public bool InfoSearchTitleOnly { get; set; }
+        /// <summary>予約簡易検索で予約を検索対象にする</summary>
+        public bool InfoSearchReserveInfo { get; set; }
+        /// <summary>予約簡易検索で録画結果を検索対象にする</summary>
+        public bool InfoSearchRecInfo { get; set; }
+        /// <summary>予約簡易検索でキーワード予約を検索対象にする</summary>
+        public bool InfoSearchEpgAutoAddInfo { get; set; }
+        /// <summary>予約簡易検索でプログラム予約を検索対象にする</summary>
+        public bool InfoSearchManualAutoAddInfo { get; set; }
+        /// <summary>予約簡易検索で検索結果のツールチップを表示する</summary>
+        public bool InfoSearchItemTooltip { get; set; }
+        /// <summary>予約簡易検索ウィンドウ</summary>
+        public HidableWindowSet InfoSearchWndSet { get; set; }
         /// <summary>情報通知をファイルに記録する</summary>
         public short AutoSaveNotifyLog { get; set; }
         /// <summary>タスクトレイアイコンを表示する</summary>
@@ -1014,6 +1042,18 @@ namespace EpgTimer
         public bool DisplayStatus { get; set; }
         /// <summary>主要操作の操作結果を表示をする</summary>
         public bool DisplayStatusNotify { get; set; }
+        /// <summary>予約一覧のボタンを表示する</summary>
+        public bool IsVisibleReserveView { get; set; }
+        /// <summary>録画済み一覧のボタンを表示する</summary>
+        public bool IsVisibleRecInfoView { get; set; }
+        /// <summary>自動予約登録のボタンを表示する</summary>
+        public bool IsVisibleAutoAddView { get; set; }
+        /// <summary>自動予約登録の「並び替え」のボタンのみを表示する</summary>
+        public bool IsVisibleAutoAddViewMoveOnly { get; set; }
+        /// <summary>各画面のボタン列の位置</summary>
+        public Dock MainViewButtonsDock { get; set; }
+        /// <summary>初期表示画面</summary>
+        public CtxmCode StartTab { get; set; }
 
         /// <summary>多重起動を許す</summary>
         public bool ApplyMultiInstance { get; set; }
@@ -1041,6 +1081,12 @@ namespace EpgTimer
         public int InfoWindowItemFilterLevel { get; set; }
         /// <summary>予約簡易表示のプログレスバーの選択</summary>
         public int InfoWindowItemProgressBarType { get; set; }
+        /// <summary>予約簡易表示のプログレスバーの色</summary>
+        public List<string> InfoWindowItemProgressBarColors { get; set; }
+        /// <summary>予約簡易表示のプログレスバーの色 (カスタム用)</summary>
+        public List<UInt32> InfoWindowItemProgressBarCustColors { get; set; }
+        /// <summary>予約簡易表示のプログレスバーの背景色を透明にする</summary>
+        public bool InfoWindowItemProgressBarTransparent { get; set; }
         /// <summary>予約簡易表示の表示制限件数</summary>
         public int InfoWindowItemTopN { get; set; }
         /// <summary>予約簡易表示の表示範囲1[秒]</summary>
@@ -1105,15 +1151,18 @@ namespace EpgTimer
             TunerServiceNoWrap = true;
             TunerTitleIndent = true;
             TunerPopup = false;
+            TunerPopupMode = 0;
             TunerPopupRecinfo = false;
             TunerInfoSingleClick = false;
             TunerColorModeUse = false;
             TunerDisplayOffReserve = false;
             EpgTitleIndent = true;
             EpgPopup = true;
-            EpgPopupResOnly = false;
+            EpgPopupMode = 0;
             EpgGradation = true;
             EpgGradationHeader = true;
+            EpgNoDisplayOld = false;
+            EpgNoDisplayOldDays = 1;
             ResColumnHead = "";
             ResSortDirection = ListSortDirection.Ascending;
             LastWindowState = WindowState.Normal;
@@ -1203,12 +1252,19 @@ namespace EpgTimer
             SearchWndColumn = new List<ListColumnInfo>();
             SearchColumnHead = "";
             SearchSortDirection = ListSortDirection.Ascending;
-            SearchWndLeft = -100;
-            SearchWndTop = -100;
-            SearchWndWidth = -100;
-            SearchWndHeight = -100;
-            SearchWndPinned = false;
+            SearchWndSet = new HidableWindowSet();
             SaveSearchKeyword = true;
+            InfoSearchWndColumn = new List<ListColumnInfo>();
+            InfoSearchColumnHead = "";
+            InfoSearchSortDirection = ListSortDirection.Ascending;
+            InfoSearchLastWord = "";
+            InfoSearchTitleOnly = true;
+            InfoSearchReserveInfo = true;
+            InfoSearchRecInfo = true;
+            InfoSearchEpgAutoAddInfo = true;
+            InfoSearchManualAutoAddInfo = true;
+            InfoSearchItemTooltip = true;
+            InfoSearchWndSet = new HidableWindowSet();
             AutoSaveNotifyLog = 0;
             ShowTray = true;
             MinHide = true;
@@ -1249,6 +1305,9 @@ namespace EpgTimer
             InfoWindowBasedOnBroadcast = true;
             InfoWindowItemFilterLevel = 10;
             InfoWindowItemProgressBarType = 1;
+            InfoWindowItemProgressBarColors = new List<string>();
+            InfoWindowItemProgressBarCustColors = new List<UInt32>();
+            InfoWindowItemProgressBarTransparent = true;
             InfoWindowItemTopN = 10;
             InfoWindowItemLevel1Seconds = 0;
             InfoWindowItemLevel2Seconds = 15 * 60;
@@ -1260,6 +1319,12 @@ namespace EpgTimer
             UpdateTaskText = false;
             DisplayStatus = false;
             DisplayStatusNotify = false;
+            IsVisibleReserveView = true;
+            IsVisibleRecInfoView = true;
+            IsVisibleAutoAddView = true;
+            IsVisibleAutoAddViewMoveOnly = false;
+            MainViewButtonsDock = Dock.Right;
+            StartTab = CtxmCode.ReserveView;
         }
 
         [NonSerialized()]
@@ -1438,7 +1503,20 @@ namespace EpgTimer
                 }
                 _FillList(Instance.StatCustColors, 0xFFFFFFFF, num);
 
-                //予約状態列文字色
+                //予約簡易表示のプログレスバー色
+                num = 2;
+                if (Instance.InfoWindowItemProgressBarColors.Count < num)
+                {
+                    defColors = new List<string>
+                    {
+                        "LightGreen", // Foreground
+                        "Transparent" // Background
+                    };
+                    _FillList(Instance.InfoWindowItemProgressBarColors, defColors);
+                }
+                _FillList(Instance.InfoWindowItemProgressBarCustColors, 0xFFFFFFFF, num);
+
+                //予約簡易表示の予約状態列背景色
                 num = 5;
                 if (Instance.InfoWindowItemBgColors.Count < num)
                 {
@@ -1455,115 +1533,65 @@ namespace EpgTimer
 
                 if (Instance.ViewButtonList.Count == 0)
                 {
-                    Instance.ViewButtonList.Add("設定");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("再接続");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("検索");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("スタンバイ");
-                    Instance.ViewButtonList.Add("休止");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("EPG取得");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("EPG再読み込み");
-                    Instance.ViewButtonList.Add("（空白）");
-                    Instance.ViewButtonList.Add("終了");
+                    Instance.ViewButtonList.AddRange(GetViewButtonDefIDs(false));
                 }
                 if (Instance.TaskMenuList.Count == 0)
                 {
-                    Instance.TaskMenuList.Add("設定");
-                    Instance.TaskMenuList.Add("（セパレータ）");
-                    Instance.TaskMenuList.Add("再接続");
-                    Instance.TaskMenuList.Add("（セパレータ）");
-                    Instance.TaskMenuList.Add("スタンバイ");
-                    Instance.TaskMenuList.Add("休止");
-                    Instance.TaskMenuList.Add("（セパレータ）");
-                    Instance.TaskMenuList.Add("終了");
+                    Instance.TaskMenuList.AddRange(GetTaskMenuDefIDs(false));
                 }
                 if (Instance.ReserveListColumn.Count == 0)
                 {
                     var obj = new ReserveItem();
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.NetworkName), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.RecMode), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Priority), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Tuijyu), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Comment), double.NaN));
-                    Instance.ReserveListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.RecFileName), double.NaN));
-                    Instance.ResColumnHead = CommonUtil.GetMemberName(() => obj.StartTime);
+                    Instance.ReserveListColumn.AddRange(GetDefaultColumn(typeof(ReserveView)));
+                    Instance.ResColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.ResSortDirection = ListSortDirection.Ascending;
                 }
                 if (Instance.RecInfoListColumn.Count == 0)
                 {
                     var obj = new RecInfoItem();
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.IsProtect), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.NetworkName), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Drops), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Scrambles), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Result), double.NaN));
-                    Instance.RecInfoListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.RecFilePath), double.NaN));
-                    Instance.RecInfoColumnHead = CommonUtil.GetMemberName(() => obj.StartTime);
+                    Instance.RecInfoListColumn.AddRange(GetDefaultColumn(typeof(RecInfoView)));
+                    Instance.RecInfoColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.RecInfoSortDirection = ListSortDirection.Descending;
                 }
                 if (Instance.AutoAddEpgColumn.Count == 0)
                 {
-                    var obj = new EpgAutoDataItem();
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.NotKey), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.RegExp), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.RecMode), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Priority), double.NaN));
-                    Instance.AutoAddEpgColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Tuijyu), double.NaN));
+                    Instance.AutoAddEpgColumn.AddRange(GetDefaultColumn(typeof(EpgAutoAddView)));
                 }
                 if (Instance.AutoAddManualColumn.Count == 0)
                 {
-                    var obj = new ManualAutoAddDataItem();
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.DayOfWeek), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.RecMode), double.NaN));
-                    Instance.AutoAddManualColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Priority), double.NaN));
+                    Instance.AutoAddManualColumn.AddRange(GetDefaultColumn(typeof(ManualAutoAddView)));
                 }
                 if (Instance.EpgListColumn.Count == 0)
                 {
                     var obj = new SearchItem();
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Status), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.NetworkName), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), double.NaN));
-                    Instance.EpgListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), double.NaN));
-                    Instance.EpgListColumnHead = CommonUtil.GetMemberName(() => obj.StartTime);
+                    Instance.EpgListColumn.AddRange(GetDefaultColumn(typeof(EpgListMainView)));
+                    Instance.EpgListColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.EpgListSortDirection = ListSortDirection.Ascending;
                 }
                 if (Instance.SearchWndColumn.Count == 0)
                 {
                     var obj = new SearchItem();
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Status), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ProgramDuration), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.NetworkName), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ProgramContent), double.NaN));
-                    Instance.SearchWndColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.JyanruKey), double.NaN));
-                    Instance.SearchColumnHead = CommonUtil.GetMemberName(() => obj.StartTime);
+                    Instance.SearchWndColumn.AddRange(GetDefaultColumn(typeof(SearchWindow)));
+                    Instance.SearchColumnHead = CommonUtil.NameOf(() => obj.StartTime);
                     Instance.SearchSortDirection = ListSortDirection.Ascending;
                 }
+                if (Instance.InfoSearchWndColumn.Count == 0)
+                {
+                    var obj = new InfoSearchItem();
+                    Instance.InfoSearchWndColumn.AddRange(GetDefaultColumn(typeof(InfoSearchWindow)));
+                    Instance.InfoSearchColumnHead = CommonUtil.NameOf(() => obj.StartTime);
+                    Instance.InfoSearchSortDirection = ListSortDirection.Ascending;
+                }
+
                 if (Instance.InfoWindowListColumn.Count == 0)
                 {
                     var obj = new ReserveItem();
-                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.Status), double.NaN));
-                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.StartTime), double.NaN));
-                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.ServiceName), 80));
-                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.GetMemberName(() => obj.EventName), 300));
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.Status), double.NaN));
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.StartTime), double.NaN));
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.ServiceName), 80));
+                    Instance.InfoWindowListColumn.Add(new ListColumnInfo(CommonUtil.NameOf(() => obj.EventName), 300));
                 }
+
                 if (Instance.RecInfoDropExclude.Count == 0)
                 {
                     Settings.Instance.RecInfoDropExclude = new List<string> { "EIT", "NIT", "CAT", "SDT", "SDTT", "TOT", "ECM", "EMM" };
@@ -1695,48 +1723,175 @@ namespace EpgTimer
 
         public double FontHeight
         {
-            get { return FontSize * CommonManager.Instance.VUtil.ItemFontNormal.GlyphType.Height; }
+            get { return FontSize * ViewUtil.ItemFontNormal.GlyphType.Height; }
         }
         public double FontHeightTitle
         {
-            get { return FontSizeTitle * CommonManager.Instance.VUtil.ItemFontTitle.GlyphType.Height; }
+            get { return FontSizeTitle * ViewUtil.ItemFontTitle.GlyphType.Height; }
         }
         public double TunerFontHeight
         {
-            get { return tunerFontSize * CommonManager.Instance.VUtil.ItemFontTunerNormal.GlyphType.Height; }
+            get { return tunerFontSize * ViewUtil.ItemFontTunerNormal.GlyphType.Height; }
         }
         public double TunerFontHeightService
         {
-            get { return tunerFontSizeService * CommonManager.Instance.VUtil.ItemFontTunerService.GlyphType.Height; }
+            get { return tunerFontSizeService * ViewUtil.ItemFontTunerService.GlyphType.Height; }
         }
 
-        public List<string> GetViewButtonAllItems()
+        private static List<string> viewButtonIDs = new List<string>();
+        public const string ViewButtonSpacer = "（空白）";
+        public const string TaskMenuSeparator = "（セパレータ）";
+        public static void ResisterViewButtonIDs(IEnumerable<string> list)
+        {
+            viewButtonIDs = list == null ? new List<string>() : list.ToList();
+        } 
+        public static List<string> GetViewButtonAllIDs()
+        {
+            return new List<string> { ViewButtonSpacer }.Concat(viewButtonIDs).ToList();
+        }
+        public static List<string> GetTaskMenuAllIDs()
+        {
+            return new List<string> { TaskMenuSeparator }.Concat(viewButtonIDs).ToList();
+        }
+        public static List<string> GetViewButtonDefIDs(bool nwMode)
         {
             return new List<string>
             {
-                "（空白）",
                 "設定",
+                ViewButtonSpacer,
                 "再接続",
-                "再接続(前回)",
+                ViewButtonSpacer,
                 "検索",
+                ViewButtonSpacer,
                 "スタンバイ",
                 "休止",
-                "終了",
+                ViewButtonSpacer,
                 "EPG取得",
+                ViewButtonSpacer,
                 "EPG再読み込み",
-                "NetworkTV終了",
-                "情報通知ログ",
-                "予約簡易表示",
-                "カスタム１",
-                "カスタム２",
-                "カスタム３"
+                ViewButtonSpacer,
+                "終了",
             };
         }
-        public List<string> GetTaskMenuAllItems()
+
+        public static List<string> GetTaskMenuDefIDs(bool nwMode)
         {
-            var taskItem = new List<string> { "（セパレータ）" };
-            taskItem.AddRange(GetViewButtonAllItems().Skip(1));
-            return taskItem;
+            return new List<string>
+            {
+                "設定",
+                TaskMenuSeparator,
+                "再接続",
+                TaskMenuSeparator,
+                "スタンバイ",
+                "休止",
+                TaskMenuSeparator,
+                "終了",
+            };
+        }
+
+        public static List<ListColumnInfo> GetDefaultColumn(Type t)
+        {
+            if (t == typeof(ReserveView))
+            {
+                var obj = new ReserveItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecMode) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Priority) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Tuijyu) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Comment) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecFileName) },
+                };
+            }
+            else if (t == typeof(RecInfoView))
+            {
+                var obj = new RecInfoItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.IsProtect) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Drops) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Scrambles) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Result) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecFilePath) },
+                };
+            }
+            else if (t == typeof(EpgAutoAddView))
+            {
+                var obj = new EpgAutoDataItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NotKey) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RegExp) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecMode) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Priority) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Tuijyu) },
+                };
+            }
+            else if (t == typeof(ManualAutoAddView))
+            {
+                var obj = new ManualAutoAddDataItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.DayOfWeek) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.RecMode) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Priority) },
+                };
+            }
+            else if (t == typeof(EpgListMainView))
+            {
+                var obj = new SearchItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Status) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                };
+            }
+            else if (t == typeof(SearchWindow))
+            {
+                var obj = new SearchItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Status) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramDuration) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramContent) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.JyanruKey) },
+                };
+            }
+            else if (t == typeof(InfoSearchWindow))
+            {
+                var obj = new InfoSearchItem();
+                return new List<ListColumnInfo>
+                {
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ViewItemName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.Status) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.StartTime) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramDuration) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.NetworkName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ServiceName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.EventName) },
+                    new ListColumnInfo { Tag = CommonUtil.NameOf(() => obj.ProgramContent) },
+                };
+            }
+            return null;
         }
     }
 }

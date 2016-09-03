@@ -66,7 +66,7 @@ namespace EpgTimer
             var progress_list_columns = Resources["ProgressStatusItemViewColumns"] as GridViewColumnList;
 
             lstCtrl = new ListViewController<ReserveItem>(this);
-            lstCtrl.SetSavePath(CommonUtil.GetMemberName(() => Settings.Instance.InfoWindowListColumn));
+            lstCtrl.SetSavePath(CommonUtil.NameOf(() => Settings.Instance.InfoWindowListColumn));
             lstCtrl.SetViewSetting(listView_InfoWindow, girdView_InfoWindow, false, false, progress_list_columns, null, false);
 
             MouseLeftButtonDown += (s, e) => { DragMove(); };

@@ -92,11 +92,6 @@
                         <ColumnDefinition Width="auto"/>
                     </Grid.ColumnDefinitions>
                     <ListView Grid.Column="0" Name="listView_recFolder" ItemsSource="{Binding}">
-                        <ListView.Resources>
-                            <Style TargetType="ListViewItem">
-                                <EventSetter Event="MouseDoubleClick" Handler="listView_recFolder_MouseDoubleClick"/>
-                            </Style>
-                        </ListView.Resources>
                         <ListView.View>
                             <GridView x:Name="gridView_recFolder">
                                 <GridViewColumn DisplayMemberBinding="{Binding Path=RecFolder}">
@@ -125,7 +120,7 @@
                     <StackPanel Grid.Column="1" Margin="10,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <Button Name="button_recFolderChg" Content="変更" Margin="0,2,3,2" Click="button_recFolderChg_Click" />
-                            <Button Name="button_recFolderDel" Content="削除" Margin="3,2,0,2" Click="button_recFolderDel_Click" />
+                            <Button Name="button_recFolderDel" Content="削除" Margin="3,2,0,2" />
                         </StackPanel>
                         <Button Name="button_recFolderAdd" Content="追加" Margin="0,2" Click="button_recFolderAdd_Click" />
                         <Button Name="button_recFolderAdd_1seg" Content="部分受信追加" Margin="0,2" Click="button_recFolderAdd_1seg_Click" />

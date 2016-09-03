@@ -9,9 +9,6 @@ namespace EpgTimer
 {
     public class SearchItem : RecSettingItem
     {
-        protected MenuUtil mutil = CommonManager.Instance.MUtil;
-        protected ViewUtil vutil = CommonManager.Instance.VUtil;
-
         protected EpgEventInfo eventInfo = null;
         public virtual EpgEventInfo EventInfo { get { return eventInfo; } set { eventInfo = value; } }
         public ReserveData ReserveInfo { get; set; }
@@ -24,23 +21,8 @@ namespace EpgTimer
             reserveTuner = null;
             base.Reset();
         }
-        public static new string GetValuePropertyName(string key)
-        {
-            var obj = new SearchItem();
-            if (key == CommonUtil.GetMemberName(() => obj.StartTime))
-            {
-                return CommonUtil.GetMemberName(() => obj.StartTimeValue);
-            }
-            else if (key == CommonUtil.GetMemberName(() => obj.ProgramDuration))
-            {
-                return CommonUtil.GetMemberName(() => obj.ProgramDurationValue);
-            }
-            else
-            {
-                return RecSettingItem.GetValuePropertyName(key);
-            }
-        }
 
+        public override ulong KeyID { get { return EventInfo == null ? 0 : EventInfo.Create64PgKey(); } }
         public bool IsReserved { get { return (ReserveInfo != null); } }
         public override RecSettingData RecSettingInfo { get { return ReserveInfo != null ? ReserveInfo.RecSetting : null; } }
         public override bool IsManual { get { return ReserveInfo != null ? ReserveInfo.IsManual : false; } }
@@ -61,9 +43,9 @@ namespace EpgTimer
                 if (EventInfo != null)
                 {
                     UInt64 serviceKey = EventInfo.Create64Key();
-                    if (ChSet5.Instance.ChList.ContainsKey(serviceKey) == true)
+                    if (ChSet5.ChList.ContainsKey(serviceKey) == true)
                     {
-                        return ChSet5.Instance.ChList[serviceKey].ServiceName;
+                        return ChSet5.ChList[serviceKey].ServiceName;
                     }
                 }
                 return "";
@@ -98,7 +80,7 @@ namespace EpgTimer
             }
         }
         /// <summary>
-        /// 番組放送時間(長さ)
+        /// 番組長
         /// </summary>
         public virtual String ProgramDuration
         {
@@ -167,8 +149,24 @@ namespace EpgTimer
                 {
                     string s = ReserveInfo.Comment;
                     return (ReserveInfo.IsAutoAddMissing == true ? "不明な" : ReserveInfo.IsAutoAddInvalid == true ? "無効の" : "")
-                            + (s.StartsWith("EPG自動予約(") == true ? "キーワード予約(" + s.Substring(8) : s);
+                            + (s.StartsWith("EPG自動予約(") == true ? "キーワード予約(" + AutoAddInfo + ")" : s);
                 }
+            }
+        }
+        public String AutoAddInfo
+        {
+            get
+            {
+                if (ReserveInfo == null) return "";
+                //
+                String info = "";
+                var reserveList = ReserveInfo.AutoAddInfo;
+                foreach (var data in reserveList)
+                {
+                    if (info.Length > 0) info += ",";
+                    info += data.andKey;
+                }
+                return info;
             }
         }
         public List<String> RecFileName
@@ -197,19 +195,9 @@ namespace EpgTimer
                 return reserveTuner;
             }
         }
-        public virtual TextBlock ToolTipView
+        public override String ConvertInfoText()
         {
-            get
-            {
-                if (Settings.Instance.NoToolTip == true) return null;
-                if (EventInfo == null) return mutil.GetTooltipBlockStandard("");
-                //
-                return mutil.GetTooltipBlockStandard(CommonManager.Instance.ConvertProgramText(EventInfo, EventInfoTextMode.All));
-            }
-        }
-        public override string ToString()
-        {
-            return CommonManager.Instance.ConvertTextSearchString(this.EventName);
+            return CommonManager.Instance.ConvertProgramText(EventInfo, EventInfoTextMode.All);
         }
         public virtual String Status
         {
@@ -242,7 +230,7 @@ namespace EpgTimer
                 return wiewString[index];
             }
         }
-        public virtual SolidColorBrush StatusColor
+        public virtual Brush StatusColor
         {
             get
             {
@@ -263,44 +251,32 @@ namespace EpgTimer
                 return CommonManager.Instance.StatResForeColor;
             }
         }
-        public int NowJumpingTable { set; get; }
-        public SolidColorBrush ForeColor
+        public override Brush ForeColor
         {
             get
             {
                 //番組表へジャンプ時の強調表示
-                switch(NowJumpingTable)
-                {
-                    case 1: return Brushes.Red;
-                    case 2: return CommonManager.Instance.ListDefForeColor;
-                }
-
-                //通常表示
-                if (ReserveInfo == null) return CommonManager.Instance.ListDefForeColor;
+                if (NowJumpingTable != 0 || ReserveInfo == null) return base.ForeColor;
                 //
                 return CommonManager.Instance.RecModeForeColor[ReserveInfo.RecSetting.RecMode];
             }
         }
-        public SolidColorBrush BackColor
+        public override Brush BackColor
         {
             get
             {
                 //番組表へジャンプ時の強調表示
-                switch (NowJumpingTable)
-                {
-                    case 1: return CommonManager.Instance.ResDefBackColor;
-                    case 2: return Brushes.Red;
-                }
+                if (NowJumpingTable != 0 || ReserveInfo == null) return base.BackColor;
 
                 //通常表示
-                return vutil.ReserveErrBrush(ReserveInfo);
+                return ViewUtil.ReserveErrBrush(ReserveInfo);
             }
         }
-        public Brush BorderBrush
+        public override Brush BorderBrush
         {
             get
             {
-                return vutil.EpgDataContentBrush(EventInfo);
+                return ViewUtil.EpgDataContentBrush(EventInfo);
             }
         }
     }
@@ -327,24 +303,12 @@ namespace EpgTimer
         //{
         //    return list.Any(info => item != null && item.IsReserved == true);
         //}
-        public static void AddFromEventList(this ICollection<SearchItem> itemlist, ICollection<EpgEventInfo> eventList, bool isExceptUnknownStartTime, bool isExceptEnded)
+        public static void AddFromEventList(this ICollection<SearchItem> itemlist, IEnumerable<EpgEventInfo> eventList, bool isExceptUnknownStartTime, bool isExceptEnded)
         {
-            if (itemlist == null) return;
+            if (eventList == null) return;
             //
-            DateTime now = DateTime.Now;
-            foreach (EpgEventInfo info in eventList.OfType<EpgEventInfo>())
+            foreach (EpgEventInfo info in eventList.OfAvailable(isExceptUnknownStartTime, isExceptEnded == true ? (DateTime?)DateTime.Now : null))
             {
-                //開始未定を除外
-                if (isExceptUnknownStartTime == true)
-                {
-                    if (info.StartTimeFlag == 0) continue;
-                }
-                //時間の過ぎているものを除外
-                if (isExceptEnded == true)
-                {
-                    if (info.start_time.AddSeconds(info.DurationFlag == 0 ? 0 : info.durationSec) < now) continue;
-                }
-
                 itemlist.Add(new SearchItem(info));
             }
             itemlist.SetReserveData();

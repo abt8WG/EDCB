@@ -107,7 +107,7 @@ namespace EpgTimer
 
         public bool Compare(SerializableSecureString s)
         {
-            if (Length != s.Length)
+            if (s == null || Length != s.Length)
                 return false;
             // 本来はマーシャリングして中身を取り出して Compare するべき
             return new NetworkCredential(string.Empty, secureString).Password == new NetworkCredential(string.Empty, s.SecureString).Password;

@@ -20,11 +20,18 @@ namespace EpgTimer.Setting
     /// </summary>
     public partial class SetOtherAppView : UserControl
     {
-        private MenuUtil mutil = CommonManager.Instance.MUtil;
-
         public SetOtherAppView()
         {
             InitializeComponent();
+
+            //エスケープキャンセルだけは常に有効にする。
+            var bx = new BoxExchangeEdit.BoxExchangeEditor(null, this.listBox_bon, true);
+            if (CommonManager.Instance.NWMode == false)
+            {
+                bx.AllowDragDrop();
+                bx.AllowKeyAction();
+                button_del.Click += new RoutedEventHandler(bx.button_Delete_Click);
+            }
 
             try
             {
@@ -83,8 +90,8 @@ namespace EpgTimer.Setting
             Settings.Instance.NwTvMode = (checkBox_nwTvMode.IsChecked == true);
             Settings.Instance.NwTvModeUDP = (checkBox_nwUDP.IsChecked == true);
             Settings.Instance.NwTvModeTCP = (checkBox_nwTCP.IsChecked == true);
-            Settings.Instance.TvTestOpenWait = mutil.MyToNumerical(textBox_TvTestOpenWait, Convert.ToInt32, 120000, 0, Settings.Instance.TvTestOpenWait);
-            Settings.Instance.TvTestChgBonWait = mutil.MyToNumerical(textBox_TvTestChgBonWait, Convert.ToInt32, 120000, 0, Settings.Instance.TvTestChgBonWait);
+            Settings.Instance.TvTestOpenWait = MenuUtil.MyToNumerical(textBox_TvTestOpenWait, Convert.ToInt32, 120000, 0, Settings.Instance.TvTestOpenWait);
+            Settings.Instance.TvTestChgBonWait = MenuUtil.MyToNumerical(textBox_TvTestChgBonWait, Convert.ToInt32, 120000, 0, Settings.Instance.TvTestChgBonWait);
 
             if (listBox_bon.IsEnabled)
             {
@@ -106,28 +113,9 @@ namespace EpgTimer.Setting
             CommonManager.GetFileNameByDialog(textBox_exe, false, "", ".exe");
         }
 
-        private void button_del_Click(object sender, RoutedEventArgs e)
-        {
-            if (listBox_bon.SelectedItem != null)
-            {
-                listBox_bon.Items.RemoveAt(listBox_bon.SelectedIndex);
-            }
-        }
-
         private void button_add_Click(object sender, RoutedEventArgs e)
         {
-            if (String.IsNullOrEmpty(comboBox_bon.Text) == false)
-            {
-                foreach (String info in listBox_bon.Items)
-                {
-                    if (String.Compare(comboBox_bon.Text, info, true) == 0)
-                    {
-                        MessageBox.Show("すでに追加されています");
-                        return;
-                    }
-                }
-                listBox_bon.Items.Add(comboBox_bon.Text);
-            }
+            ViewUtil.ListBox_TextCheckAdd(listBox_bon, comboBox_bon.Text);
         }
 
         private void button_playExe_Click(object sender, RoutedEventArgs e)

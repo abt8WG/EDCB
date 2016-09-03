@@ -257,9 +257,14 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 						nid.cbSize = NOTIFYICONDATA_V2_SIZE;
 						nid.hWnd = hwnd;
 						nid.uID = 1;
-						nid.hIcon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(
-							ctx->notifySrvStatus == 1 ? IDI_ICON_RED :
-							ctx->notifySrvStatus == 2 ? IDI_ICON_GREEN : IDI_ICON_BLUE), IMAGE_ICON, 16, 16, LR_SHARED);
+						int iconID = ctx->notifySrvStatus == 1 ? IDI_ICON_RED :
+						             ctx->notifySrvStatus == 2 ? IDI_ICON_GREEN : IDI_ICON_BLUE;
+						HRESULT (WINAPI* pfnLoadIconMetric)(HINSTANCE,PCWSTR,int,HICON*) =
+							(HRESULT (WINAPI*)(HINSTANCE,PCWSTR,int,HICON*))GetProcAddress(GetModuleHandle(L"comctl32.dll"), "LoadIconMetric");
+						if( pfnLoadIconMetric == NULL ||
+						    pfnLoadIconMetric(GetModuleHandle(NULL), MAKEINTRESOURCE(iconID), LIM_SMALL, &nid.hIcon) != S_OK ){
+							nid.hIcon = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(iconID), IMAGE_ICON, 16, 16, 0);
+						}
 						if( ctx->notifyActiveTime != LLONG_MAX ){
 							SYSTEMTIME st;
 							ConvertSystemTime(ctx->notifyActiveTime + 30 * I64_1SEC, &st);
@@ -270,6 +275,9 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 						nid.uCallbackMessage = WM_TRAY_PUSHICON;
 						if( Shell_NotifyIcon(NIM_MODIFY, &nid) == FALSE && Shell_NotifyIcon(NIM_ADD, &nid) == FALSE ){
 							SetTimer(hwnd, TIMER_RETRY_ADD_TRAY, 5000, NULL);
+						}
+						if( nid.hIcon ){
+							DestroyIcon(nid.hIcon);
 						}
 					}
 				}else if( itr->notifyID < _countof(ctx->sys->notifyUpdateCount) ){
@@ -338,12 +346,9 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 			{
 				wstring moduleFolder;
 				GetModuleFolderPath(moduleFolder);
-				WIN32_FIND_DATA findData;
-				HANDLE hFind = FindFirstFile((moduleFolder + L"\\EpgTimer.lnk").c_str(), &findData);
-				if( hFind != INVALID_HANDLE_VALUE ){
+				if( GetFileAttributes((moduleFolder + L"\\EpgTimer.lnk").c_str()) != INVALID_FILE_ATTRIBUTES ){
 					//EpgTimer.lnk(ショートカット)を優先的に開く
 					ShellExecute(NULL, L"open", (moduleFolder + L"\\EpgTimer.lnk").c_str(), NULL, NULL, SW_SHOWNORMAL);
-					FindClose(hFind);
 				}else{
 					//EpgTimer.exeがあれば起動
 					PROCESS_INFORMATION pi;
@@ -407,6 +412,7 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 				bool addCountUpdated = false;
 				bool addReserve = false;
 				{
+					TIME_MEASURE_1(L"予約登録処理");
 					CBlockLock lock(&ctx->sys->settingLock);
 					for( map<DWORD, EPG_AUTO_ADD_DATA>::const_iterator itr = ctx->sys->epgAutoAdd.GetMap().begin(); itr != ctx->sys->epgAutoAdd.GetMap().end(); itr++ ){
 						DWORD addCount = itr->second.addCount;
@@ -418,6 +424,11 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 					for( map<DWORD, MANUAL_AUTO_ADD_DATA>::const_iterator itr = ctx->sys->manualAutoAdd.GetMap().begin(); itr != ctx->sys->manualAutoAdd.GetMap().end(); itr++ ){
 						addReserve |= ctx->sys->AutoAddReserveProgram(itr->second, true);
 					}
+#ifdef _DEBUG
+					_CrtMemState s;
+					_CrtMemCheckpoint(&s);
+					_CrtMemDumpStatistics(&s);
+#endif
 				}
 				if( addCountUpdated ){
 					//予約登録数の変化を通知する
@@ -715,6 +726,7 @@ void CEpgTimerSrvMain::ReloadNetworkSetting()
 		this->httpOptions.authenticationDomain = GetPrivateProfileToString(L"SET", L"HttpAuthenticationDomain", L"", iniPath.c_str());
 		this->httpOptions.numThreads = GetPrivateProfileInt(L"SET", L"HttpNumThreads", 5, iniPath.c_str());
 		this->httpOptions.requestTimeout = GetPrivateProfileInt(L"SET", L"HttpRequestTimeoutSec", 120, iniPath.c_str()) * 1000;
+		this->httpOptions.sslCipherList = GetPrivateProfileToString(L"SET", L"HttpSslCipherList", L"HIGH:!aNULL:!MD5", iniPath.c_str());
 		this->httpOptions.sslProtocolVersion = GetPrivateProfileInt(L"SET", L"HttpSslProtocolVersion", 2, iniPath.c_str());
 		this->httpOptions.keepAlive = GetPrivateProfileInt(L"SET", L"HttpKeepAlive", 0, iniPath.c_str()) != 0;
 		this->httpOptions.ports = GetPrivateProfileToString(L"SET", L"HttpPort", L"5510", iniPath.c_str());
@@ -980,6 +992,7 @@ bool CEpgTimerSrvMain::AutoAddReserveEPG(const EPG_AUTO_ADD_DATA& data, bool noR
 	vector<RESERVE_BASIC_DATA> reserveBasic; reserveBasic.resize(reserveData.size());
 	std::copy(reserveData.begin(), reserveData.end(), reserveBasic.begin());
 	epgAutoAdd.SetAddList(data.dataID, reserveBasic);
+	epgAutoAdd.SetSearchKeyHash(data.dataID, data.searchInfo.searchKeyHash); //検索キーハッシュ値の更新
 	return ret;
 }
 
@@ -1028,7 +1041,7 @@ void CEpgTimerSrvMain::UpdateRecFileInfo() {
 	CBlockLock lock(&this->settingLock);
 
 	if (reserveManager.GetNewRecInfoCount() > 0) {
-		DWORD time = GetTickCount();
+		//DWORD time = GetTickCount();
 		// 新規録画ファイルがある場合は録画ファイルとの関連付けを更新
 		auto list = reserveManager.UpdateAndMergeNewRecInfo(epgAutoAdd.GetMap());
 		// 新規関連付け分を追加
@@ -1624,14 +1637,10 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 				if( hFile != INVALID_HANDLE_VALUE ){
 					DWORD dwFileSize = GetFileSize(hFile, NULL);
 					if (dwFileSize != INVALID_FILE_SIZE && dwFileSize != 0) {
-						BYTE* data = new BYTE[dwFileSize];
+						resParam->data.reset(new BYTE[dwFileSize]);
 						DWORD dwRead;
-						if (ReadFile(hFile, data, dwFileSize, &dwRead, NULL) && dwRead != 0) {
+						if (ReadFile(hFile, resParam->data.get(), dwFileSize, &dwRead, NULL) && dwRead == dwFileSize) {
 							resParam->dataSize = dwRead;
-							resParam->data = data;
-						}
-						else {
-							delete[] data;
 						}
 					}
 					CloseHandle(hFile);
@@ -1970,11 +1979,9 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		{
 			DWORD val;
 			NWPLAY_TIMESHIFT_INFO resVal;
-			DWORD ctrlID;
-			DWORD processID;
 			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) &&
-			    sys->reserveManager.GetRecFilePath(val, resVal.filePath, &ctrlID, &processID) &&
-			    sys->streamingManager.OpenTimeShift(resVal.filePath.c_str(), processID, ctrlID, &resVal.ctrlID) ){
+			    sys->reserveManager.GetRecFilePath(val, resVal.filePath) &&
+			    sys->streamingManager.OpenTimeShift(resVal.filePath.c_str(), &resVal.ctrlID) ){
 				resParam->data = NewWriteVALUE(resVal, resParam->dataSize);
 				resParam->param = CMD_SUCCESS;
 			}
@@ -2009,7 +2016,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				DWORD reserveID;
-				if( ReadVALUE2(ver, &reserveID, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &reserveID, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					RESERVE_DATA info;
 					if( sys->reserveManager.GetReserveData(reserveID, &info) ){
 						resParam->data = NewWriteVALUE2WithVersion(ver, info, resParam->dataSize);
@@ -2025,7 +2032,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<RESERVE_DATA> list;
-				if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) &&
+				if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) &&
 				    sys->reserveManager.AddReserveData(list) ){
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2039,7 +2046,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<RESERVE_DATA> list;
-				if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) &&
+				if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) &&
 				    sys->reserveManager.ChgReserveData(list) ){
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2063,7 +2070,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&CommitedVerForNewCMD, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPGDB_SEARCH_KEY_INFO> key;
-				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->epgDB.SearchEpg(&key, SearchPg2Callback, resParam);
 				}
 			}
@@ -2076,7 +2083,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&CommitedVerForNewCMD, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPGDB_SEARCH_KEY_INFO> key;
-				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->epgDB.SearchEpgByKey(&key, SearchPgByKey2Callback, resParam);
 				}
 			}
@@ -2098,7 +2105,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPG_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->AddAutoAdd(val);
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2112,7 +2119,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<EPG_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->ChgAutoAdd(val);
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2143,7 +2150,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<MANUAL_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					{
 						CBlockLock lock(&sys->settingLock);
 						for( size_t i = 0; i < val.size(); i++ ){
@@ -2171,7 +2178,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<MANUAL_AUTO_ADD_DATA> val;
-				if( ReadVALUE2(ver, &val, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &val, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					{
 						CBlockLock lock(&sys->settingLock);
 						for( size_t i = 0; i < val.size(); i++ ){
@@ -2214,7 +2221,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<DWORD> idList;
-				if( ReadVALUE2(ver, &idList, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &idList, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					resParam->data = NewWriteVALUE2WithVersion(ver,
 						sys->reserveManager.GetRecFileInfoList(idList), resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2228,7 +2235,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				REC_FILE_INFO info;
-				if( ReadVALUE2(ver, &info.id, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) &&
+				if( ReadVALUE2(ver, &info.id, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) &&
 				    sys->reserveManager.GetRecFileInfo(info.id, &info) ){
 					resParam->data = NewWriteVALUE2WithVersion(ver, info, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2242,7 +2249,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				vector<REC_FILE_INFO> list;
-				if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					sys->reserveManager.ChgProtectRecFileInfo(list);
 					resParam->data = NewWriteVALUE(ver, resParam->dataSize);
 					resParam->param = CMD_SUCCESS;
@@ -2256,7 +2263,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
             DWORD readSize;
             if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
                 vector<wstring> list;
-                if( ReadVALUE2(ver, &list, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+                if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
                     vector<FILE_DATA> result;
                     vector<wstring>::iterator itr;
                     for( itr = list.begin(); itr != list.end(); itr++ ){
@@ -2318,7 +2325,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			DWORD readSize;
 			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
 				DWORD count;
-				if( ReadVALUE2(ver, &count, cmdParam->data + readSize, cmdParam->dataSize - readSize, NULL) ){
+				if( ReadVALUE2(ver, &count, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
 					NOTIFY_SRV_INFO info;
 					if( sys->notifyManager.GetNotify(&info, count) ){
 						resParam->data = NewWriteVALUE2WithVersion(ver, info, resParam->dataSize);

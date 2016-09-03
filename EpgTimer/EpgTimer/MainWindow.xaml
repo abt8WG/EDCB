@@ -13,7 +13,7 @@
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Name="stackPanel_button" Orientation="Horizontal" />
-        <TabControl Grid.Row="1" Name="tabControl_main" >
+        <TabControl Grid.Row="1" Name="tabControl_main">
             <TabItem Header="予約一覧" Name="tabItem_reserve">
                 <local:ReserveView x:Name="reserveView" />
             </TabItem>
@@ -23,7 +23,7 @@
             <TabItem Header="録画済み一覧" Name="tabItem_recinfo">
                 <local:RecInfoView x:Name="recInfoView" />
             </TabItem>
-            <TabItem Header="自動予約登録" Name="tabItem_epgAutoAdd">
+            <TabItem Header="自動予約登録" Name="tabItem_AutoAdd">
                 <local:AutoAddView x:Name="autoAddView" />
             </TabItem>
             <TabItem Header="番組表" Name="tabItem_epg">

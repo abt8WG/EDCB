@@ -27,9 +27,9 @@ namespace EpgTimer
             list_columns.AddRange(Resources["RecSettingViewColumns"] as GridViewColumnList);
 
             lstCtrl = new ListViewController<SearchItem>(this);
-            lstCtrl.SetSavePath(CommonUtil.GetMemberName(() => Settings.Instance.EpgListColumn)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.EpgListColumnHead)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.EpgListSortDirection));
+            lstCtrl.SetSavePath(CommonUtil.NameOf(() => Settings.Instance.EpgListColumn)
+                    , CommonUtil.NameOf(() => Settings.Instance.EpgListColumnHead)
+                    , CommonUtil.NameOf(() => Settings.Instance.EpgListSortDirection));
             lstCtrl.SetViewSetting(listView_event, gridView_event, true, true, list_columns);
             lstCtrl.SetSelectedItemDoubleClick(EpgCmds.ShowDialog);
 
@@ -62,15 +62,16 @@ namespace EpgTimer
         }
         public override void RefreshMenu()
         {
+            base.RefreshMenu();
             mBinds.ResetInputBindings(this, listView_event);
             mm.CtxmGenerateContextMenu(listView_event.ContextMenu, CtxmCode.EpgView, true);
         }
 
         protected override void UpdateStatusData(int mode = 0)
         {
-            if (mode == 0) this.status[1] = vutil.ConvertSearchItemStatus(lstCtrl.dataList, "番組数");
+            if (mode == 0) this.status[1] = ViewUtil.ConvertSearchItemStatus(lstCtrl.dataList, "番組数");
             List<SearchItem> sList = lstCtrl.GetSelectedItemsList();
-            this.status[2] = sList.Count == 0 ? "" : vutil.ConvertSearchItemStatus(sList, "　選択中");
+            this.status[2] = sList.Count == 0 ? "" : ViewUtil.ConvertSearchItemStatus(sList, "　選択中");
         }
 
         protected override void ReloadReserveViewItem()
@@ -132,7 +133,7 @@ namespace EpgTimer
                         foreach (EpgEventInfo eventInfo in serviceEventList[info.ID].eventList)
                         {
                             //ジャンル絞り込み
-                            if (vutil.ContainsContent(eventInfo, this.viewCustContentKindList) == false)
+                            if (ViewUtil.ContainsContent(eventInfo, this.viewCustContentKindList) == false)
                             {
                                 continue;
                             }
@@ -206,7 +207,7 @@ namespace EpgTimer
             SearchItem target_item = lstCtrl.dataList.Find(item => item.ReserveInfo != null && item.ReserveInfo.ReserveID == ID);
             if (target_item != null)
             {
-                vutil.ScrollToFindItem(target_item, listView_event, IsMarking);
+                ViewUtil.ScrollToFindItem(target_item, listView_event, IsMarking);
             }
             else
             {
@@ -229,9 +230,7 @@ namespace EpgTimer
 
         protected override void MoveToProgramItem(EpgEventInfo target, bool IsMarking)
         {
-            ulong PgKey = target.Create64PgKey();
-            SearchItem target_item = lstCtrl.dataList.Find(item => item.EventInfo.Create64PgKey() == PgKey);
-            vutil.ScrollToFindItem(target_item, listView_event, IsMarking);
+            ViewUtil.JumpToListItem(new SearchItem(target), listView_event, IsMarking);
         }
 
         protected override void UserControl_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)

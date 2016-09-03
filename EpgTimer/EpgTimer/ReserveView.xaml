@@ -13,22 +13,18 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="auto" />
-        </Grid.ColumnDefinitions>
-        <ListView Name="listView_reserve" Margin="10" Style="{StaticResource DataListViewStyle}" >
+    <DockPanel>
+        <StackPanel Name="stackPanel_button" DockPanel.Dock="Right">
+            <Button Name="button_on_off"        Content="予約←→無効"       Margin="0,10" />
+            <Button Name="button_change"        Content="変更"               Margin="0,10" />
+            <Button Name="button_del"           Content="削除"               Margin="0,10" />
+            <Button Name="button_add_manual"    Content="プログラム予約追加" Margin="0,10" />
+            <Button Name="button_timeShiftPlay" Content="追っかけ再生"       Margin="0,10" />
+        </StackPanel>
+        <ListView Name="listView_reserve" Style="{StaticResource DataListViewStyle}" >
             <ListView.View>
                 <GridView x:Name="gridView_reserve" />
             </ListView.View>
         </ListView>
-        <StackPanel Grid.Column="1" Name="stackPanel_button" Margin="0,0,10,0">
-            <Button Name="button_on_off" Content="予約←→無効" Margin="0,10" />
-            <Button Name="button_change" Content="変更" Margin="0,10" />
-            <Button Name="button_del" Content="削除" Margin="0,10" />
-            <Button Name="button_add_manual" Content="プログラム予約追加" Margin="0,10" />
-            <Button Name="button_timeShiftPlay" Content="追っかけ再生" Margin="0,10" />
-        </StackPanel>
-    </Grid>
+    </DockPanel>
 </local:DataViewBase>

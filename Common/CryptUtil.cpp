@@ -8,7 +8,7 @@
 #pragma comment(lib, "crypt32.lib")
 
 // template<class T>Base64Encode用テーブル
-const int CCryptUtil::base64_encode[66] = {
+const char CCryptUtil::base64_encode[66] = {
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 	'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
 	'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
@@ -19,7 +19,7 @@ const int CCryptUtil::base64_encode[66] = {
 };
 
 // template<class T>Base64Decode用テーブル
-const int CCryptUtil::base64_decode[256] = {
+const char CCryptUtil::base64_decode[256] = {
 	-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 	-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 	-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,62,-1,-1,-1,63,		// +, /

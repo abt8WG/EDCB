@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="削除設定" Height="450" Width="587" Loaded="Window_Loaded" ShowInTaskbar="False" ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
 
-    <Grid Margin="12">
+    <Grid Name="grid_main" Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition />
@@ -13,8 +13,8 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        
-        <Label Grid.Row="0" Name="label1" Content="同時に削除するファイルの拡張子" />
+
+        <Label Grid.Row="0" Content="同時に削除するファイルの拡張子" />
 
         <Grid Grid.Row="1" Margin="35,8,20,4" >
             <Grid.ColumnDefinitions>
@@ -22,43 +22,39 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <ListBox Grid.Column="0" Name="listBox_ext" Margin="0,0,10,0"/>
-            <Grid Grid.Column="1" VerticalAlignment="Top">
+            <Grid    Grid.Column="1" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition />
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Name="label2" Content="拡張子" MinWidth="60" />
+                <Label   Grid.Column="0" Name="label2"      Content="拡張子" MinWidth="60" />
                 <TextBox Grid.Column="1" Name="textBox_ext" Margin="10,0"/>
-                <Button Grid.Column="2" Name="button_add" Content="追加" Click="button_add_Click" />
+                <Button  Grid.Column="2" Name="button_add"  Content="追加" />
             </Grid>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom" >
-                <Button Name="button_del" Content="削除" Click="button_del_Click" />
-            </StackPanel>
+            <Button Grid.Column="1" Name="button_del" Content="削除" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
         </Grid>
 
-        <Label Grid.Row="2" Name="label3" Content="自動削除対象フォルダ" />
+        <Label   Grid.Row="2" Content="自動削除対象フォルダ" />
 
-        <ListBox Grid.Row="3" Name="listBox_chk_folder" Margin="35,0,20,4" />
+        <ListBox Grid.Row="3" Name="listBox_chk_folder" Margin="35,0,20,4" SelectionMode="Extended" />
 
-        <StackPanel Grid.Row="4"  Orientation="Horizontal" Margin="35,0,20,4">
-            <Button Name="button_chk_del" Content="削除" Click="button_chk_del_Click" />
-        </StackPanel>
+        <Button  Grid.Row="4" Name="button_chk_del" Content="削除" Margin="35,0,20,4" HorizontalAlignment="Left" />
 
-        <Grid Grid.Row="5" Margin="35,0,20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Name="textBox_chk_folder" Margin="0,0,10,0"/>
-                <Button Grid.Column="1" Name="button_chk_add" Content="追加" Margin="0,0,10,0" Click="button_chk_add_Click" />
-                <Button Grid.Column="2" Name="button_chk_open" Content="開く" Click="button_chk_open_Click" />
+        <Grid    Grid.Row="5" Margin="35,0,20,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Name="textBox_chk_folder" Margin="0,0,10,0"/>
+            <Button Grid.Column="1" Name="button_chk_add" Content="追加" Margin="0,0,10,0" />
+            <Button Grid.Column="2" Name="button_chk_open" Content="開く" Click="button_chk_open_Click" />
         </Grid>
 
         <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12">
             <Button Name="button_OK" Content="    OK    " Margin="0,0,30,0" Click="button_OK_Click" />
-            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" />
+            <Button Name="button_cancel" Content="キャンセル" IsCancel="True" />
         </StackPanel>
     </Grid>
 </Window>

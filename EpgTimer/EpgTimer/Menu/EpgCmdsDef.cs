@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using System.Windows.Input;
 using System.Reflection;
 
@@ -11,7 +10,6 @@ namespace EpgTimer
     public static class EpgCmds
     {
         public static RoutedUICommand Add { get; private set; }
-        public static RoutedUICommand ShowAddDialog { get; private set; }
         public static RoutedUICommand AddOnPreset { get; private set; }
         public static RoutedUICommand ChgOnOff { get; private set; }
         public static RoutedUICommand ChgOnPreset { get; private set; }
@@ -35,10 +33,12 @@ namespace EpgTimer
         public static RoutedUICommand DeleteAll { get; private set; }
         public static RoutedUICommand AdjustReserve { get; private set; }
         public static RoutedUICommand ShowDialog { get; private set; }
+        public static RoutedUICommand ShowAddDialog { get; private set; }
+        public static RoutedUICommand ShowAutoAddDialog { get; private set; }
         public static RoutedUICommand JumpReserve { get; private set; }
         public static RoutedUICommand JumpTuner { get; private set; }
         public static RoutedUICommand JumpTable { get; private set; }
-        public static RoutedUICommand ShowAutoAddDialog { get; private set; }
+        public static RoutedUICommand JumpListView { get; private set; }
         public static RoutedUICommand ToAutoadd { get; private set; }
         public static RoutedUICommand ReSearch { get; private set; }
         public static RoutedUICommand ReSearch2 { get; private set; }
@@ -46,6 +46,7 @@ namespace EpgTimer
         public static RoutedUICommand OpenFolder { get; private set; }
         public static RoutedUICommand CopyTitle { get; private set; }
         public static RoutedUICommand CopyContent { get; private set; }
+        public static RoutedUICommand InfoSearchTitle { get; private set; }
         public static RoutedUICommand SearchTitle { get; private set; }
         public static RoutedUICommand CopyNotKey { get; private set; }
         public static RoutedUICommand SetNotKey { get; private set; }
@@ -59,8 +60,11 @@ namespace EpgTimer
         public static RoutedUICommand DeleteInDialog { get; private set; }
         public static RoutedUICommand Delete2InDialog { get; private set; }
         public static RoutedUICommand Search { get; private set; }
+        public static RoutedUICommand InfoSearch { get; private set; }
+        public static RoutedUICommand TopItem { get; private set; }
         public static RoutedUICommand UpItem { get; private set; }
         public static RoutedUICommand DownItem { get; private set; }
+        public static RoutedUICommand BottomItem { get; private set; }
         public static RoutedUICommand SaveOrder { get; private set; }
         public static RoutedUICommand RestoreOrder { get; private set; }
         public static RoutedUICommand DragCancel { get; private set; }

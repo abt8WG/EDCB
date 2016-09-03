@@ -29,9 +29,9 @@ namespace EpgTimer
                 list_columns.AddRange(Resources["RecSettingViewColumns"] as GridViewColumnList);
 
                 lstCtrl = new ListViewController<ReserveItem>(this);
-                lstCtrl.SetSavePath(CommonUtil.GetMemberName(() => Settings.Instance.ReserveListColumn)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.ResColumnHead)
-                    , CommonUtil.GetMemberName(() => Settings.Instance.ResSortDirection));
+                lstCtrl.SetSavePath(CommonUtil.NameOf(() => Settings.Instance.ReserveListColumn)
+                    , CommonUtil.NameOf(() => Settings.Instance.ResColumnHead)
+                    , CommonUtil.NameOf(() => Settings.Instance.ResSortDirection));
                 lstCtrl.SetViewSetting(listView_reserve, gridView_reserve, true, true, list_columns);
                 lstCtrl.SetSelectedItemDoubleClick(EpgCmds.ShowDialog);
                 
@@ -66,7 +66,7 @@ namespace EpgTimer
                 mBinds.SetCommandToButton(button_timeShiftPlay, EpgCmds.Play);
 
                 //メニューの作成、ショートカットの登録
-                RefreshMenu();
+                //RefreshMenu();
 
                 //コンテキストメニューを開く時の設定
                 listView_reserve.ContextMenu.Opened += new RoutedEventHandler(mc.SupportContextMenuLoading);
@@ -83,7 +83,7 @@ namespace EpgTimer
         {
             return lstCtrl.ReloadInfoData(dataList =>
             {
-                if (vutil.ReloadReserveData(this) == false) return false;
+                if (ViewUtil.ReloadReserveData(this) == false) return false;
 
                 foreach (ReserveData info in CommonManager.Instance.DB.ReserveList.Values)
                 {
@@ -94,9 +94,9 @@ namespace EpgTimer
         }
         protected override void UpdateStatusData(int mode = 0)
         {
-            if (mode == 0) this.status[1] = vutil.ConvertReserveStatus(lstCtrl.dataList, "予約数", 1);
+            if (mode == 0) this.status[1] = ViewUtil.ConvertReserveStatus(lstCtrl.dataList, "予約数", 1);
             List<ReserveItem> sList = lstCtrl.GetSelectedItemsList();
-            this.status[2] = sList.Count == 0 ? "" : vutil.ConvertReserveStatus(sList, "　選択中", 2);
+            this.status[2] = sList.Count == 0 ? "" : ViewUtil.ConvertReserveStatus(sList, "　選択中", 2);
         }
         public void SaveViewData()
         {
@@ -111,18 +111,9 @@ namespace EpgTimer
 
             if (BlackoutWindow.HasReserveData == true)
             {
-                MoveToReserveItem(BlackoutWindow.SelectedItem.ReserveInfo, BlackoutWindow.NowJumpTable);
+                ViewUtil.JumpToListItem(new ReserveItem(BlackoutWindow.SelectedItem.ReserveInfo), listView_reserve, BlackoutWindow.NowJumpTable);
             }
-
             BlackoutWindow.Clear();
         }
-
-        protected void MoveToReserveItem(ReserveData target, bool IsMarking)
-        {
-            uint ID = target.ReserveID;
-            ReserveItem item = lstCtrl.dataList.Find(data => data.ReserveInfo.ReserveID == ID);
-            vutil.ScrollToFindItem(item, listView_reserve, IsMarking);
-        }
-
     }
 }

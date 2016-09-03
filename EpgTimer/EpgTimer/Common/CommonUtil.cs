@@ -55,7 +55,7 @@ namespace EpgTimer
         }
 
         /// <summary>メンバ名を返す。</summary>
-        public static string GetMemberName<T>(Expression<Func<T>> e)
+        public static string NameOf<T>(Expression<Func<T>> e)
         {
             var member = (MemberExpression)e.Body;
             return member.Member.Name;
@@ -79,6 +79,18 @@ namespace EpgTimer
             if (obj == null) return null;
             var topWindow = PresentationSource.FromVisual(obj);
             return topWindow == null ? null : topWindow.RootVisual as Window;
+        }
+
+        /// <summary>文字数を制限し、超える場合は省略記号を付与する</summary>
+        public static string LimitLenString(string s, int max_len, string tag = "...")
+        {
+            if (string.IsNullOrEmpty(s) == false && s.Length > max_len)
+            {
+                tag = tag ?? "";
+                max_len = Math.Max(max_len, 0);
+                s = s.Substring(0, Math.Max(0, max_len - tag.Length)) + tag.Substring(0, Math.Min(max_len, tag.Length));
+            }
+            return s;
         }
 
         /// <summary>テーマを設定する</summary>

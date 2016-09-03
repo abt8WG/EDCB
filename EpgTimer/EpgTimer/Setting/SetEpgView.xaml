@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EpgTimer"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="780">
     <UserControl.Resources>
@@ -47,6 +48,8 @@
             <Style TargetType="{x:Type Button}" BasedOn="{StaticResource colorButton}" />
         </ResourceDictionary>
         -->
+        <local:NotConverter x:Key="notConverter" />
+        <local:OrConverter  x:Key="orConverter" />
     </UserControl.Resources>
     <TabControl>
         <TabItem Header="番組表">
@@ -115,13 +118,30 @@
                                             <Label Content="サービス１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                             <TextBox Name="textBox_service_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-                                        <CheckBox Name="checkBox_epg_popup" Margin="9,4" Click="checkBox_epg_popup_Click">
-                                            <TextBlock Text="番組内容をポップアップ表示する" TextWrapping="Wrap"/>
+                                        <CheckBox Name="checkBox_epg_popup" Content="番組内容のポップアップ表示" Margin="9,4">
+                                            <CheckBox.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource orConverter}">
+                                                    <Binding Path="IsEnabled" ElementName="checkBox_singleOpen" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="checkBox_singleOpen" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="radioButton_epg_popup_onClick" Converter="{StaticResource notConverter}" />
+                                            </MultiBinding>
+                                            </CheckBox.IsEnabled>
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_epg_popup_resOnly" Margin="25,0,0,4" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup}">
-                                            <TextBlock Text="予約のある番組のみポップアップする" TextWrapping="Wrap"/>
-                                        </CheckBox>
+                                        <WrapPanel Margin="25,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup, UpdateSourceTrigger=PropertyChanged}" >
+                                            <RadioButton Name="radioButton_epg_popup_onOver" Content="マウスオーバー" Margin="0,0,20,4" />
+                                            <RadioButton Name="radioButton_epg_popup_onClick" Content="クリックしたとき" Margin="0,0,20,4" />
+                                            <RadioButton Name="radioButton_epg_popup_resOnly" Margin="0,0,20,4">
+                                                <TextBlock Text="予約のみマウスオーバーで、他はクリックしたとき" TextWrapping="Wrap" />
+                                            </RadioButton>
+                                        </WrapPanel>
                                         <CheckBox Name="checkBox_singleOpen" Margin="9,4">
+                                            <CheckBox.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource orConverter}">
+                                                    <Binding Path="IsEnabled" ElementName="checkBox_epg_popup" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="checkBox_epg_popup" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="radioButton_epg_popup_onClick" Converter="{StaticResource notConverter}" />
+                                                </MultiBinding>
+                                            </CheckBox.IsEnabled>
                                             <TextBlock Text="シングルクリックで予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_openInfo" Margin="9,4">
@@ -155,6 +175,11 @@
                                             <CheckBox Name="checkBox_gradationHeader" Margin="130,0,0,4">
                                                 <TextBlock Text="サービス・時刻軸" TextWrapping="Wrap" />
                                             </CheckBox>
+                                        </WrapPanel>
+                                        <WrapPanel Margin="9,4,0,0">
+                                            <CheckBox Name="checkBox_epgNoDisplayOld" Content="古い番組データの表示を抑制する" Margin="0,0,20,0" ToolTip="通常はチェック不要です。" />
+                                            <TextBox Name="textBox_epgNoDisplayOldDays" Style="{StaticResource NumberBox}" />
+                                            <Label Content="日前まで表示" Margin="12,0,0,0" />
                                         </WrapPanel>
                                     </StackPanel>
                                 </Grid>
@@ -358,19 +383,15 @@
                                     <RowDefinition Height="auto" />
                                 </Grid.RowDefinitions>
                                 <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Content="表示タブ" />
-                                <ListBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Name="listBox_tab" Margin="8,4" SelectionMode="Extended">
-                                    <ListBox.Resources>
-                                        <Style TargetType="ListBoxItem">
-                                            <EventSetter Event="MouseDoubleClick" Handler="listBox_tab_MouseDoubleClick"/>
-                                        </Style>
-                                    </ListBox.Resources>
-                                </ListBox>
+                                <ListBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Name="listBox_tab" Margin="8,4" SelectionMode="Extended" />
                                 <StackPanel Grid.Column="2" Grid.Row="1" Margin="8,4">
-                                    <Button Name="button_tab_add" Content="追加" Margin="0,4" Click="button_tab_add_Click" />
-                                    <Button Name="button_tab_chg" Content="変更" Margin="0,4" Click="button_tab_chg_Click" />
-                                    <Button Name="button_tab_del" Content="削除" Margin="0,4" />
-                                    <Button Name="button_tab_up" Content="↑" Margin="0,4" />
-                                    <Button Name="button_tab_down" Content="↓" Margin="0,4" />
+                                    <Button Name="button_tab_add"    Content="追加" Margin="0,4" Click="button_tab_add_Click" />
+                                    <Button Name="button_tab_chg"    Content="変更" Margin="0,4" Click="button_tab_chg_Click" />
+                                    <Button Name="button_tab_del"    Content="削除" Margin="0,4" />
+                                    <Button Name="button_tab_top"    Content="↑↑" Margin="0,4" />
+                                    <Button Name="button_tab_up"     Content="↑"   Margin="0,4" />
+                                    <Button Name="button_tab_down"   Content="↓"   Margin="0,4" />
+                                    <Button Name="button_tab_bottom" Content="↓↓" Margin="0,4" />
                                 </StackPanel>
                                 <Button Grid.Column="0" Grid.Row="2" Name="button_tab_clone" Content="コピー" Margin="8,4" Click="button_tab_clone_Click" />
                                 <Button Grid.Column="1" Grid.Row="2" Name="button_tab_defaultCopy" Content="デフォルト表示をコピー" Margin="8,4" Click="button_tab_defaultCopy_Click" />
@@ -446,17 +467,34 @@
                                             <Label Content="チューナ１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                             <TextBox Name="textBox_tuner_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-                                        <CheckBox Name="checkBox_tuner_popup" Margin="9,4" Click="checkBox_tuner_popup_Click">
-                                            <TextBlock Text="予約をポップアップ表示する" TextWrapping="Wrap"></TextBlock>
+                                        <CheckBox Name="checkBox_tuner_popup" Content="予約のポップアップ表示" Margin="9,4">
+                                            <CheckBox.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource orConverter}">
+                                                    <Binding Path="IsEnabled" ElementName="checkBox_tunerSingleOpen" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="checkBox_tunerSingleOpen" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="radioButton_tuner_popup_onClick" Converter="{StaticResource notConverter}" />
+                                            </MultiBinding>
+                                            </CheckBox.IsEnabled>
                                         </CheckBox>
-                                        <CheckBox Name="checkBox_tuner_popup_recInfo" Margin="25,0,0,4">
-                                            <TextBlock Text="ポップアップに優先度と録画モードを表示する" TextWrapping="Wrap" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup}"/>
+                                        <WrapPanel Margin="25,0">
+                                            <RadioButton Name="radioButton_tuner_popup_onOver"  Content="マウスオーバー" Margin="0,0,20,4" />
+                                            <RadioButton Name="radioButton_tuner_popup_onClick" Content="クリックしたとき" Margin="0,0,20,4" />
+                                        </WrapPanel>
+                                        <CheckBox Name="checkBox_tuner_popup_recInfo" Margin="25,0,0,4" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup, UpdateSourceTrigger=PropertyChanged}">
+                                            <TextBlock Text="ポップアップに優先度と録画モードを表示する" TextWrapping="Wrap"></TextBlock>
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tunerSingleOpen" Margin="9,4">
+                                            <CheckBox.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource orConverter}">
+                                                    <Binding Path="IsEnabled" ElementName="checkBox_tuner_popup" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="checkBox_tuner_popup" Converter="{StaticResource notConverter}" />
+                                                    <Binding Path="IsChecked" ElementName="radioButton_tuner_popup_onClick" Converter="{StaticResource notConverter}" />
+                                                </MultiBinding>
+                                            </CheckBox.IsEnabled>
                                             <TextBlock Text="シングルクリックで予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tunerColorModeUse" Margin="9,4" ToolTip="チェックされていない場合はこの画面の設定色が使われます。" Click="checkBox_tunerColorModeUse_Click">
-                                            <TextBlock Text="サービスのフォント色を優先度で変える('色'タブの設定)" TextWrapping="Wrap" />
+                                            <TextBlock Text="サービスのフォント色を優先度で変える ('色'タブの設定)" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tuner_title_indent" Margin="9,4">
                                             <TextBlock Text="サービス名と番組名の表示位置をあわせる" TextWrapping="Wrap" />
@@ -478,7 +516,7 @@
                                                 <TextBox Name="textBox_tunerDdragScroll" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
                                         </WrapPanel>
-                                        <CheckBox Name="checkBox_tuner_display_offres" Content="無効の予約も表示する" Margin="8,4" />
+                                        <CheckBox Name="checkBox_tuner_display_offres" Content="無効の予約も表示する" Margin="9,4" />
                                     </StackPanel>
                                 </Grid>
                             </GroupBox>
@@ -621,18 +659,18 @@
                     <ScrollViewer>
                         <GroupBox Header="各種設定" Margin="6,6,6,0" VerticalAlignment="Top">
                             <StackPanel>
-                                <Button Name="button_set_cm" Content="右クリックメニューの設定" Margin="8" HorizontalAlignment="Left" Click="button_set_cm_Click" />
-                                <CheckBox Name="checkBox_displayAutoAddMissing" Margin="8,4" ToolTip="自動予約登録を削除・変更した場合や、EPGのタイトルが変わった場合などに発生する場合があります">
+                                <Button Name="button_set_cm" Content="右クリックメニューの設定" Margin="8,8,0,2" HorizontalAlignment="Left" Click="button_set_cm_Click" />
+                                <CheckBox Name="checkBox_displayAutoAddMissing" Margin="8,2" ToolTip="自動予約登録を削除・変更した場合や、EPGのタイトルが変わった場合などに発生する場合があります">
                                     <TextBlock TextWrapping="Wrap">自動予約登録(キーワード予約、プログラム予約)を見失った予約を強調表示する<LineBreak/>※EpgTimerNWでは若干もたつく感じがあるかもしれません</TextBlock>
                                 </CheckBox>
-                                <WrapPanel Margin="4">
+                                <WrapPanel Margin="4,0">
                                     <Label Content="番組表などへジャンプしたときの強調表示の継続時間" />
                                     <StackPanel Margin="14,0" Orientation="Horizontal">
                                         <TextBox Name="textBox_DisplayJumpTime" Style="{StaticResource NumberBox}" />
                                         <Label Content="秒" />
                                     </StackPanel>
                                 </WrapPanel>
-                                <WrapPanel Margin="4">
+                                <WrapPanel Margin="4,0">
                                     <Label Content="リスト表示で省略する(録画済み一覧以外)" />
                                     <StackPanel Margin="14,0" Orientation="Horizontal">
                                         <CheckBox Name="checkBox_resNoYear" Content="'年'" Margin="4,0" />
@@ -647,20 +685,52 @@
                                         <Label Content="時まで" />
                                     </StackPanel>
                                 </WrapPanel>
-                                <CheckBox Name="checkBox_displayPresetOnSearch" Margin="8,4">
+                                <CheckBox Name="checkBox_displayPresetOnSearch" Margin="8,2">
                                     <TextBlock TextWrapping="Wrap">検索/キーワード予約ダイアログの録画設定タブにプリセットを表示する</TextBlock>
                                 </CheckBox>
-                                <CheckBox Name="checkBox_nekopandaToolTip" Margin="8,4">
+                                <CheckBox Name="checkBox_nekopandaToolTip" Margin="8,2">
                                     <TextBlock TextWrapping="Wrap">自動予約登録画面で録画予約項目をツールチップ表示する</TextBlock>
                                 </CheckBox>
-                                <WrapPanel Margin="8,4">
+                                <WrapPanel Margin="8,2">
                                     <CheckBox Name="checkBox_NotNoStyle" Content="テーマを適用する" Checked="checkBox_NotNoStyle_Checked" Unchecked="checkBox_NotNoStyle_Unchecked"/>
                                     <ComboBox Name="comboBox_Style" Margin="20,0" Width="200" IsEnabled="{Binding IsChecked, ElementName=checkBox_NotNoStyle}" SelectionChanged="comboBox_Style_SelectionChanged" />
                                 </WrapPanel>
-                                <StackPanel Margin="8,4">
+                                <WrapPanel Margin="8,2">
                                     <CheckBox Name="checkBox_displayStatus" Content="ステータス表示をする" />
-                                    <CheckBox Name="checkBox_displayStatusNotify" Content="主要操作の操作結果を表示をする" Margin="14,4,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_displayStatus, UpdateSourceTrigger=PropertyChanged}" />
-                                </StackPanel>
+                                    <CheckBox Name="checkBox_displayStatusNotify" Content="主要操作の操作結果を表示をする" Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_displayStatus, UpdateSourceTrigger=PropertyChanged}" />
+                                </WrapPanel>
+                                <WrapPanel>
+                                    <GroupBox Header="初期表示画面" Margin="0,2,0,0" >
+                                        <WrapPanel Name="wrapPanel_StartTab" Margin="0,4,0,0">
+                                            <WrapPanel.Resources>
+                                                <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                                                    <Setter Property="Margin" Value="6,0"/>
+                                                </Style>
+                                            </WrapPanel.Resources>
+                                        </WrapPanel>
+                                    </GroupBox>
+                                    <GroupBox Header="各画面のボタン列を表示する" Margin="0,2,0,0" >
+                                        <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <CheckBox Name="checkBox_IsVisibleReserveView"             Content="予約一覧"             Margin="6,0" />
+                                            <CheckBox Name="checkBox_IsVisibleRecInfoView"             Content="録画済み一覧"         Margin="6,0" />
+                                            <CheckBox Name="checkBox_IsVisibleAutoAddView"             Content="自動予約登録"         Margin="6,0" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="（" />
+                                                <CheckBox Name="checkBox_IsVisibleAutoAddViewMoveOnly" Content="「並び替え」のみ表示" Margin="6,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_IsVisibleAutoAddView, UpdateSourceTrigger=PropertyChanged}"/>
+                                                <TextBlock Text="）" />
+                                            </StackPanel>
+                                        </WrapPanel>
+                                    </GroupBox>
+                                    <GroupBox Header="各画面のボタン列の位置" Margin="0,2,0,0" >
+                                        <WrapPanel Name="wrapPanel_MainViewButtonsDock" Margin="0,4,0,0">
+                                            <WrapPanel.Resources>
+                                                <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                                                    <Setter Property="Margin" Value="6,0"/>
+                                                </Style>
+                                            </WrapPanel.Resources>
+                                        </WrapPanel>
+                                    </GroupBox>
+                                </WrapPanel>
                             </StackPanel>
                         </GroupBox>
                     </ScrollViewer>
@@ -783,92 +853,115 @@
                 <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource colorCombo}" />
                 <Style TargetType="{x:Type Button}" BasedOn="{StaticResource colorButton}" />
             </TabItem.Resources>
-            <StackPanel Margin="0,8">
-                <GroupBox Header="進行状況の表示基準" Margin="6,6,6,0">
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton Name="radioButton_iw_based_on_bcst" Content="放送" Margin="8,4"/>
-                        <RadioButton Name="radioButton_iw_based_on_rec" Content="録画" Margin="8,4" ToolTip="録画マージンを含めた時間を基準にします。"/>
-                    </StackPanel>
-                </GroupBox>
-                <GroupBox Header="表示範囲の選択" Margin="6,6,6,0">
-                    <WrapPanel Margin="8,0">
-                        <RadioButton Name="radioButton_Level1" Content="レベル1のみ" Tag="1" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
-                        <RadioButton Name="radioButton_Level2" Content="レベル2まで" Tag="2" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
-                        <RadioButton Name="radioButton_Level3" Content="レベル3まで" Tag="3" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
-                        <RadioButton Name="radioButton_All"    Content="全て"        Tag="4" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton Name="radioButton_TopN" GroupName="groupDisplayLevel" />
-                            <StackPanel Orientation="Horizontal" Margin="10,0,0,0" IsEnabled="{Binding IsChecked, ElementName=radioButton_TopN}">
-                                <TextBox Name="textBox_TopN" Style="{StaticResource NumberBox}" />
-                                <Label Content="件まで" />
+            <ScrollViewer>
+                <StackPanel Margin="0,8">
+                    <WrapPanel>
+                        <GroupBox Header="進行状況の表示基準" Margin="6,6,6,0">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Name="radioButton_iw_based_on_bcst" Content="放送" Margin="8,4"/>
+                                <RadioButton Name="radioButton_iw_based_on_rec" Content="録画" Margin="8,4" ToolTip="録画マージンを含めた時間を基準にします。"/>
                             </StackPanel>
-                        </StackPanel>
+                        </GroupBox>
+                        <GroupBox Header="表示範囲の選択" Margin="6,6,6,0">
+                            <WrapPanel Margin="8,0">
+                                <RadioButton Name="radioButton_Level1" Content="レベル1のみ" Tag="1" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                                <RadioButton Name="radioButton_Level2" Content="レベル2まで" Tag="2" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                                <RadioButton Name="radioButton_Level3" Content="レベル3まで" Tag="3" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                                <RadioButton Name="radioButton_All"    Content="全て"        Tag="4" GroupName="groupDisplayLevel" Margin="0,0,20,0" />
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Name="radioButton_TopN" GroupName="groupDisplayLevel" />
+                                    <StackPanel Orientation="Horizontal" Margin="10,0,0,0" IsEnabled="{Binding IsChecked, ElementName=radioButton_TopN}">
+                                        <TextBox Name="textBox_TopN" Style="{StaticResource NumberBox}" />
+                                        <Label Content="件まで" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </WrapPanel>
+                        </GroupBox>
                     </WrapPanel>
-                </GroupBox>
-                <GroupBox Header="プログレスバーの選択" Margin="6,6,6,0">
-                    <WrapPanel Margin="8,0">
-                        <RadioButton Name="radioButton_ProgressBarOff"   Content="表示しない"           Tag="0" Margin="0,0,20,0" />
-                        <RadioButton Name="radioButton_ProgressBarType1" Content="日時の下に表示"       Tag="1" Margin="0,0,20,0" />
-                        <RadioButton Name="radioButton_ProgressBarType2" Content="録画項目の背景に表示" Tag="2" Margin="0,0,20,0" />
-                        <StackPanel Orientation="Horizontal" ToolTip="プログレスバーを更新する間隔(1～60秒)。">
-                            <Label Content="プログレスバーの更新間隔" />
-                            <TextBox x:Name="textBox_iw_refresh_interval" Style="{StaticResource NumberBox}" />
-                            <Label Content="秒" />
+                    <GroupBox Header="プログレスバーの選択" x:Name="groupInfoWinItemProgressBarColors"  Margin="6,6,6,0">
+                        <StackPanel>
+                            <WrapPanel Margin="8,0">
+                                <RadioButton Name="radioButton_ProgressBarOff"   Content="表示しない"           Tag="0" Margin="0,0,20,0" />
+                                <RadioButton Name="radioButton_ProgressBarType1" Content="日時の下に表示"       Tag="1" Margin="0,0,20,0" />
+                                <RadioButton Name="radioButton_ProgressBarType2" Content="録画項目の背景に表示" Tag="2" Margin="0,0,20,0" />
+                                <StackPanel Orientation="Horizontal" ToolTip="プログレスバーを更新する間隔(1～60秒)。">
+                                    <Label Content="プログレスバーの更新間隔" />
+                                    <TextBox x:Name="textBox_iw_refresh_interval" Style="{StaticResource NumberBox}" />
+                                    <Label Content="秒" />
+                                </StackPanel>
+                            </WrapPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                <Label Width="{Binding ActualWidth, ElementName=label_MaxWidth}" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
+                                <Label Content="カスタム色" Width="308" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                                <Label Content="プログレスバーの色" Width="{Binding ActualWidth, ElementName=label_MaxWidth}"/>
+                                <ComboBox Tag="0" />
+                                <Button   Tag="0" />
+                            </StackPanel>
+                            <WrapPanel Margin="20,1,0,1">
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel.IsEnabled>
+                                        <MultiBinding Converter="{StaticResource orConverter}">
+                                            <Binding Path="IsChecked" ElementName="checkBox_bgTransparent" Converter="{StaticResource notConverter}" />
+                                            <Binding Path="IsEnabled" ElementName="checkBox_bgTransparent" Converter="{StaticResource notConverter}" />
+                                        </MultiBinding>
+                                    </StackPanel.IsEnabled>
+                                    <Label Content="プログレスバーの背景色" Width="{Binding ActualWidth, ElementName=label_MaxWidth}"/>
+                                    <ComboBox Tag="1" />
+                                    <Button   Tag="1" />
+                                </StackPanel>
+                                <CheckBox Name="checkBox_bgTransparent" Content="項目の背景にした場合は透明色とする" Margin="20,0" IsEnabled="{Binding IsChecked, ElementName=radioButton_ProgressBarType2}" />
+                            </WrapPanel>
                         </StackPanel>
-                    </WrapPanel>
-                </GroupBox>
-                <GroupBox Header="背景色" x:Name="groupInfoWinItemBgColors" Margin="6,6,6,0">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-                            <Label Content="開始までの時間" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
-                            <Label Content="カスタム色" Width="308" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
-                            <Grid Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
-                                <Label Content="レベル1" Margin="-10,0,0,0" />
-                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0" HorizontalAlignment="Right">
+                    </GroupBox>
+                    <GroupBox Header="背景色" x:Name="groupInfoWinItemBgColors" Margin="6,6,6,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                <Label Content="開始までの時間" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
+                                <Label Content="カスタム色" Width="308" HorizontalContentAlignment="Center" Padding="0,0,0,2" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                                <StackPanel Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
+                                    <Label Content="レベル1" />
                                     <TextBox x:Name="textBox_iw_item_level1" Style="{StaticResource NumberBox}" />
                                     <Label Content="分" />
                                 </StackPanel>
-                            </Grid>
-                            <ComboBox Tag="0" />
-                            <Button   Tag="0" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
-                            <Grid Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
-                                <Label Content="レベル2" Margin="-10,0,0,0" />
-                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0" HorizontalAlignment="Right">
+                                <ComboBox Tag="0" />
+                                <Button   Tag="0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                                <StackPanel Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
+                                    <Label Content="レベル2" />
                                     <TextBox x:Name="textBox_iw_item_level2" Style="{StaticResource NumberBox}" />
                                     <Label Content="分" />
                                 </StackPanel>
-                            </Grid>
-                            <ComboBox Tag="1" />
-                            <Button   Tag="1" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
-                            <Grid Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
-                                <Label Content="レベル3" Margin="-10,0,0,0" />
-                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0" HorizontalAlignment="Right">
+                                <ComboBox Tag="1" />
+                                <Button   Tag="1" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                                <StackPanel Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=label_MaxWidth}">
+                                    <Label Content="レベル3" />
                                     <TextBox x:Name="textBox_iw_item_level3" Style="{StaticResource NumberBox}" />
                                     <Label Content="分" />
                                 </StackPanel>
-                            </Grid>
-                            <ComboBox Tag="2" />
-                            <Button   Tag="2" />
+                                <ComboBox Tag="2" />
+                                <Button   Tag="2" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,10,0,1">
+                                <Label Content="無効な予約" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" ToolTip="無効な予約" />
+                                <ComboBox Tag="3" />
+                                <Button   Tag="3" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
+                                <Label Content="不完全な予約" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" ToolTip="チューナー不足、一部実行、自動予約登録不明な予約" />
+                                <ComboBox Tag="4" />
+                                <Button   Tag="4" />
+                            </StackPanel>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="20,10,0,1">
-                            <Label Content="無効な予約" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" Margin="-10,0,10,0" HorizontalContentAlignment="Right" ToolTip="無効な予約" />
-                            <ComboBox Tag="3" />
-                            <Button   Tag="3" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="20,1,0,1">
-                            <Label Content="不完全な予約" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" Margin="-10,0,10,0" HorizontalContentAlignment="Right" ToolTip="チューナー不足、一部実行、自動予約登録不明な予約" />
-                            <ComboBox Tag="4" />
-                            <Button   Tag="4" />
-                        </StackPanel>
-                    </StackPanel>
-                </GroupBox>
-            </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
         </TabItem>
     </TabControl>
 </UserControl>

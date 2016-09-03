@@ -3,23 +3,42 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="色指定" Height="189" Width="370" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
-    <Grid>
-        <Label Content="R" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label1" VerticalAlignment="Top" />
-        <TextBox Height="24" HorizontalAlignment="Left" Margin="36,14,0,0" Name="textBox_R" VerticalAlignment="Top" Width="39" InputMethod.IsInputMethodEnabled="False" TextChanged="textBox_R_TextChanged" />
+    <DockPanel>
+        <DockPanel.Resources>
+            <Style TargetType="Slider" BasedOn="{StaticResource {x:Type Slider}}">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Width" Value="120" />
+                <Setter Property="Minimum" Value="0" />
+                <Setter Property="Maximum" Value="255" />
+                <Setter Property="SmallChange" Value="1" />
+            </Style>
+        </DockPanel.Resources>
 
-        <Slider Height="23" HorizontalAlignment="Left" Margin="93,15,0,0" Name="slider_R" VerticalAlignment="Top" Width="114"  Minimum="0" Maximum="255" ValueChanged="slider_R_ValueChanged" SmallChange="1" />
-        <Label Content="G" Height="28" HorizontalAlignment="Left" Margin="12,42,0,0" Name="label2" VerticalAlignment="Top" />
-        <TextBox Height="24" HorizontalAlignment="Left" InputMethod.IsInputMethodEnabled="False" Margin="36,44,0,0" Name="textBox_G" VerticalAlignment="Top" Width="39" TextChanged="textBox_G_TextChanged" />
-
-        <Slider Height="23" HorizontalAlignment="Left" Margin="93,45,0,0" Maximum="255" Minimum="0" Name="slider_G" VerticalAlignment="Top" Width="114" ValueChanged="slider_G_ValueChanged" SmallChange="1" />
-        <Label Content="B" Height="28" HorizontalAlignment="Left" Margin="12,72,0,0" Name="label3" VerticalAlignment="Top" />
-        <TextBox Height="24" HorizontalAlignment="Left" InputMethod.IsInputMethodEnabled="False" Margin="36,74,0,0" Name="textBox_B" VerticalAlignment="Top" Width="39" TextChanged="textBox_B_TextChanged" />
-
-        <Slider Height="23" HorizontalAlignment="Left" Margin="93,75,0,0" Maximum="255" Minimum="0" Name="slider_B" VerticalAlignment="Top" Width="114" ValueChanged="slider_B_ValueChanged" SmallChange="1" />
-        <Rectangle Height="86" HorizontalAlignment="Left" Margin="222,12,0,0" Name="rectangle_color" Stroke="Black" VerticalAlignment="Top" Width="114" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20" VerticalAlignment="Bottom" >
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,0,20,12" HorizontalAlignment="Right">
             <Button Name="button_OK" Content="    OK    " Margin="0,0,30,0" Click="button_OK_Click" />
-            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" />
+            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" IsCancel="True" />
         </StackPanel>
-    </Grid>
+
+        <StackPanel DockPanel.Dock="Left" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" >
+                <Label Content="R" Margin="5" />
+                <TextBox Name="textBox_R" Margin="0,0,10,0" Style="{StaticResource NumberBox}" TextChanged="textBox_R_TextChanged" />
+                <Slider Name="slider_R" ValueChanged="slider_R_ValueChanged" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" >
+                <Label Content="G" Margin="5" />
+                <TextBox Name="textBox_G" Margin="0,0,10,0" Style="{StaticResource NumberBox}" TextChanged="textBox_G_TextChanged" />
+                <Slider Name="slider_G" ValueChanged="slider_G_ValueChanged" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="B" Margin="5" />
+                <TextBox Name="textBox_B" Margin="0,0,10,0" Style="{StaticResource NumberBox}" TextChanged="textBox_B_TextChanged" />
+                <Slider Name="slider_B" ValueChanged="slider_B_ValueChanged" />
+            </StackPanel>
+        </StackPanel>
+
+        <Rectangle DockPanel.Dock="Right" Name="rectangle_color" Margin="20" Stroke="Black" />
+    </DockPanel>
 </Window>

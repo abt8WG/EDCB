@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "EpgTimerSrv.h"
 #include "EpgTimerSrvMain.h"
+#include "../../Common/PathUtil.h"
 #include "../../Common/ServiceUtil.h"
 #include "../../Common/BlockLock.h"
 
@@ -13,9 +14,19 @@
 
 SERVICE_STATUS_HANDLE g_hStatusHandle;
 CEpgTimerSrvMain* g_pMain;
-static HANDLE g_hDebugLog;
+static HANDLE g_hDebugLog = INVALID_HANDLE_VALUE;
 static CRITICAL_SECTION g_debugLogLock;
-static bool g_saveDebugLog;
+static bool g_saveDebugLog = false;
+
+// _CrtSetReportMode の _CRTDBG_MODE_FILE が ANSI でしか出力できないので、Unicode 出力の report hook 関数を用意する
+int __cdecl reportWithUnicode(int /*nReportType*/, wchar_t* szMsg, int* /*pnRet*/)
+{
+	if (g_saveDebugLog && g_hDebugLog != INVALID_HANDLE_VALUE) {
+		DWORD numOfSize = static_cast<DWORD>(sizeof(*szMsg) * wcslen(szMsg));
+		WriteFile(g_hDebugLog, szMsg, numOfSize, &numOfSize, NULL);
+	}
+	return 0;
+}
 
 static void StartDebugLog()
 {
@@ -37,6 +48,11 @@ static void StartDebugLog()
 			InitializeCriticalSection(&g_debugLogLock);
 			g_saveDebugLog = true;
 			OutputDebugString(L"****** LOG START ******\r\n");
+
+			// Debug版で memory leak 検出を行う
+			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+			// memory leak 検出の出力ハンドラーを登録
+			_CrtSetReportHookW2(_CRT_RPTHOOK_INSTALL, reportWithUnicode);
 		}
 	}
 }
@@ -44,10 +60,25 @@ static void StartDebugLog()
 static void StopDebugLog()
 {
 	if( g_saveDebugLog ){
+
+		// 未開放の memory block があれば dump する (CEpgTimerSrvMain クラスが delete されている前提)
+		_CrtDumpMemoryLeaks();
+
+		// 局所的な memory leak を調べるなら
+		// _CrtMemState memchk;
+		// _CrtMemCheckpoint(&memchk);
+		// /* 調べる処理 */
+		// _CrtMemDumpStatistics(&memchk);
+		//
+
+		// 出力ハンドラーを解除
+		_CrtSetReportHookW2(_CRT_RPTHOOK_REMOVE, reportWithUnicode);
+
 		OutputDebugString(L"****** LOG STOP ******\r\n");
 		g_saveDebugLog = false;
 		DeleteCriticalSection(&g_debugLogLock);
 		CloseHandle(g_hDebugLog);
+		g_hDebugLog = INVALID_HANDLE_VALUE;
 	}
 }
 
@@ -178,7 +209,6 @@ void WINAPI service_main(DWORD dwArgc, LPTSTR *lpszArgv)
 	g_hStatusHandle = RegisterServiceCtrlHandlerEx(SERVICE_NAME, service_ctrl, NULL);
 	if( g_hStatusHandle != NULL ){
 		ReportServiceStatus(SERVICE_START_PENDING, 0, 1, 10000);
-
 		//メインスレッドに対するCOMの初期化
 		CoInitialize(NULL);
 		//ここでは単純な(時間のかからない)初期化のみ行う
@@ -192,7 +222,6 @@ void WINAPI service_main(DWORD dwArgc, LPTSTR *lpszArgv)
 		delete g_pMain;
 		g_pMain = NULL;
 		CoUninitialize();
-
 		ReportServiceStatus(SERVICE_STOPPED, 0, 0, 0);
 	}
 }

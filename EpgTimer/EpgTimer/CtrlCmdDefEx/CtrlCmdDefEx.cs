@@ -24,9 +24,58 @@ namespace EpgTimer
 
     public interface IAutoAddTargetData : IBasicPgInfo
     {
-        List<EpgAutoAddData> SearchEpgAutoAddList(bool? IsEnabled, bool ByFazy);
+        List<EpgAutoAddData> SearchEpgAutoAddList(bool? IsEnabled = null, bool ByFazy = false);
+        List<ManualAutoAddData> SearchManualAutoAddList(bool? IsEnabled = null);
         List<EpgAutoAddData> GetEpgAutoAddList(bool? IsEnabled = null);
         List<ManualAutoAddData> GetManualAutoAddList(bool? IsEnabled = null);
+    }
+
+    public abstract class AutoAddTargetData : IAutoAddTargetData
+    {
+        public abstract string DataTitle { get; }
+        public abstract DateTime PgStartTime { get; }
+        public abstract uint PgDurationSecond { get; }
+        public abstract UInt64 Create64Key();
+        public abstract UInt64 Create64PgKey();
+        public virtual List<EpgAutoAddData> SearchEpgAutoAddList(bool? IsEnabled = null, bool ByFazy = false)
+        {
+            return SearchEpgAutoAddHitList(this, IsEnabled, ByFazy);
+        }
+        public virtual List<ManualAutoAddData> SearchManualAutoAddList(bool? IsEnabled = null)
+        {
+            return GetManualAutoAddHitList(this, IsEnabled);
+        }
+        public virtual List<EpgAutoAddData> GetEpgAutoAddList(bool? IsEnabled = null)
+        {
+            return GetEpgAutoAddHitList(this, IsEnabled);
+        }
+        public virtual List<ManualAutoAddData> GetManualAutoAddList(bool? IsEnabled = null)
+        {
+            return GetManualAutoAddHitList(this, IsEnabled);
+        }
+
+        public static List<EpgAutoAddData> SearchEpgAutoAddHitList(IAutoAddTargetData info, bool? IsEnabled = null, bool ByFazy = false)
+        {
+            if (info == null) return new List<EpgAutoAddData>();
+            //
+            var list = GetEpgAutoAddHitList(info, IsEnabled);
+            if (ByFazy == true)
+            {
+                list.AddRange(MenuUtil.FazySearchEpgAutoAddData(info.DataTitle, IsEnabled));
+                list = list.Distinct().OrderBy(data => data.DataID).ToList();
+            }
+            return list;
+        }
+        public static List<EpgAutoAddData> GetEpgAutoAddHitList(IAutoAddTargetData info, bool? IsEnabled = null)
+        {
+            return CommonManager.Instance.DB.EpgAutoAddList.Values.GetAutoAddList(IsEnabled)
+                .FindAll(data => data.CheckPgHit(info) == true);//info==nullでもOK
+        }
+        public static List<ManualAutoAddData> GetManualAutoAddHitList(IAutoAddTargetData info, bool? IsEnabled = null)
+        {
+            return CommonManager.Instance.DB.ManualAutoAddList.Values.GetAutoAddList(IsEnabled)
+                .FindAll(data => data.CheckPgHit(info) == true);//info==nullでもOK
+        }
     }
 
     static class CtrlCmdDefEx
@@ -152,12 +201,12 @@ namespace EpgTimer
             resInfo.Title = epgInfo.DataTitle;
             resInfo.StartTime = epgInfo.start_time;
             resInfo.StartTimeEpg = epgInfo.start_time;
-            resInfo.DurationSecond = (epgInfo.DurationFlag == 0 ? 10 * 60 : epgInfo.durationSec);
+            resInfo.DurationSecond = epgInfo.PgDurationSecond;
 
             UInt64 key = epgInfo.Create64Key();
-            if (ChSet5.Instance.ChList.ContainsKey(key) == true)
+            if (ChSet5.ChList.ContainsKey(key) == true)
             {
-                resInfo.StationName = ChSet5.Instance.ChList[key].ServiceName;
+                resInfo.StationName = ChSet5.ChList[key].ServiceName;
             }
             resInfo.OriginalNetworkID = epgInfo.original_network_id;
             resInfo.TransportStreamID = epgInfo.transport_stream_id;
@@ -188,64 +237,6 @@ namespace EpgTimer
             int shift_day = (direction >= 0 ? 1 : -1);
             hour = (ushort)((int)hour + -1 * shift_day * 24);
             weekFlg = (byte)((weekFlg + 7 + shift_day) % 7);
-        }
-
-        public static Func<object, ulong> GetKeyFunc(Type t)
-        {
-            if (t == typeof(ReserveItem))
-            {
-                return info => (info as ReserveItem).ReserveInfo.ReserveID;
-            }
-            else if (t == typeof(RecInfoItem))
-            {
-                return info => (info as RecInfoItem).RecInfo.ID;
-            }
-            else if (t.IsSubclassOf(typeof(AutoAddDataItem)))
-            {
-                return info => (info as AutoAddDataItem).Data.DataID;
-            }
-            else if (t == typeof(SearchItem))
-            {
-                return info => (info as SearchItem).EventInfo.Create64PgKey();
-            }
-            else if (t == typeof(NotifySrvInfoItem))
-            {
-                return info => (info as NotifySrvInfoItem).NotifyInfo.notifyID;
-            }
-            else
-            {
-                //必ずしもキーにはなるとは限らないが、エラーにしないため一応返す。
-                return info => (ulong)info.GetHashCode();
-            }
-        }
-
-        //ソート用の代替プロパティ用の変換メソッドを返す
-        public static Func<string, string> GetValuePropertyFunc(Type t)
-        {
-            if (t == typeof(ReserveItem))
-            {
-                return ReserveItem.GetValuePropertyName;
-            }
-            else if (t == typeof(SearchItem))
-            {
-                return SearchItem.GetValuePropertyName;
-            }
-            else if (t == typeof(RecInfoItem))
-            {
-                return RecInfoItem.GetValuePropertyName;
-            }
-            else if (t == typeof(EpgAutoDataItem))
-            {
-                return EpgAutoDataItem.GetValuePropertyName;
-            }
-            else if (t == typeof(ManualAutoAddDataItem))
-            {
-                return ManualAutoAddDataItem.GetValuePropertyName;
-            }
-            else
-            {
-                return str => str;
-            }
         }
 
         public static UInt64 Create64Key(this EpgServiceInfo obj)

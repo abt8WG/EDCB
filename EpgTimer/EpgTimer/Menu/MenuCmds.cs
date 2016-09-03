@@ -60,7 +60,6 @@ namespace EpgTimer
 
             //コンテキストメニュー用
             AddCommand(EpgCmds.Add);
-            AddCommand(EpgCmds.ShowAddDialog, spc: GestureTrg.ToView, isEnable: false);
             AddCommand(EpgCmds.ChgOnOff, Key.S, ModifierKeys.Control);
             AddCommand(EpgCmds.ChgGenre, isEnable: false, isSave: false);
             AddCommand(EpgCmds.Delete, Key.D, ModifierKeys.Control, Key.Delete);
@@ -70,16 +69,19 @@ namespace EpgTimer
             AddCommand(EpgCmds.AdjustReserve, isEnable: false);
             AddCommand(EpgCmds.ShowDialog, Key.Enter, gesNeedMenu: false);//doubleclickは上手く入らないので省略
             AddCommand(EpgCmds.ShowAutoAddDialog);
+            AddCommand(EpgCmds.ShowAddDialog, spc: GestureTrg.ToView, isEnable: false);
             AddCommand(EpgCmds.JumpReserve, Key.F3, ModifierKeys.Shift, isEnable: false);
             AddCommand(EpgCmds.JumpTuner, Key.F3, ModifierKeys.Control, isEnable: false);
             AddCommand(EpgCmds.JumpTable, Key.F3);
+            AddCommand(EpgCmds.JumpListView, Key.F3, ModifierKeys.Alt);//簡易検索画面用のジャンプ。
             AddCommand(EpgCmds.ToAutoadd);
-            AddCommand(EpgCmds.ReSearch);
-            AddCommand(EpgCmds.ReSearch2, isEnable: false);
+            AddCommand(EpgCmds.ReSearch, Key.F, ModifierKeys.Control | ModifierKeys.Shift);
+            AddCommand(EpgCmds.ReSearch2, Key.F, ModifierKeys.Control | ModifierKeys.Alt, isEnable: false);
             AddCommand(EpgCmds.Play, Key.P, ModifierKeys.Control);
             AddCommand(EpgCmds.OpenFolder, isEnable: false);
             AddCommand(EpgCmds.CopyTitle, Key.C, ModifierKeys.Control, isEnable: false);
             AddCommand(EpgCmds.CopyContent, isEnable: false);
+            AddCommand(EpgCmds.InfoSearchTitle, isEnable: false);
             AddCommand(EpgCmds.SearchTitle, isEnable: false);
             AddCommand(EpgCmds.CopyNotKey, Key.X, ModifierKeys.Control, isEnable: false);
             AddCommand(EpgCmds.SetNotKey, Key.V, ModifierKeys.Control, isEnable: false);
@@ -94,8 +96,11 @@ namespace EpgTimer
             AddCommand(EpgCmds.DeleteInDialog, Key.X, ModifierKeys.Control | ModifierKeys.Shift, spc: GestureTrg.ToView, gesNeedMenu: false);
             AddCommand(EpgCmds.Delete2InDialog, Key.D, ModifierKeys.Control | ModifierKeys.Shift, spc: GestureTrg.ToView, gesNeedMenu: false);
             AddCommand(EpgCmds.Search, Key.F, ModifierKeys.Control, spc: GestureTrg.ToView, gesNeedMenu: false);
+            AddCommand(EpgCmds.InfoSearch, Key.F, ModifierKeys.Control | ModifierKeys.Shift, spc: GestureTrg.ToView, gesNeedMenu: false);
+            AddCommand(EpgCmds.TopItem, Key.Up, ModifierKeys.Control | ModifierKeys.Shift, spc: GestureTrg.ToList | GestureTrg.ToView, gesNeedMenu: false);
             AddCommand(EpgCmds.UpItem, Key.Up, ModifierKeys.Control, spc: GestureTrg.ToList | GestureTrg.ToView, gesNeedMenu: false);
             AddCommand(EpgCmds.DownItem, Key.Down, ModifierKeys.Control, spc: GestureTrg.ToList | GestureTrg.ToView, gesNeedMenu: false);
+            AddCommand(EpgCmds.BottomItem, Key.Down, ModifierKeys.Control | ModifierKeys.Shift, spc: GestureTrg.ToList | GestureTrg.ToView, gesNeedMenu: false);
             AddCommand(EpgCmds.SaveOrder, Key.S, ModifierKeys.Control, spc: GestureTrg.ToView, gesNeedMenu: false);
             AddCommand(EpgCmds.RestoreOrder, Key.Z, ModifierKeys.Control, spc: GestureTrg.ToView, gesNeedMenu: false);
             AddCommand(EpgCmds.DragCancel, Key.Escape, spc: GestureTrg.ToView, gesNeedMenu: false, isSave: false);

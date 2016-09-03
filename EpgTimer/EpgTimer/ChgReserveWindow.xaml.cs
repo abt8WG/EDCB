@@ -27,7 +27,6 @@ namespace EpgTimer
         #endregion
 
         private ReserveData reserveInfo = null;
-        private MenuUtil mutil = CommonManager.Instance.MUtil;
         private MenuBinds mBinds = new MenuBinds();
 
         protected enum AddMode { Add, Re_Add, Change }
@@ -101,7 +100,7 @@ namespace EpgTimer
             //その他設定
             //深夜時間関係は、comboBoxの表示だけ変更する手もあるが、
             //オプション変更タイミングなどいろいろ面倒なので、実際の値で処理することにする。
-            comboBox_service.ItemsSource = ChSet5.Instance.ChList.Values;
+            comboBox_service.ItemsSource = ChSet5.ChList.Values;
             comboBox_sh.ItemsSource = CommonManager.Instance.HourDictionarySelect.Values;
             comboBox_eh.ItemsSource = CommonManager.Instance.HourDictionarySelect.Values;
             comboBox_sm.ItemsSource = CommonManager.Instance.MinDictionary.Values;
@@ -421,7 +420,7 @@ namespace EpgTimer
                     if (eventInfoNew != null)
                     {
                         //基本的にAddReserveEpgWindowと同じ処理内容
-                        if (mutil.IsEnableReserveAdd(eventInfoNew) == false) return;
+                        if (MenuUtil.IsEnableReserveAdd(eventInfoNew) == false) return;
                         eventInfoNew.ConvertToReserveData(ref reserveInfo);
                         reserveInfo.Comment = "";
                     }
@@ -436,13 +435,13 @@ namespace EpgTimer
 
                 if (addMode == AddMode.Change)
                 {
-                    bool ret = mutil.ReserveChange(CommonUtil.ToList(reserveInfo));
-                    CommonManager.Instance.StatusNotifySet(ret, "録画予約を変更");
+                    bool ret = MenuUtil.ReserveChange(CommonUtil.ToList(reserveInfo));
+                    StatusManager.StatusNotifySet(ret, "録画予約を変更");
                 }
                 else
                 {
-                    bool ret = mutil.ReserveAdd(CommonUtil.ToList(reserveInfo));
-                    CommonManager.Instance.StatusNotifySet(ret, "録画予約を追加");
+                    bool ret = MenuUtil.ReserveAdd(CommonUtil.ToList(reserveInfo));
+                    StatusManager.StatusNotifySet(ret, "録画予約を追加");
                 }
 
                 // EPG自動予約以外になったら戻せないようにしておく
@@ -465,8 +464,8 @@ namespace EpgTimer
 
             if (CheckExistReserveItem() == false) return;
 
-            bool ret = mutil.ReserveDelete(CommonUtil.ToList(reserveInfo));
-            CommonManager.Instance.StatusNotifySet(ret, "録画予約を削除");
+            bool ret = MenuUtil.ReserveDelete(CommonUtil.ToList(reserveInfo));
+            StatusManager.StatusNotifySet(ret, "録画予約を削除");
 
             DialogResult = true;
         }
@@ -518,8 +517,7 @@ namespace EpgTimer
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.ListFoucsOnVisibleChanged();
+            ViewUtil.MainWindow.ListFoucsOnVisibleChanged();
         }
     }
 

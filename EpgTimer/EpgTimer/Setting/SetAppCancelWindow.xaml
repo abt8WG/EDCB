@@ -3,18 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="抑制条件" Height="487" Width="443" Loaded="Window_Loaded" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
-    <Grid Margin="12">
+    <Grid Name="grid_main" Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Name="label1" Content="指定プロセスが起動している場合" />
-        <ListBox Grid.Row="1" Name="listBox_process" Margin="30,0,20,0" />
+        <Label      Grid.Row="0" Content="指定プロセスが起動している場合" />
+        <ListBox    Grid.Row="1" Name="listBox_process" Margin="30,0,20,0" SelectionMode="Extended" />
         <StackPanel Grid.Row="2">
             <StackPanel Orientation="Horizontal" Margin="30,4,0,0">
-                <Button Content="削除" Name="button_process_del" Click="button_process_del_Click" />
+                <Button Content="削除" Name="button_process_del" />
             </StackPanel>
             <Grid Margin="30,4,20,0">
                 <Grid.ColumnDefinitions>
@@ -26,7 +26,7 @@
                 <Label Grid.Column="0" Name="label2" Content="exe名(拡張子含む)" Margin="0,0,10,0"/>
                 <TextBox Grid.Column="1" Name="textBox_process" />
                 <Button Grid.Column="2" Name="button_process_open" Content="開く" Margin="10,0,0,0" Click="button_process_open_Click" />
-                <Button Grid.Column="3" Name="button_process_add" Content="追加" Margin="10,0,0,0" Click="button_process_add_Click" />
+                <Button Grid.Column="3" Name="button_process_add" Content="追加" Margin="10,0,0,0" />
             </Grid>
             <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                 <Label Name="label3" Content="次の予約が" />
@@ -42,11 +42,11 @@
             <CheckBox Name="checkBox_ng_fileStreaming" Content="追っかけ再生、ストリーミング再生を行っている場合" Margin="0,8,0,0" />
             <CheckBox Name="checkBox_ng_shareFile" Content="共有フォルダのTSファイルにアクセスがある場合" Margin="0,8,0,0" />
 
-            <Label Name="label5" Content="（※EpgTimerSrv.exeが管理者権限で実行されている必要があります）" Margin="12,10,0,0" Foreground="Red" />
+            <Label Content="（※EpgTimerSrv.exeが管理者権限で実行されている必要があります）" Margin="12,10,0,0" Foreground="Red" />
         </StackPanel>
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
             <Button Name="button_OK" Content="    OK    " Margin="0,0,30,0" Click="button_OK_Click" />
-            <Button Name="button_cancel" Content="キャンセル" Click="button_cancel_Click" />
+            <Button Name="button_cancel" Content="キャンセル" IsCancel="True" />
         </StackPanel>
     </Grid>
 </Window>

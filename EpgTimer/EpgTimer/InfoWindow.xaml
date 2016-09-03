@@ -24,8 +24,8 @@
                         <ControlTemplate>
                             <Grid Background="{Binding Background}">
                                 <ProgressBar Minimum="{Binding OnAirOrRecStart}" Maximum="{Binding OnAirOrRecEnd}" Value="{Binding OnAirOrRecProgress, Mode=OneWay}"
-                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderThickness="0" BorderBrush="Transparent"
-                                             Visibility="{Binding ProgressBar2Visibility}" />
+                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" BorderThickness="0" BorderBrush="Transparent"
+                                             Visibility="{Binding ProgressBar2Visibility}" Foreground="{Binding ProgressBarForeground}" Background="{Binding ProgressBarBackground}" />
                                 <GridViewRowPresenter Content="{TemplateBinding Property=ContentControl.Content}" />
                             </Grid>
                         </ControlTemplate>
@@ -59,7 +59,8 @@
                             <StackPanel>
                                 <TextBlock Text="{Binding Path=StartTimeShort}" />
                                 <ProgressBar Minimum="{Binding Path=OnAirOrRecStart}" Maximum="{Binding Path=OnAirOrRecEnd}" Value="{Binding Path=OnAirOrRecProgress, Mode=OneWay}"
-                                             Height="{StaticResource ProgressBarHeight}" Visibility="{Binding ProgressBar1Visibility}" />
+                                             Height="{StaticResource ProgressBarHeight}" Visibility="{Binding ProgressBar1Visibility}"
+                                             Foreground="{Binding ProgressBarForeground}" Background="{Binding ProgressBarBackground}" />
                             </StackPanel>
                         </DataTemplate>
                     </GridViewColumn.CellTemplate>

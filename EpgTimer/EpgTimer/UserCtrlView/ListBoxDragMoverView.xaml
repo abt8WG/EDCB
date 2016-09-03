@@ -3,18 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="220" d:DesignWidth="130">
-    <!--<UserControl.Resources>
-        <UserControl x:Key="DragCursor" Cursor="/Resources/drag.cur"/>
-    </UserControl.Resources>-->
+             mc:Ignorable="d">
     <GroupBox Header="並べ替え" Name="groupOrder">
         <StackPanel Name="stackPanel_Order">
-            <Button Name="button_up" Content="↑" Margin="5,10,5,0" />
-            <Button Name="button_down" Content="↓" Margin="5,10,5,0" />
+            <TextBlock Name="textBox_Header2" Text="並べ替え" VerticalAlignment="Center" Visibility="Collapsed"/>
+            <Button Name="button_top"           Content="↑↑"     Margin="5,10,5,0" />
+            <Button Name="button_up"            Content="↑"       Margin="5,10,5,0" />
+            <Button Name="button_down"          Content="↓"       Margin="5,10,5,0" />
+            <Button Name="button_bottom"        Content="↓↓"     Margin="5,10,5,0" />
             <Button Name="button_saveItemOrder" Content="保存する" Margin="5,10,5,0" />
-            <Button Name="button_reloadItem" Content="元に戻す" Margin="5,10,5,0" />
-            <TextBlock Name="textBox_Status" Text="{}" Margin="5,10,5,0" TextWrapping="Wrap" Foreground="Blue" />
+            <Button Name="button_reloadItem"    Content="元に戻す" Margin="5,10,5,0" />
+            <TextBlock Name="textBox_Status"    Text="{}"          Margin="5,10,5,0" TextWrapping="Wrap" Foreground="Blue" />
         </StackPanel>
     </GroupBox>
 </UserControl>

@@ -11,14 +11,10 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="auto"/>
-            </Grid.ColumnDefinitions>
-            <ComboBox Grid.Column="0" Name="comboBox_service" Margin="50,10,10,10" SelectionChanged="comboBox_service_SelectionChanged" />
-            <Button   Grid.Column="1" Name="button_go_Main" Content="標準モード" Margin="10" />
-        </Grid>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <ComboBox Grid.Column="0" Name="comboBox_service" Margin="50,10,10,10" MinWidth="160" SelectionChanged="comboBox_service_SelectionChanged" />
+            <Button   Name="button_go_Main" Content="標準モード" Margin="10" />
+        </StackPanel>
         <Grid Grid.Row="1" Name="grid_PG">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />

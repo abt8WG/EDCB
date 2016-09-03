@@ -72,8 +72,8 @@ public:
 	bool SetNWTVCh(bool nwUdp, bool nwTcp, const SET_CH_INFO& chInfo, const vector<DWORD>& tunerIDList);
 	//ネットワークモードのチューナを閉じる
 	bool CloseNWTV();
-	//予約が録画中であればその録画ファイル名などを取得する
-	bool GetRecFilePath(DWORD reserveID, wstring& filePath, DWORD* ctrlID, DWORD* processID) const;
+	//予約が録画中であればその録画ファイル名を取得する
+	bool GetRecFilePath(DWORD reserveID, wstring& filePath) const;
 	//指定EPGイベントは録画済みかどうか
 	bool IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPGDB_SEARCH_KEY_INFO& key) const;
 	//自動予約によって作成された指定イベントの予約を無効にする
@@ -129,6 +129,9 @@ private:
 	void CheckAutoDel() const;
 	//チューナ割り当てされていない古い予約を終了処理する
 	void CheckOverTimeReserve();
+	//予約終了を処理する
+	//shutdownMode: 最後に処理した予約の録画後動作を記録
+	void ProcessRecEnd(const vector<CTunerBankCtrl::CHECK_RESULT>& retList, int* shutdownMode = NULL);
 	//EPG取得可能なチューナIDのリストを取得する
 	vector<DWORD> GetEpgCapTunerIDList(__int64 now) const;
 	//EPG取得処理を管理する
@@ -191,12 +194,18 @@ private:
 	bool errEndBatRun;
 	wstring recNamePlugInFileName;
 	bool recNameNoChkYen;
+	int delReserveMode;
 
 	DWORD checkCount;
 	__int64 lastCheckEpgCap;
 	bool epgCapRequested;
 	bool epgCapWork;
 	bool epgCapSetTimeSync;
+	__int64 epgCapTimeSyncBase;
+	__int64 epgCapTimeSyncDelayMin;
+	__int64 epgCapTimeSyncDelayMax;
+	DWORD epgCapTimeSyncTick;
+	DWORD epgCapTimeSyncQuality;
 	int epgCapBasicOnlyFlags;
 	int shutdownModePending;
 	bool reserveModified;

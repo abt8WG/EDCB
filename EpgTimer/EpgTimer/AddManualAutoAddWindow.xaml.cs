@@ -13,8 +13,7 @@ namespace EpgTimer
     public partial class AddManualAutoAddWindow : Window
     {
         private ManualAutoAddData defKey = null;
-        private CtrlCmdUtil cmd = CommonManager.Instance.CtrlCmd;
-        private MenuUtil mutil = CommonManager.Instance.MUtil;
+        private static CtrlCmdUtil cmd { get { return CommonManager.Instance.CtrlCmd; } }
         private MenuBinds mBinds = new MenuBinds();
 
         private bool chgMode = false;
@@ -54,7 +53,7 @@ namespace EpgTimer
                 comboBox_endSS.DataContext = CommonManager.Instance.MinDictionary.Values;
                 comboBox_endSS.SelectedIndex = 0;
 
-                comboBox_service.ItemsSource = ChSet5.Instance.ChList.Values;
+                comboBox_service.ItemsSource = ChSet5.ChList.Values;
                 comboBox_service.SelectedIndex = 0;
 
                 recSettingView.SetViewMode(false);
@@ -189,13 +188,13 @@ namespace EpgTimer
 
                 if (chgFlag == true)
                 {
-                    bool ret = mutil.AutoAddChange(CommonUtil.ToList(defKey));
-                    CommonManager.Instance.StatusNotifySet(ret, "プログラム予約登録を変更");
+                    bool ret = MenuUtil.AutoAddChange(CommonUtil.ToList(defKey));
+                    StatusManager.StatusNotifySet(ret, "プログラム予約登録を変更");
                 }
                 else
                 {
-                    bool ret = mutil.AutoAddAdd(CommonUtil.ToList(defKey));
-                    CommonManager.Instance.StatusNotifySet(ret, "プログラム予約登録を追加");
+                    bool ret = MenuUtil.AutoAddAdd(CommonUtil.ToList(defKey));
+                    StatusManager.StatusNotifySet(ret, "プログラム予約登録を追加");
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
@@ -206,8 +205,8 @@ namespace EpgTimer
         {
             if (CheckAutoAddChange(e, 2) == false) return;
             //
-            bool ret = mutil.AutoAddDelete(CommonUtil.ToList(defKey));
-            CommonManager.Instance.StatusNotifySet(ret, "プログラム予約登録を削除");
+            bool ret = MenuUtil.AutoAddDelete(CommonUtil.ToList(defKey));
+            StatusManager.StatusNotifySet(ret, "プログラム予約登録を削除");
             DialogResult = true;
         }
 
@@ -215,8 +214,8 @@ namespace EpgTimer
         {
             if (CheckAutoAddChange(e, 3) == false) return;
             //
-            bool ret = mutil.AutoAddDelete(CommonUtil.ToList(defKey), cmdDeleteType.Delete2);
-            CommonManager.Instance.StatusNotifySet(ret, "プログラム予約登録を予約ごと削除");
+            bool ret = MenuUtil.AutoAddDelete(CommonUtil.ToList(defKey), cmdDeleteType.Delete2);
+            StatusManager.StatusNotifySet(ret, "プログラム予約登録を予約ごと削除");
             DialogResult = true;
         }
 
@@ -289,9 +288,9 @@ namespace EpgTimer
 
                 UInt64 key = defKey.Create64Key();
 
-                if (ChSet5.Instance.ChList.ContainsKey(key) == true)
+                if (ChSet5.ChList.ContainsKey(key) == true)
                 {
-                    comboBox_service.SelectedItem = ChSet5.Instance.ChList[key];
+                    comboBox_service.SelectedItem = ChSet5.ChList[key];
                 }
                 recSettingView.SetDefSetting(defKey.recSetting, true);
             }
@@ -299,8 +298,7 @@ namespace EpgTimer
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.ListFoucsOnVisibleChanged();
+            ViewUtil.MainWindow.ListFoucsOnVisibleChanged();
         }
     }
 }
