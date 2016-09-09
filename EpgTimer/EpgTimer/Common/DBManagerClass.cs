@@ -355,6 +355,7 @@ namespace EpgTimer
                     updateEpgData = true;
                     updateEpgAutoAddAppend = true;
                     epgAutoAddAppendList = null;//検索数が変わる。
+                    reserveAppendList = null;
                     break;
                 case UpdateNotifyItem.ReserveInfo:
                     updateReserveInfo = true;
