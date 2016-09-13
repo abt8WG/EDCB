@@ -217,6 +217,7 @@
     <ClInclude Include="lua.hpp" />
     <ClInclude Include="luaconf.h" />
     <ClInclude Include="lualib.h" />
+    <ClInclude Include="NetPathUtil.h" />
     <ClInclude Include="NotifyManager.h" />
     <ClInclude Include="ReserveManager.h" />
     <ClInclude Include="Resource.h" />
@@ -264,6 +265,7 @@
     <ClCompile Include="EpgTimerSrvMain.cpp" />
     <ClCompile Include="FileStreamingManager.cpp" />
     <ClCompile Include="HttpServer.cpp" />
+    <ClCompile Include="NetPathUtil.cpp" />
     <ClCompile Include="NotifyManager.cpp" />
     <ClCompile Include="ReserveManager.cpp" />
     <ClCompile Include="stdafx.cpp">

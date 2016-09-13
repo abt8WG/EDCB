@@ -13,6 +13,7 @@ public:
 	void RegistTCP(const REGIST_TCP_INFO& info);
 	void UnRegistGUI(DWORD processID);
 	void UnRegistTCP(const REGIST_TCP_INFO& info);
+	BOOL IsRegistTCP(const REGIST_TCP_INFO& info) const;
 	void SetNotifyWindow(HWND hwnd, UINT msgID);
 	vector<NOTIFY_SRV_INFO> RemoveSentList();
 	BOOL GetNotify(NOTIFY_SRV_INFO* info, DWORD targetCount);

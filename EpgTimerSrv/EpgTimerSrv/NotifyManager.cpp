@@ -97,6 +97,19 @@ void CNotifyManager::UnRegistTCP(const REGIST_TCP_INFO& info)
 	}
 }
 
+BOOL CNotifyManager::IsRegistTCP(const REGIST_TCP_INFO& info) const
+{
+	CBlockLock lock(&this->managerLock);
+
+	for( size_t i = 0; i < this->registTCPList.size(); i++ ){
+		if( this->registTCPList[i].ip == info.ip && this->registTCPList[i].port == info.port ){
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 void CNotifyManager::SetNotifyWindow(HWND hwnd, UINT msgID)
 {
 	CBlockLock lock(&this->managerLock);

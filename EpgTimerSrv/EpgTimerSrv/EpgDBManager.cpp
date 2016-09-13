@@ -383,6 +383,47 @@ BOOL CEpgDBManager::SearchEpg(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumPro
 	return ret;
 }
 
+BOOL CEpgDBManager::SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumProc)(vector<SEARCH_RESULT_EVENT>*, void*), void* param)
+{
+	CBlockLock lock(&this->epgMapLock);
+
+	BOOL ret = TRUE;
+	vector<SEARCH_RESULT_EVENT> result;
+	
+	SEARCH_RESULT_EVENT dummy;
+	EPGDB_EVENT_INFO dummyinfo;
+
+	dummyinfo.original_network_id = 0;
+	dummyinfo.transport_stream_id = 0;
+	dummyinfo.service_id = 0;
+	dummyinfo.event_id = 0;
+	dummyinfo.shortInfo = NULL; //無くてもコンストラクタが初期化する
+	GetSystemTime(&dummyinfo.start_time);//途中にコンバート関数があるので、まともな値を入れておく。
+	dummy.info = &dummyinfo;
+
+	CoInitialize(NULL);
+	{
+		IRegExpPtr regExp;
+		for( size_t i=0; i<key->size(); i++ ){
+			map<ULONGLONG, SEARCH_RESULT_EVENT> resultMap;
+			SearchEvent( &(*key)[i], &resultMap, regExp );
+
+			map<ULONGLONG, SEARCH_RESULT_EVENT>::iterator itr;
+			for( itr = resultMap.begin(); itr != resultMap.end(); itr++ ){
+				result.push_back(itr->second);
+			}
+
+			result.push_back(dummy);
+		}
+	}
+	CoUninitialize();
+
+	//ここはロック状態なのでコールバック先で排他制御すべきでない
+	enumProc(&result, param);
+
+	return ret;
+}
+
 void CEpgDBManager::SearchEvent(EPGDB_SEARCH_KEY_INFO* key, map<ULONGLONG, SEARCH_RESULT_EVENT>* resultMap, IRegExpPtr& regExp)
 {
 	if( key == NULL || resultMap == NULL ){
@@ -399,22 +440,6 @@ void CEpgDBManager::SearchEvent(EPGDB_SEARCH_KEY_INFO* key, map<ULONGLONG, SEARC
 		//大小文字を区別するキーワードが指定されている
 		andKey.erase(0, 7);
 		caseFlag = TRUE;
-	}
-	DWORD chkDurationMinSec = 0;
-	DWORD chkDurationMaxSec = MAXDWORD;
-	if( andKey.compare(0, 4, L"D!{1") == 0 ){
-		LPWSTR endp;
-		DWORD dur = wcstoul(andKey.c_str() + 3, &endp, 10);
-		if( endp - andKey.c_str() == 12 && endp[0] == L'}' ){
-			//番組長を絞り込むキーワードが指定されている
-			andKey.erase(0, 13);
-			chkDurationMinSec = dur / 10000 % 10000 * 60;
-			chkDurationMaxSec = dur % 10000 == 0 ? MAXDWORD : dur % 10000 * 60;
-		}
-	}
-	if( andKey.size() == 0 && key->notKey.size() == 0 && key->contentList.size() == 0 && key->videoList.size() == 0 && key->audioList.size() == 0){
-		//キーワードもジャンル指定もないので検索しない
-		return ;
 	}
 	
 	//キーワード分解
@@ -589,13 +614,13 @@ void CEpgDBManager::SearchEvent(EPGDB_SEARCH_KEY_INFO* key, map<ULONGLONG, SEARC
 				}
 
 				//番組長で絞り込み
-				if( itrEvent->second->DurationFlag == FALSE ){
-					//不明なので絞り込みされていれば対象外
-					if( 0 < chkDurationMinSec || chkDurationMaxSec < MAXDWORD ){
+				if( key->chkDurationMin != 0 ){
+					if( (LONGLONG)key->chkDurationMin * 60 > itrEvent->second->durationSec || itrEvent->second->DurationFlag == FALSE){
 						continue;
 					}
-				}else{
-					if( itrEvent->second->durationSec < chkDurationMinSec || chkDurationMaxSec < itrEvent->second->durationSec ){
+				}
+				if( key->chkDurationMax != 0 ){
+					if( (LONGLONG)key->chkDurationMax * 60 < itrEvent->second->durationSec || itrEvent->second->DurationFlag == FALSE){
 						continue;
 					}
 				}
@@ -679,9 +704,45 @@ BOOL CEpgDBManager::IsEqualContent(vector<EPGDB_CONTENT_DATA>* searchKey, vector
 {
 	for( size_t i=0; i<searchKey->size(); i++ ){
 		for( size_t j=0; j<eventData->size(); j++ ){
+
+			/*本来の比較コード(CS用ジャンルコード対応に修正済))
 			if( (*searchKey)[i].content_nibble_level_1 == (*eventData)[j].content_nibble_level_1 ){
 				if( (*searchKey)[i].content_nibble_level_2 != 0xFF ){
 					if( (*searchKey)[i].content_nibble_level_2 == (*eventData)[j].content_nibble_level_2 ){
+						if( (*eventData)[j].content_nibble_level_1 == 0x0e && (*eventData)[j].content_nibble_level_2 == 0x01 )
+						{
+							if( (*searchKey)[i].user_nibble_1 == (*eventData)[j].user_nibble_1 ){
+								if( (*searchKey)[i].user_nibble_2 != 0xFF ){
+									if( (*searchKey)[i].user_nibble_2 == (*eventData)[j].user_nibble_2 ){
+										return TRUE;
+									}
+								}else{
+									return TRUE;
+								}
+							}
+						}else{
+							return TRUE;
+						}
+					}
+				}else{
+					return TRUE;
+				}
+			}
+			*/
+
+			//CS用ジャンルコードへの仮対応版
+			BYTE event_nibble_level_1=(*eventData)[j].content_nibble_level_1;
+			BYTE event_nibble_level_2=(*eventData)[j].content_nibble_level_2;
+
+			if( event_nibble_level_1 == 0x0e && event_nibble_level_2 == 0x01 )
+			{
+				event_nibble_level_1=(*eventData)[j].user_nibble_1 | 0x70;
+				event_nibble_level_2=(*eventData)[j].user_nibble_2;
+			}
+
+			if( (*searchKey)[i].content_nibble_level_1 == event_nibble_level_1 ){
+				if( (*searchKey)[i].content_nibble_level_2 != 0xFF ){
+					if( (*searchKey)[i].content_nibble_level_2 == event_nibble_level_2 ){
 						return TRUE;
 					}
 				}else{
