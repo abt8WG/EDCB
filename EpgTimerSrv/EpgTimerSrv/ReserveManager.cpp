@@ -48,7 +48,8 @@ void CReserveManager::Initialize()
 	}
 	this->recInfoText.ParseText((settingPath + L"\\" + REC_INFO_TEXT_NAME).c_str());
 	this->recInfo2Text.ParseText((settingPath + L"\\" + REC_INFO2_TEXT_NAME).c_str());
-	
+
+	// nekopanda: EPGé©ìÆó\ñÒìoò^Ç∆ÅAìoò^Ç≥ÇÍÇΩó\ñÒÅAÇ®ÇÊÇ—ò^âÊçœÇ›ÉtÉ@ÉCÉãÇ∆ÇÃä÷òAïtÇØÇé¿ëï
 	this->recEventDB.Load(settingPath + L"\\" + REC_EPG_DATA_NAME, recInfoText.GetMap());
 	this->recEventDB.Save();
 
@@ -277,10 +278,12 @@ bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bo
 
 vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus, bool noReportNotify)
 {
+	// nekopanda: EPGé©ìÆó\ñÒìoò^Ç∆ÅAìoò^Ç≥ÇÍÇΩó\ñÒÅAÇ®ÇÊÇ—ò^âÊçœÇ›ÉtÉ@ÉCÉãÇ∆ÇÃä÷òAïtÇØÇé¿ëï
+	vector<const RESERVE_DATA*> addList;
+
 	__int64 minStartTime = LLONG_MAX;
 	__int64 now = GetNowI64Time();
 	vector<BAT_WORK_INFO> batWorkList;
-	vector<const RESERVE_DATA*> addList;
 	for( size_t i = 0; i < reserveList.size(); i++ ){
 		RESERVE_DATA r = reserveList[i];
 		//Ç∑Ç≈Ç…èIóπÇµÇƒÇ¢Ç»Ç¢Ç©
@@ -305,6 +308,8 @@ vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERV
 			}
 		}
 	}
+
+	// nekopanda: EPGé©ìÆó\ñÒìoò^Ç∆ÅAìoò^Ç≥ÇÍÇΩó\ñÒÅAÇ®ÇÊÇ—ò^âÊçœÇ›ÉtÉ@ÉCÉãÇ∆ÇÃä÷òAïtÇØÇé¿ëï
 	if(addList.size() > 0){
 		this->reserveModified = true;
 		this->reserveText.SaveText();
@@ -538,6 +543,7 @@ vector<REC_FILE_INFO> CReserveManager::GetRecFileInfoAll(bool getExtraInfo) cons
 			}
 		}
 
+		// nekopanda: ò^âÊçœÇ›ÉäÉXÉgÇ…ò^âÊÉtÉ@ÉCÉãÇÃë∂ç›ÉtÉâÉOÇí«â¡
 		const REC_EVENT_INFO* extra_info = recEventDB.Get(info.id);
 		if( extra_info != NULL ){
 			info.fileExist = extra_info->fileExist;
@@ -1365,7 +1371,7 @@ void CReserveManager::ProcessRecEnd(const vector<CTunerBankCtrl::CHECK_RESULT>& 
 {
 	vector<BAT_WORK_INFO> batWorkList;
 	bool modified = false;
-	for( auto itrRet = retList.cbegin(); itrRet != retList.end(); itrRet++ ){
+	for( auto itrRet = retList.cbegin(); itrRet != retList.cend(); itrRet++ ){
 		map<DWORD, RESERVE_DATA>::const_iterator itrRes = this->reserveText.GetMap().find(itrRet->reserveID);
 		if( itrRes != this->reserveText.GetMap().end() ){
 			if( itrRet->type == CTunerBankCtrl::CHECK_END && itrRet->recFilePath.empty() == false &&
@@ -1436,7 +1442,10 @@ void CReserveManager::ProcessRecEnd(const vector<CTunerBankCtrl::CHECK_RESULT>& 
 				item.comment = L"ò^âÊéûä‘Ç…ãNìÆÇµÇƒÇ¢Ç»Ç©Ç¡ÇΩâ¬î\ê´Ç™Ç†ÇËÇ‹Ç∑";
 				break;
 			}
-			this->recInfoText.AddRecInfo(item);
+
+			// nekopanda: EPGé©ìÆó\ñÒìoò^Ç∆ÅAìoò^Ç≥ÇÍÇΩó\ñÒÅAÇ®ÇÊÇ—ò^âÊçœÇ›ÉtÉ@ÉCÉãÇ∆ÇÃä÷òAïtÇØÇé¿ëï
+			item.id = this->recInfoText.AddRecInfo(item);
+			this->recEventDB.AddRecInfo(item);
 
 			//ÉoÉbÉ`èàóùí«â¡
 			BAT_WORK_INFO batInfo;
@@ -1476,6 +1485,11 @@ void CReserveManager::ProcessRecEnd(const vector<CTunerBankCtrl::CHECK_RESULT>& 
 		this->reserveText.SaveText();
 		this->recInfoText.SaveText();
 		this->recInfo2Text.SaveText();
+
+		// nekopanda: EPGé©ìÆó\ñÒìoò^Ç∆ÅAìoò^Ç≥ÇÍÇΩó\ñÒÅAÇ®ÇÊÇ—ò^âÊçœÇ›ÉtÉ@ÉCÉãÇ∆ÇÃä÷òAïtÇØÇé¿ëï
+		this->recEventDB.Save();
+		this->notifyManager.AddNotify(NOTIFY_UPDATE_AUTOADD_EPG);
+
 		AddNotifyAndPostBat(NOTIFY_UPDATE_RESERVE_INFO);
 		AddNotifyAndPostBat(NOTIFY_UPDATE_REC_INFO);
 		AddPostBatWork(batWorkList, L"PostRecEnd.bat");
@@ -1818,6 +1832,7 @@ bool CReserveManager::IsFindReserve(WORD onid, WORD tsid, WORD sid, WORD eid, DW
 	vector<pair<ULONGLONG, DWORD>>::const_iterator itr = std::lower_bound(
 		sortList.begin(), sortList.end(), pair<ULONGLONG, DWORD>(_Create64Key2(onid, tsid, sid, eid), 0));
 	if (itr != sortList.end() && itr->first == _Create64Key2(onid, tsid, sid, eid)) {
+		// nekopanda: EPGé©ìÆó\ñÒìoò^Ç∆ÅAìoò^Ç≥ÇÍÇΩó\ñÒÅAÇ®ÇÊÇ—ò^âÊçœÇ›ÉtÉ@ÉCÉãÇ∆ÇÃä÷òAïtÇØÇé¿ëï
 		if (outID) {
 			*outID = itr->second;
 		}
@@ -1837,6 +1852,7 @@ bool CReserveManager::IsFindProgramReserve(WORD onid, WORD tsid, WORD sid, __int
 	for( ; itr != sortList.end() && itr->first == _Create64Key2(onid, tsid, sid, 0xFFFF); itr++ ){
 		map<DWORD, RESERVE_DATA>::const_iterator itrRes = this->reserveText.GetMap().find(itr->second);
 		if( itrRes->second.durationSecond == durationSec && ConvertI64Time(itrRes->second.startTime) == startTime ){
+			// nekopanda: EPGé©ìÆó\ñÒìoò^Ç∆ÅAìoò^Ç≥ÇÍÇΩó\ñÒÅAÇ®ÇÊÇ—ò^âÊçœÇ›ÉtÉ@ÉCÉãÇ∆ÇÃä÷òAïtÇØÇé¿ëï
 			if (outID) {
 				*outID = itrRes->first;
 			}
