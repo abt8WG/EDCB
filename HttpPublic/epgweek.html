@@ -3,9 +3,9 @@ dofile(mg.script_name:gsub('[^\\/]*$','')..'string.lua')
 dofile(mg.script_name:gsub('[^\\/]*$','')..'util.lua')
 
 path='Setting\\HttpPublic.ini'
-Light_Mode=0+edcb.GetPrivateProfile('GUIDE','Light_Mode',false,path)~=0
-oneseg=0+edcb.GetPrivateProfile('GUIDE','oneseg',false,path)~=0
-hover=0+edcb.GetPrivateProfile('GUIDE','hover',false,path)~=0
+Light_Mode=tonumber(edcb.GetPrivateProfile('GUIDE','Light_Mode',false,path))~=0
+oneseg=tonumber(edcb.GetPrivateProfile('GUIDE','oneseg',false,path))~=0
+hover=tonumber(edcb.GetPrivateProfile('GUIDE','hover',false,path))~=0
 ONE_MIN_PX=edcb.GetPrivateProfile('GUIDE','ONE_MIN_PX','4',path)
 MARGIN_HOUR=edcb.GetPrivateProfile('GUIDE','MARGIN_HOUR','1',path)
 MARGIN_MIN=edcb.GetPrivateProfile('GUIDE','MARGIN_MIN','30',path)
@@ -39,7 +39,7 @@ partially=edcb.GetPrivateProfile('BACKGROUND','partially','#FFFF00',path)
 partially_border=edcb.GetPrivateProfile('BACKGROUND','partially_border','#FF3D00',path)
 shortage=edcb.GetPrivateProfile('BACKGROUND','shortage','#FF5252',path)
 shortage_border=edcb.GetPrivateProfile('BACKGROUND','shortage_border','#FFEA00',path)
-paint=0+edcb.GetPrivateProfile('BACKGROUND','paint',false,path)~=0
+paint=tonumber(edcb.GetPrivateProfile('BACKGROUND','paint',false,path))~=0
 
 
 CATEGORY={
@@ -62,14 +62,14 @@ CATEGORY={
 }
 
 show=mg.get_var(mg.request_info.query_string,'show') or nil
-page=0+(mg.get_var(mg.request_info.query_string,'page') or 0)
-hour=0+(mg.get_var(mg.request_info.query_string,'hour') or 4)
+page=tonumber(mg.get_var(mg.request_info.query_string,'page')) or 0
+hour=tonumber(mg.get_var(mg.request_info.query_string,'hour')) or 4
 --hour=0で現在時刻-MARGIN_HOUR時間を基準、0以外で"hour"時を基準
-interval=0+(mg.get_var(mg.request_info.query_string,'interval') or 25)
+interval=tonumber(mg.get_var(mg.request_info.query_string,'interval')) or 25
 
-onid=0+(mg.get_var(mg.request_info.query_string,'onid') or 0)
-tsid=0+(mg.get_var(mg.request_info.query_string,'tsid') or 0)
-sid=0+(mg.get_var(mg.request_info.query_string,'sid') or 0)
+onid=tonumber(mg.get_var(mg.request_info.query_string,'onid')) or 0
+tsid=tonumber(mg.get_var(mg.request_info.query_string,'tsid')) or 0
+sid=tonumber(mg.get_var(mg.request_info.query_string,'sid')) or 0
 
 now=os.time()
 timezone=os.time(os.date('*t',now))-os.time(os.date('!*t',now))
@@ -142,8 +142,8 @@ ct.js='<script>\n'
 edcb.htmlEscape=15
 a=edcb.GetServiceList()
 sort={}
-hidecount=0+edcb.GetPrivateProfile('HIDE','count',0,path)
-count=0+edcb.GetPrivateProfile('SORT','count',0,path)
+hidecount=tonumber(edcb.GetPrivateProfile('HIDE','count',0,path))
+count=tonumber(edcb.GetPrivateProfile('SORT','count',0,path))
 if count>0 then
   for i=0,count do
     w=edcb.GetPrivateProfile('SORT','sort'..i,0,path)
@@ -299,7 +299,7 @@ for i=0,7 do
   for j,w in ipairs(b) do
     startTime=os.time(w.startTime)
     startPx=math.min(math.floor((startTime-baseTime-i*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
-    endTime=w.durationSecond and startTime+w.durationSecond or (j<#v.et and os.time(v.et[j+1].startTime) or startTime) --終了時間未定
+    endTime=w.durationSecond and startTime+w.durationSecond or (j<#b and os.time(b[j+1].startTime) or startTime) --終了時間未定
     endPx=math.min(math.floor((endTime-baseTime-i*24*3600)/60)*ONE_MIN_PX, ONE_MIN_PX*60*interval)
     if startPx-lastPx>0 then
       table.insert(ctt, '<div class="cell" style="height:'..(startPx-lastPx)..'px"><div class="content nothing"></div></div>\n')
@@ -364,5 +364,4 @@ ct.main=ct.main..table.concat(ctt)..'</div>\n</div>\n'
 ct=template(ct)
 
 zl=Deflate(ct)
-mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'..(zl and 'Content-Encoding: deflate\r\n' or '')
-  ..'Content-Length: '..(zl and #zl or #ct)..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n', zl or ct)
+mg.write(Response(200, 'text/html', 'utf-8', zl and #zl or #ct)..(zl and 'Content-Encoding: deflate\r\n' or '')..'\r\n', zl or ct)

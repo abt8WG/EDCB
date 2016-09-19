@@ -1,6 +1,6 @@
 ﻿path='Setting\\HttpPublic.ini'
-option=0+edcb.GetPrivateProfile('SET','option',false,path)~=0
-Roboto=0+edcb.GetPrivateProfile('SET','Roboto',false,path)~=0
+option=tonumber(edcb.GetPrivateProfile('SET','option',false,path))~=0
+Roboto=tonumber(edcb.GetPrivateProfile('SET','Roboto',false,path))~=0
 css=edcb.GetPrivateProfile('SET','css',false,path)
 
 authuser=edcb.GetPrivateProfile('CALENDAR','authuser','0',path)
@@ -101,23 +101,180 @@ function template(temp)
 ..(temp.side or '')
 
 ..[=[
-      <a class="mdl-navigation__link" href="]=]..path..[=[epg.html">番組表</a>
-      <a class="mdl-navigation__link" href="]=]..path..[=[epgweek.html">週間番組表</a>
-      <a class="mdl-navigation__link" href="]=]..path..[=[reserve.html">予約一覧</a>
-      <a class="mdl-navigation__link" href="]=]..path..[=[tunerreserve.html">チューナー別</a>
-      <a class="mdl-navigation__link" href="]=]..path..[=[autoaddepg.html">EPG予約</a>
-      <a class="mdl-navigation__link" href="]=]..path..[=[recinfo.html">録画結果</a>
-      <a class="mdl-navigation__link" href="]=]..path..[=[search.html">検索</a>
-      <a class="mdl-navigation__link" href="]=]..path..[=[setting.html">設定</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[epg.html"><i class="material-icons">dashboard</i>番組表</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[epgweek.html"><i class="material-icons">view_week</i>週間番組表</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[reserve.html"><i class="material-icons">schedule</i>予約一覧</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[tunerreserve.html"><i class="material-icons">tune</i>チューナー別</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[autoaddepg.html"><i class="material-icons">update</i>EPG予約</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[library.html"><i class="material-icons">video_library</i>ライブラリ</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[recinfo.html"><i class="material-icons">assignment</i>録画結果</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[search.html"><i class="material-icons">search</i>検索</a>
+      <a class="mdl-navigation__link" href="]=]..path..[=[setting.html"><i class="material-icons">settings</i>設定</a>
     </nav>
   </div>
   <div class="drawer-swipe"></div>
 ]=]
-..(temp.video and [=[
+
+..((temp.macro or temp.video) and [=[
   <div id="popup" class="mdl-layout__obfuscator">
     <div class="mdl-card mdl-shadow--16dp">
-      <video id="video" controls></video>
-      <span class="close mdl-badge" data-badge="&#xE5CD">
+]=]..(temp.macro and [=[
+      <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">マクロ一覧</h2>
+      </div>
+      <div class="macro-list">
+        <div class="macro-list-container">
+          <input type="checkbox" class="check-shrink-phone hidden" id="macro-start">
+          <label class="drop-down " for="macro-start">開始時間</label>
+          <ul class="shrink-phone">
+            <li>
+              <input type="checkbox" class="hidden" id="macro-start28">
+              <label class="drop-down " for="macro-start28">28時間表記</label>
+              <ul>
+                <li class="macro-item" data-macro="$SDYYYY28$"><span>年 4桁</span><span class="mdl-layout-spacer"></span><span>$SDYYYY28$</span></li>
+                <li class="macro-item" data-macro="$SDYY28$"><span>年 2桁</span><span class="mdl-layout-spacer"></span><span>$SDYY28$</span></li>
+                <li class="macro-item" data-macro="$SDM28$"><span>月</span><span class="mdl-layout-spacer"></span><span>$SDM28$</span></li>
+                <li class="macro-item" data-macro="$SDMM28$"><span>月 2桁</span><span class="mdl-layout-spacer"></span><span>$SDMM28$</span></li>
+                <li class="macro-item" data-macro="$SDD28$"><span>日</span><span class="mdl-layout-spacer"></span><span>$SDD28$</span></li>
+                <li class="macro-item" data-macro="$SDDD28$"><span>日 2桁</span><span class="mdl-layout-spacer"></span><span>$SDDD28$</span></li>
+                <li class="macro-item" data-macro="$SDW28$"><span>曜日</span><span class="mdl-layout-spacer"></span><span>$SDW28$</span></li>
+                <li class="macro-item" data-macro="$STH28$"><span>時</span><span class="mdl-layout-spacer"></span><span>$STH28$</span></li>
+                <li class="macro-item" data-macro="$STHH28$"><span>時 2桁</span><span class="mdl-layout-spacer"></span><span>$STHH28$</span></li>
+              </ul>
+              <div class="drawer-separator"></div>
+            </li>
+            <li class="macro-item" data-macro="$SDYYYY$"><span>年 4桁</span><span class="mdl-layout-spacer"></span><span>$SDYYYY$</span></li>
+            <li class="macro-item" data-macro="$SDYY$"><span>年 2桁</span><span class="mdl-layout-spacer"></span><span>$SDYY$</span></li>
+            <li class="macro-item" data-macro="$SDM$"><span>月</span><span class="mdl-layout-spacer"></span><span>$SDM$</span></li>
+            <li class="macro-item" data-macro="$SDMM$"><span>月 2桁</span><span class="mdl-layout-spacer"></span><span>$SDMM$</span></li>
+            <li class="macro-item" data-macro="$SDD$"><span>日</span><span class="mdl-layout-spacer"></span><span>$SDD$</span></li>
+            <li class="macro-item" data-macro="$SDDD$"><span>日 2桁</span><span class="mdl-layout-spacer"></span><span>$SDDD$</span></li>
+            <li class="macro-item" data-macro="$SDW$"><span>曜日</span><span class="mdl-layout-spacer"></span><span>$SDW$</span></li>
+            <li class="macro-item" data-macro="$STH$"><span>時</span><span class="mdl-layout-spacer"></span><span>$STH$</span></li>
+            <li class="macro-item" data-macro="$STHH$"><span>時 2桁</span><span class="mdl-layout-spacer"></span><span>$STHH$</span></li>
+            <li class="macro-item" data-macro="$STM$"><span>分</span><span class="mdl-layout-spacer"></span><span>$STM$</span></li>
+            <li class="macro-item" data-macro="$STMM$"><span>分 2桁</span><span class="mdl-layout-spacer"></span><span>$STMM$</span></li>
+            <li class="macro-item" data-macro="$STS$"><span>秒</span><span class="mdl-layout-spacer"></span><span>$STS$</span></li>
+            <li class="macro-item" data-macro="$STSS$"><span>秒 2桁</span><span class="mdl-layout-spacer"></span><span>$STSS$</span></li>
+          </ul>
+        </div>
+        <div class="macro-list-container">
+          <input type="checkbox" class="check-shrink-phone hidden" id="macro-end">
+          <label class="drop-down" for="macro-end">終了時間</label>
+          <ul class="shrink-phone">
+            <li>
+              <input type="checkbox" class="hidden" id="macro-end24">
+              <label class="drop-down" for="macro-end24">28時間表記</label>
+              <ul>
+                <li class="macro-item" data-macro="$EDYYYY28$"><span>年 4桁</span><span class="mdl-layout-spacer"></span><span>$EDYYYY28$</span></li>
+                <li class="macro-item" data-macro="$EDYY28$"><span>年 2桁</span><span class="mdl-layout-spacer"></span><span>$EDYY28$</span></li>
+                <li class="macro-item" data-macro="$EDM28$"><span>月</span><span class="mdl-layout-spacer"></span><span>$EDM28$</span></li>
+                <li class="macro-item" data-macro="$EDMM28$"><span>月 2桁</span><span class="mdl-layout-spacer"></span><span>$EDMM28$</span></li>
+                <li class="macro-item" data-macro="$EDD28$"><span>日</span><span class="mdl-layout-spacer"></span><span>$EDD28$</span></li>
+                <li class="macro-item" data-macro="$EDDD28$"><span>日 2桁</span><span class="mdl-layout-spacer"></span><span>$EDDD28$</span></li>
+                <li class="macro-item" data-macro="$EDW28$"><span>曜日</span><span class="mdl-layout-spacer"></span><span>$EDW28$</span></li>
+                <li class="macro-item" data-macro="$ETH28$"><span>時</span><span class="mdl-layout-spacer"></span><span>$ETH28$</span></li>
+                <li class="macro-item" data-macro="$ETHH28$"><span>時 2桁</span><span class="mdl-layout-spacer"></span><span>$ETHH28$</span></li>
+              </ul>
+              <div class="drawer-separator"></div>
+            </li>
+            <li class="macro-item" data-macro="$EDYYYY$"><span>年 4桁</span><span class="mdl-layout-spacer"></span><span>$EDYYYY$</span></li>
+            <li class="macro-item" data-macro="$EDYY$"><span>年 2桁</span><span class="mdl-layout-spacer"></span><span>$EDYY$</span></li>
+            <li class="macro-item" data-macro="$EDM$"><span>月</span><span class="mdl-layout-spacer"></span><span>$EDM$</span></li>
+            <li class="macro-item" data-macro="$EDMM$"><span>月 2桁</span><span class="mdl-layout-spacer"></span><span>$EDMM$</span></li>
+            <li class="macro-item" data-macro="$EDD$"><span>日</span><span class="mdl-layout-spacer"></span><span>$EDD$</span></li>
+            <li class="macro-item" data-macro="$EDDD$"><span>日 2桁</span><span class="mdl-layout-spacer"></span><span>$EDDD$</span></li>
+            <li class="macro-item" data-macro="$EDW$"><span>曜日</span><span class="mdl-layout-spacer"></span><span>$EDW$</span></li>
+            <li class="macro-item" data-macro="$ETH$"><span>時</span><span class="mdl-layout-spacer"></span><span>$ETH$</span></li>
+            <li class="macro-item" data-macro="$ETHH$"><span>時 2桁</span><span class="mdl-layout-spacer"></span><span>$ETHH$</span></li>
+            <li class="macro-item" data-macro="$ETM$"><span>分</span><span class="mdl-layout-spacer"></span><span>$ETM$</span></li>
+            <li class="macro-item" data-macro="$ETMM$"><span>分 2桁</span><span class="mdl-layout-spacer"></span><span>$ETMM$</span></li>
+            <li class="macro-item" data-macro="$ETS$"><span>秒</span><span class="mdl-layout-spacer"></span><span>$ETS$</span></li>
+            <li class="macro-item" data-macro="$ETSS$"><span>秒 2桁</span><span class="mdl-layout-spacer"></span><span>$ETSS$</span></li>
+          </ul>
+        </div>
+        <div class="macro-list-container">
+          <input type="checkbox" class="check-shrink-phone hidden"  id="macro-duration">
+          <label class="drop-down" for="macro-duration">番組総時間</label>
+          <ul class="shrink-phone">
+            <li class="macro-item" data-macro="$DUH$"><span>時</span><span class="mdl-layout-spacer"></span><span>$DUH$</span></li>
+            <li class="macro-item" data-macro="$DUHH$"><span>時 2桁</span><span class="mdl-layout-spacer"></span><span>$DUHH$</span></li>
+            <li class="macro-item" data-macro="$DUM$"><span>分</span><span class="mdl-layout-spacer"></span><span>$DUM$</span></li>
+            <li class="macro-item" data-macro="$DUMM$"><span>分 2桁</span><span class="mdl-layout-spacer"></span><span>$DUMM$</span></li>
+            <li class="macro-item" data-macro="$DUS$"><span>秒</span><span class="mdl-layout-spacer"></span><span>$DUS$</li>
+            <li class="macro-item" data-macro="$DUSS$"><span>秒 2桁</span><span class="mdl-layout-spacer"></span><span>$DUSS$</span></li>
+          </ul>
+        </div>
+        <div class="macro-list-container2">
+          <div class="mdl-layout-spacer"></div>
+	      <div class="macro-list-container">
+	        <div class="drawer-separator mdl-cell--hide-desktop"></div>
+	        <ul>
+	          <li class="macro-item" data-macro="$Title$"><span>番組名</span><span class="mdl-layout-spacer"></span><span>$Title$</span></li>
+	          <li class="macro-item" data-macro="$Title2$"><span>番組名（[]削除）</span><span class="mdl-layout-spacer"></span><span>$Title2$</span></li>
+	          <li class="macro-item" data-macro="$SubTitle$"><span>サブタイトル（番組内容）</span><span class="mdl-layout-spacer"></span><span>$SubTitle$</span></li>
+	          <li class="macro-item" data-macro="$SubTitle2$"><span>話数が含まれるサブタイトル</span><span class="mdl-layout-spacer"></span><span>$SubTitle2$</span></li>
+	          <li class="macro-item" data-macro="$Genre$"><span>番組のジャンル</span><span class="mdl-layout-spacer"></span><span>$Genre$</span></li>
+	          <li class="macro-item" data-macro="$Genre2$"><span>番組の詳細ジャンル</span><span class="mdl-layout-spacer"></span><span>$Genre2$</span></li>
+	          <li class="macro-item" data-macro="$ServiceName$"><span>サービス名</span><span class="mdl-layout-spacer"></span><span>$ServiceName$</span></li>
+	          <li class="macro-item" data-macro="$SID10$"><span>サービスID</span><span class="mdl-layout-spacer"></span><span>$SID10$</span></li>
+	          <li class="macro-item" data-macro="$ONID10$"><span>ネットワークID</span><span class="mdl-layout-spacer"></span><span>$ONID10$</span></li>
+	          <li class="macro-item" data-macro="$TSID10$"><span>ストリームID</span><span class="mdl-layout-spacer"></span><span>$TSID10$</span></li>
+	          <li class="macro-item" data-macro="$EID10$"><span>イベントID</span><span class="mdl-layout-spacer"></span><span>$EID10$</span></li>
+	          <li class="macro-item" data-macro="$SID16$"><span>サービスID 16進数</span><span class="mdl-layout-spacer"></span><span>$SID16$</span></li>
+	          <li class="macro-item" data-macro="$ONID16$"><span>ネットワークID 16進数</span><span class="mdl-layout-spacer"></span><span>$ONID16$</span></li>
+	          <li class="macro-item" data-macro="$TSID16$"><span>ストリームID 16進数</span><span class="mdl-layout-spacer"></span><span>$TSID16$</span></li>
+	          <li class="macro-item" data-macro="$EID16$"><span>イベントID 16進数</span><span class="mdl-layout-spacer"></span><span>$EID16$</span></li>
+	        <ul>
+	      </div>
+	      <div class="macro-list-container">
+	        <div class="drawer-separator mdl-cell--hide-desktop"></div>
+	        </ul>
+	          <li class="macro-item" data-macro="HtoZ()"><span>半角⇒全角</span><span class="mdl-layout-spacer"></span><span>HtoZ()</span></li>
+	          <li class="macro-item" data-macro="ZtoH()"><span>全角⇒半角</span><span class="mdl-layout-spacer"></span><span>ZtoH()</span></li>
+	          <li class="macro-item" data-macro="HtoZ&lt;alnum&gt;()"><span>英数半角⇒全角</span><span class="mdl-layout-spacer"></span><span>HtoZ&lt;alnum&gt;()</span></li>
+	          <li class="macro-item" data-macro="ZtoH&lt;alnum&gt;()"><span>英数全角⇒半角</span><span class="mdl-layout-spacer"></span><span>ZtoH&lt;alnum&gt;()</span></li>
+	          <li class="macro-item" data-macro="Tr///()"><span>文字置換</span><span class="mdl-layout-spacer"></span><span>Tr/置換文字リスト/置換後/()</span></li>
+	          <li class="macro-item" data-macro="S///()"><span>文字列置換</span><span class="mdl-layout-spacer"></span><span>S/置換文字列/置換後/()</span></li>
+	          <li class="macro-item" data-macro="Rm//()"><span>文字削除</span><span class="mdl-layout-spacer"></span><span>Rm/削除文字リスト/()</span></li>
+	          <li class="macro-item" data-macro="Head()"><span>足切り</span><span class="mdl-layout-spacer"></span><span>Head文字数[省略記号]</span></li>
+	        </ul>
+	      </div>
+          <div class="mdl-layout-spacer"></div>
+        </div>
+      </div>
+      <div class="mdl-dialog__actions mdl-card__actions mdl-card--border">
+        <button class="macro close mdl-button">キャンセル</button>
+      </div>
+]=] or [=[
+      <div id="player" class="is-small">
+        <div class="player-container">
+          <video id="video"></video>
+          <div id="titlebar" class="bar"></div>
+          <div id="control" class="bar">
+            <i id="playprev" class="ctl-button material-icons">skip_previous</i>
+            <i id="play" class="ctl-button material-icons">play_arrow</i>
+              <i id="playnext" class="ctl-button material-icons">skip_next</i>
+              <div id="seek-container" class="mdl-layout-spacer">
+              <span class="currentTime videoTime">0:00</span>
+              <p class="mdl-layout-spacer"><input class="mdl-slider mdl-js-slider" type="range" id="seek" min="0" max="99" value="0" step="1"></p>
+              <span class="duration videoTime">0:00</span>
+            </div>
+            <p class="mdl-layout-spacer small-only"></p>
+            <i id="volume-icon" class="ctl-button material-icons">volume_up</i>
+            <p id="volume-container" class="mdl-cell--hide-phone"><input class="mdl-slider mdl-js-slider" type="range" id="volume" min="0" max="1" value="0" step="0.01"></p>
+            <i id="settings" class="ctl-button material-icons">settings</i>
+            <ul class="mdl-menu mdl-menu--top-right mdl-js-menu" for="settings">
+              <li class="mdl-menu__item"><label for="autoplay" class="mdl-layout-spacer">自動再生</label><span><label class="mdl-switch mdl-js-switch" for="autoplay"><input type="checkbox" id="autoplay" class="mdl-switch__input"></label></span></li>
+              <li class="mdl-menu__item"><label for="HD" class="mdl-layout-spacer">画質</label><span><input type="checkbox" id="HD"><label for="HD"><i class="material-icons">hd</i></label></span></li>
+              <li class="mdl-menu__item" id="rate-container"><span><i id="rewind" class="material-icons">fast_rewind</i></span><span id="rate" class="mdl-layout-spacer">1.0</span><span><i id="forward" class="material-icons">fast_forward</i></span></li>
+            </ul>
+            <i id="fullscreen" class="ctl-button material-icons">fullscreen</i>
+          </div>
+        </div>
+      </div>
+      <span class="close mdl-badge material-icons" data-badge="&#xE5CD;"></span>
+]=])..[=[
     </div>
   </div>
 ]=] or '')
@@ -276,44 +433,171 @@ function RecSettingTemplate(rs)
   end
   s=s..'</select></div></div>\n'
   
-    ..'<div id="preset" class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n'
-    ..'<div>※プリセットによる変更のみ</div>\n'
-    ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">録画後実行bat</div>\n'
-    ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..(rs.batFilePath=='' and '－' or rs.batFilePath )..'</div></div>\n'
+  local status, lfs=pcall(require, 'lfs')
 
-  local b=''
-  for i,v in ipairs(rs.recFolderList) do
-    recName,recName2,recName3=string.match(v.recNamePlugIn, '^(.+%.dll)(%?(.*))??')
-    b=b..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.recFolder..'</div></div>\n'
-      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.writePlugIn..'</div></div>\n'
-      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..(option and recName or v.recNamePlugIn=='' and '－' or v.recNamePlugIn)..'</div></div>\n'
-      ..(option and v.recNamePlugIn~='' and '<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">オプション</div>\n'
-                                          ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="mdl-textfield__input" type="text" name="recName" value="'..(recName3 or '')..'" id="recName'..i..'"><label class="mdl-textfield__label" for="recName'..i..'">ファイル名オプション</label></div></div>\n' or '')
-      ..'<input class="recFolderList" type=hidden name="recFolder" value="'..v.recFolder..'"><input class="recFolderList" type=hidden name="writePlugIn" value="'..v.writePlugIn..'"><input class="recFolderList" type=hidden name="recNamePlugIn" value="'..(option and recName or v.recNamePlugIn)..'">'
-  end
-  s=s..(#b>0 and b or '<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
-                    ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
-                    ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>')
-    ..'</div>'
-    ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"><div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">録画タグ</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="mdl-textfield__input" type="text" name="recTag" value="'..rs.recTag..'" size="30" id="recTag"><label class="mdl-textfield__label" for="recTag"></label></div></div>\n'
-    ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"><div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">部分受信サービス</div>\n'
-    ..'<div class="mdl-cell--middle"><label for="partial" class="mdl-checkbox mdl-js-checkbox"><input id="partial" class="mdl-checkbox__input" type="checkbox" name="partialRecFlag" value="1"'..(rs.partialRecFlag~=0 and ' checked' or '')..'><span class="mdl-checkbox__label">別ファイルに同時出力する</span></label></div></div>\n'
+  if status then
 
-  b=''
-  for i,v in ipairs(rs.partialRecFolder) do
-    recName,recName2,recName3=string.match(v.recNamePlugIn, '^(.+%.dll)(%?(.*))??')
-    b=b..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.recFolder..'</div></div>\n'
-      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.writePlugIn..'</div></div>\n'
-      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..(option and recName or v.recNamePlugIn=='' and '－' or v.recNamePlugIn)..'</div></div>\n'
-      ..(option and v.recNamePlugIn~='' and '<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">オプション</div>\n'
-                                          ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="mdl-textfield__input" type="text" name="partialrecName" value="'..(recName3 or '')..'" id="partialrecName'..i..'"><label class="mdl-textfield__label" for="partialrecName'..i..'">ファイル名オプション</label></div></div>\n' or '')
-      ..'<input class="recFolderList" type=hidden name="partialrecFolder" value="'..v.recFolder..'"><input class="recFolderList" type=hidden name="partialwritePlugIn" value="'..v.writePlugIn..'"><input class="recFolderList" type=hidden name="partialrecNamePlugIn" value="'..(option and recName or v.recNamePlugIn)..'">'
+    local CurrentDir=edcb.GetPrivateProfile('SET','ModulePath','','Common.ini')
+    lfs.chdir (CurrentDir)
+    local batPath=edcb.GetPrivateProfile('SET','batPath',CurrentDir..'\\bat',path)
+    s=s..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">録画後実行bat</div>\n'
+      ..'<div class="pulldown mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-grid mdl-grid--no-spacing"><select name="batFilePath">\n<option value=""'..(rs.batFilePath=='' and ' selected' or '')..'>なし\n'
+      
+    if rs.batFilePath:gsub('\\[^\\/]*$','')~=batPath and rs.batFilePath~='' then
+      s=s..'<option value="'..rs.batFilePath..'" selected>'..rs.batFilePath..'\n'
+    end
+    for file in lfs.dir(batPath) do
+      if file ~= '.' and file ~= '..' and string.find(file, '%.bat$') then
+        s=s..'<option value="'..batPath..'\\'..file..'"'..(rs.batFilePath==batPath..'\\'..file and ' selected' or '')..'>'..file..'\n'
+      end
+    end
+    s=s..'</select></div></div>\n'
+
+      ..'<div id="preset" class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing" data-lfs="true" data-option="'..(option and 'true' or 'false')..'">\n'
+
+    if #rs.recFolderList>0 then
+      for i,v in ipairs(rs.recFolderList) do
+        recName,recName2,recName3=string.match(v.recNamePlugIn, '^(.+%.dll)(%?(.*))??')
+
+        s=s..'<div class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">'
+          ..'<div class="delPreset mdl-button mdl-button--icon mdl-button--mini-icon mdl-js-button"><i class="material-icons">delete</i></div>'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.recFolder..'</div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">出力PlugIn</div>\n'
+          ..'<div class="pulldown mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-grid mdl-grid--no-spacing"><select name="writePlugIn">\n'
+        for file in lfs.dir('Write') do
+          if file ~= '.' and file ~= '..' and string.find(file, '%.dll$') then
+            s=s..'<option value="'..file..'"'..(v.writePlugIn==file and ' selected' or '')..'>'..file..'\n'
+          end
+        end
+        s=s..'</select></div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">ファイル名PlugIn</div>\n'
+          ..'<div class="pulldown mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-grid mdl-grid--no-spacing"><select name="recNamePlugIn">\n<option value=""'..((recName or v.recNamePlugIn)=='' and ' selected' or '')..'>なし\n'
+        for file in lfs.dir('RecName') do
+          if file ~= '.' and file ~= '..' and string.find(file, '%.dll$') then
+            s=s..'<option value="'..file..'"'..((recName or v.recNamePlugIn)==file and ' selected' or '')..'>'..file..'\n'
+          end
+        end
+        s=s..'</select></div></div>\n'
+          ..(option and '<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">オプション</div>\n'
+                       ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="has-icon mdl-textfield__input" type="text" name="recName" value="'..(recName3 or '')..'" id="recName'..i..'"><label class="mdl-textfield__label" for="recName'..i..'">ファイル名オプション</label><i class="addmacro material-icons">add</i></div></div>\n' or '')
+          ..'<input class="recFolderList" type=hidden name="recFolder" value="'..v.recFolder..'">'
+          ..'</div>\n'
+      end
+    end
+    s=s..'<div class="addPreset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"><i class="material-icons">add_circle_outline</i></div>\n'
+      ..'</div>'
+
+      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"><div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">部分受信サービス</div>\n'
+      ..'<div class="mdl-cell--middle"><label for="partial" class="mdl-checkbox mdl-js-checkbox"><input id="partial" class="mdl-checkbox__input" type="checkbox" name="partialRecFlag" value="1"'..(rs.partialRecFlag~=0 and ' checked' or '')..'><span class="mdl-checkbox__label">別ファイルに同時出力する</span></label></div></div>\n'
+
+      ..'<div id="partialpreset" class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"'..(rs.partialRecFlag==0 and ' style="display: none;"' or '')..'>\n'
+
+    if #rs.partialRecFolder>0 then
+      for i,v in ipairs(rs.partialRecFolder) do
+        recName,recName2,recName3=string.match(v.recNamePlugIn, '^(.+%.dll)(%?(.*))??')
+
+        s=s..'<div class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">'
+          ..'<div class="delPreset mdl-button mdl-button--icon mdl-button--mini-icon mdl-js-button"><i class="material-icons">delete</i></div>'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.recFolder..'</div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">出力PlugIn</div>\n'
+          ..'<div class="pulldown mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-grid mdl-grid--no-spacing"><select name="partialwritePlugIn">\n'
+        for file in lfs.dir('Write') do
+          if file ~= '.' and file ~= '..' and string.find(file, '%.dll$') then
+            s=s..'<option value="'..file..'"'..(v.writePlugIn==file and ' selected' or '')..'>'..file..'\n'
+          end
+        end
+        s=s..'</select></div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">ファイル名PlugIn</div>\n'
+          ..'<div class="pulldown mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-grid mdl-grid--no-spacing"><select name="partialrecNamePlugIn">\n<option value=""'..(recName=='' and ' selected' or '')..'>なし\n'
+        for file in lfs.dir('RecName') do
+          if file ~= '.' and file ~= '..' and string.find(file, '%.dll$') then
+            s=s..'<option value="'..file..'"'..((recName or v.recNamePlugIn)==file and ' selected' or '')..'>'..file..'\n'
+          end
+        end
+        s=s..'</select></div></div>\n'
+          ..(option and '<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">オプション</div>\n'
+                                              ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="has-icon mdl-textfield__input" type="text" name="partialrecName" value="'..(recName3 or '')..'" id="partialrecName'..i..'"><label class="mdl-textfield__label" for="partialrecName'..i..'">ファイル名オプション</label><i class="addmacro material-icons">add</i></div></div>\n' or '')
+          ..'<input class="recFolder" type=hidden name="partialrecFolder" value="'..v.recFolder..'">'
+          ..'</div>\n'
+      end
+    end
+    s=s..'<div class="addPreset partial mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"><i class="material-icons">add_circle_outline</i></div>\n'
+      ..'</div>'
+
+      ..'<select id="Write" class="hidden">\n'
+    for file in lfs.dir('Write') do
+      if file ~= '.' and file ~= '..' and string.find(file, '%.dll$') then
+        s=s..'<option value="'..file..'">'..file..'\n'
+      end
+    end
+    s=s..'</select>\n<select id="RecName" class="hidden">\n<option value="">なし\n'
+    for file in lfs.dir('RecName') do
+      if file ~= '.' and file ~= '..' and string.find(file, '%.dll$') then
+        s=s..'<option value="'..file..'">'..file..'\n'
+      end
+    end
+    s=s..'</select>\n'
+
+  else
+
+    s=s..'<div id="preset" class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing" data-option="'..(option and 'true' or 'false')..'">\n'
+      ..'<div>※プリセットによる変更のみ</div>\n'
+      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">'
+      ..'<div class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">録画後実行bat</div>\n'
+      ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..(rs.batFilePath=='' and '－' or rs.batFilePath )..'</div><input type=hidden name="batFilePath" value="'..rs.batFilePath..'"></div>\n'
+      ..'</div>'
+
+    if #rs.recFolderList>0 then
+      for i,v in ipairs(rs.recFolderList) do
+        recName,recName2,recName3=string.match(v.recNamePlugIn, '^(.+%.dll)(%?(.*))??')
+        s=s..'<div class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.recFolder..'</div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.writePlugIn..'</div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..(option and recName or v.recNamePlugIn=='' and '－' or v.recNamePlugIn)..'</div></div>\n'
+          ..(option and v.recNamePlugIn~='' and'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">オプション</div>\n'
+                                             ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="mdl-textfield__input" type="text" name="recName" value="'..(recName3 or '')..'" id="recName'..i..'"><label class="mdl-textfield__label" for="recName'..i..'">ファイル名オプション</label></div></div>\n' or '')
+          ..'<input class="recFolderList" type=hidden name="recFolder" value="'..v.recFolder..'"><input class="recFolderList" type=hidden name="writePlugIn" value="'..v.writePlugIn..'"><input class="recFolderList" type=hidden name="recNamePlugIn" value="'..(option and recName or v.recNamePlugIn)..'">'
+          ..'</div>'
+      end
+    else
+      s=s..'<div class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n'
+        ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
+        ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
+        ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>'
+        ..'</div>'
+    end
+
+    s=s..'</div>'
+      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"><div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">録画タグ</div>\n'
+	  ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="mdl-textfield__input" type="text" name="recTag" value="'..rs.recTag..'" size="30" id="recTag"><label class="mdl-textfield__label" for="recTag"></label></div></div>\n'
+      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"><div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">部分受信サービス</div>\n'
+      ..'<div class="mdl-cell--middle"><label for="partial" class="mdl-checkbox mdl-js-checkbox"><input id="partial" class="mdl-checkbox__input" type="checkbox" name="partialRecFlag" value="1"'..(rs.partialRecFlag~=0 and ' checked' or '')..'><span class="mdl-checkbox__label">別ファイルに同時出力する</span></label></div></div>\n'
+
+      ..'<div id="partialpreset" class="partial mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"'..(rs.partialRecFlag==0 and ' style="display: none;"' or '')..'>\n'
+      ..'<div>※プリセットによる変更のみ</div>\n'
+
+    if #rs.partialRecFolder>0 then
+      for i,v in ipairs(rs.partialRecFolder) do
+        recName,recName2,recName3=string.match(v.recNamePlugIn, '^(.+%.dll)(%?(.*))??')
+        s=s..'<div class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.recFolder..'</div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..v.writePlugIn..'</div></div>\n'
+          ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop">'..(option and recName or v.recNamePlugIn=='' and '－' or v.recNamePlugIn)..'</div></div>\n'
+          ..(option and v.recNamePlugIn~='' and '<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">オプション</div>\n'
+                                              ..'<div class="mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield"><input class="mdl-textfield__input" type="text" name="partialrecName" value="'..(recName3 or '')..'" id="partialrecName'..i..'"><label class="mdl-textfield__label" for="partialrecName'..i..'">ファイル名オプション</label></div></div>\n' or '')
+          ..'<input class="recFolderList" type=hidden name="partialrecFolder" value="'..v.recFolder..'"><input class="recFolderList" type=hidden name="partialwritePlugIn" value="'..v.writePlugIn..'"><input class="recFolderList" type=hidden name="partialrecNamePlugIn" value="'..(option and recName or v.recNamePlugIn)..'">'
+          ..'</div>'
+      end
+    else
+      s=s..'<div class="preset mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n'
+        ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
+        ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
+        ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
+        ..'</div>'
+    end
+    s=s..'</div>\n'
+
   end
-  s=s..'<div id="partialpreset" class="preset partial mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing"'..(rs.partialRecFlag==0 and ' style="display: none;"' or '')..'>\n'
-    ..'<div>※プリセットによる変更のみ</div>\n'
-    ..(#b>0 and b or '<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">フォルダ</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
-      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">出力PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>\n'
-      ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet">ファイル名PlugIn</div><div class="mdl-cell mdl-cell--6-col">－</div></div>')..'</div>\n'
   return s
 end
 
@@ -537,18 +821,50 @@ function SerchTemplate(si)
   return s
 end
 
+--プレイヤー
+function player(video, ori)
+  return '<div id="player" class="is-small">\n'
+..video..[=[
+<div id="control" class="bar is-visible">
+<i id="play" class="ctl-button material-icons">play_arrow</i>
+<div id="seek-container" class="mdl-layout-spacer">
+<span class="currentTime videoTime">0:00</span>
+<p class="mdl-layout-spacer"><input class="mdl-slider mdl-js-slider" type="range" id="seek" min="0" max="99" value="0" step="1"></p>
+<span class="duration videoTime">0:00</span>
+</div>
+<i id="volume-icon" class="ctl-button material-icons">volume_up</i>
+<p id="volume-container"><input class="mdl-slider mdl-js-slider" type="range" id="volume" min="0" max="1" value="0" step="0.01"></p>
+<p class="mdl-layout-spacer small-only"></p>
+<i id="settings" class="ctl-button material-icons">settings</i>
+<ul class="mdl-menu mdl-menu--top-right mdl-js-menu" for="settings">
+<li class="mdl-menu__item"]=]..(ori and ' disabled' or '')..'><label for="HD" class="mdl-layout-spacer">画質</label><span><input type="checkbox" id="HD"'..(ori and ' disabled' or '')..[=[><label for="HD"><i class="material-icons">hd</i></label></span></li>
+<li class="mdl-menu__item" id="rate-container"><span><i id="rewind" class="material-icons">fast_rewind</i></span><span id="rate" class="mdl-layout-spacer">1.0</span><span><i id="forward" class="material-icons">fast_forward</i></span></li>
+</ul>
+<i id="fullscreen" class="ctl-button material-icons">fullscreen</i>
+</div>
+</div>
+]=]
+end
+
+--レスポンスを生成する
+function Response(code,ctype,charset,cl)
+  return 'HTTP/1.1 '..code..' '..mg.get_response_code_text(code)
+    ..(ctype and '\r\nX-Content-Type-Options: nosniff\r\nContent-Type: '..ctype..(charset and '; charset='..charset or '') or '')
+    ..(cl and '\r\nContent-Length: '..cl or '')
+    ..(mg.keep_alive(not not cl) and '\r\n' or '\r\nConnection: close\r\n')
+end
 
 --可能ならコンテンツをzlib圧縮する(lua-zlib(zlib.dll)が必要)
 function Deflate(ct)
   local zl
   local trim
   for k,v in pairs(mg.request_info.http_headers) do
-    if not zl and k:match('^[Aa]ccept%-[Ee]ncoding$') and v:find('deflate') then
+    if not zl and k:lower()=='accept-encoding' and v:lower():find('deflate') then
       local status, zlib = pcall(require, 'zlib')
       if status then
         zl=zlib.deflate()(ct, 'finish')
       end
-    elseif k:match('^[Uu]ser%-[Aa]gent$') and (v:find(' MSIE ') or v:find(' Trident/7%.') or v:find(' Edge/')) then
+    elseif k:lower()=='user-agent' and (v:find(' MSIE ') or v:find(' Trident/7%.') or v:find(' Edge/')) then
       --RFC2616非準拠のブラウザはzlibヘッダを取り除く
       trim=true
     end

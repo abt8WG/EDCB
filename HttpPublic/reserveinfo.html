@@ -2,12 +2,12 @@ dofile(mg.document_root..'\\api\\util.lua')
 dofile(mg.script_name:gsub('[^\\/]*$','')..'string.lua')
 dofile(mg.script_name:gsub('[^\\/]*$','')..'util.lua')
 
-root=mg.script_name:gsub('[^\\/]*$',''):gsub(mg.document_root..'/',''):gsub('[^\\/]*[\\/]','../')
+KeepDisk=tonumber(edcb.GetPrivateProfile('SET','KeepDisk','1','EpgTimerSrv.ini'))~=0
 
-page=0+(mg.get_var(mg.request_info.query_string,'page') or 0)
+page=tonumber(mg.get_var(mg.request_info.query_string,'page')) or 0
 
 edcb.htmlEscape=15
-r=edcb.GetReserveData(0+(mg.get_var(mg.request_info.query_string,'id') or 0))
+r=edcb.GetReserveData(tonumber(mg.get_var(mg.request_info.query_string,'id')) or 0)
 
 ct={title='予約情報'}
 
@@ -15,18 +15,21 @@ if r then
   recording=edcb.GetRecFilePath and edcb.GetRecFilePath(r.reserveID) or nil
   redirect=mg.get_var(mg.request_info.query_string,'tuner') and 'tunerreserve.html' or 'reserve.html'..(page and '?page='..page or '')
 
-  ct.js='<script>\n$(function(){getpreset(\''..root..'api/EnumReserveInfo\');});\n</script>\n'
+  ct.js=(recording and '<script src="js/player.js"></script>\n'or '')
+    ..'<script>\n$(function(){getpreset(\''..PathToRoot()..'api/EnumReserveInfo\');});\n</script>\n'
 
-  ct.main='<main class="mdl-layout__content">\n'
+  ct.macro=true
+
+  ct.main='<main class="tab-swipe mdl-layout__content">\n'
     ..'<div class="mdl-grid">\n'
     .._ConvertEpgInfoText2(r.onid, r.tsid, r.sid, r.eid)
     ..'<section class="mdl-layout__tab-panel" id="recset">\n'
-    ..'<form id="set" class="api" method="POST" action="'..root..'api/reservechg?id='..r.reserveID..'" data-redirect="'..redirect..'">\n'
+    ..'<form id="set" class="api" method="POST" action="'..PathToRoot()..'api/reservechg?id='..r.reserveID..'" data-redirect="'..redirect..'">\n'
     ..'<div class="form mdl-grid mdl-grid--no-spacing">\n'
 
     ..'<div class="mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing">\n<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle">プリセット</div>\n'
     ..'<div class="pulldown mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-grid mdl-grid--no-spacing"><select name="presetID" data-reseveid="'..r.reserveID..'">\n'
-  presetID=0+(mg.get_var(mg.request_info.query_string,'presetID') or 65535)
+  presetID=tonumber(mg.get_var(mg.request_info.query_string,'presetID')) or 65535
   preset=false
   rs=r.recSetting
   for i,v in ipairs(edcb.EnumRecPresetInfo()) do
@@ -45,14 +48,14 @@ if r then
     ..RecSettingTemplate(rs)..'</div></form>\n'
     ..'</section>\n'
 
-    ..(recording and '<section class="mdl-layout__tab-panel" id="movie">\n<div class="mdl-grid mdl-grid--no-spacing"><div>\n'
-    ..'<video src="'..root..'api/Movie?reid='..r.reserveID..'" preload="none" controls></video>\n'
-    ..'</div></div>\n</section>\n' or '')
+    ..(recording and '<section class="mdl-layout__tab-panel" id="movie">\n<div class="mdl-grid mdl-grid--no-spacing">\n'
+      ..player('<video id="video" preload="none" data-path="'..PathToRoot()..'api/Movie?reid='..r.reserveID..'" data-rec="true" data-keepdisk="'..(KeepDisk and 'true' or 'false')..'"></video>\n')
+      ..'</div>\n</section>\n' or '')
     ..'</div>\n'
 
     ..'<div class="mdl-dialog__actions mdl-card__actions mdl-card--border">\n'
     ..'<button class="submit mdl-button mdl-js-button mdl-button--primary" data-form="#set">予約変更</button>\n'
-    ..'<form id="del" class="api" method="POST" action="'..root..'api/reservedel?id='..r.reserveID..'" data-redirect="'..redirect..'"><input type="hidden" name="ctok" value="'..CsrfToken()..'"></form>\n'
+    ..'<form id="del" class="api" method="POST" action="'..PathToRoot()..'api/reservedel?id='..r.reserveID..'" data-redirect="'..redirect..'"><input type="hidden" name="ctok" value="'..CsrfToken()..'"></form>\n'
     ..'<button class="submit mdl-button mdl-js-button mdl-button--primary" data-form="#del">削除</button>\n'
     ..'</div>\n'
 
@@ -66,4 +69,4 @@ end
 
 ct=template(ct)
 
-mg.write('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: '..#ct..(mg.keep_alive(true) and '' or '\r\nConnection: close')..'\r\n\r\n', ct)
+mg.write(Response(200, 'text/html', 'utf-8', #ct)..'\r\n', ct)

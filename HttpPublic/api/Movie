@@ -1,21 +1,33 @@
+status, lfs=pcall(require, 'lfs')
+if status then
+  CurrentDir=edcb.GetPrivateProfile('SET','ModulePath','','Common.ini')
+  lfs.chdir (CurrentDir)
+end
+
 path='Setting\\HttpPublic.ini'
-ffmpeg=edcb.GetPrivateProfile('SET','ffmpeg','ffmpeg',path)
-ffmpegoption=edcb.GetPrivateProfile('SET','ffmpegoption','-vcodec libvpx -b 896k -quality realtime -cpu-used 1 -vf yadif=0:-1:1 -s 512x288 -r 30000/1001 -acodec libvorbis -ab 128k -f webm -',path)
-readex=edcb.GetPrivateProfile('SET','readex','readex',path)
+ffmpeg=edcb.GetPrivateProfile('SET','ffmpeg','Tools\\ffmpeg',path)
+readex=edcb.GetPrivateProfile('SET','readex','Tools\\readex',path)
 
 -- トランスコードするかどうか
-XCODE=0+(mg.get_var(mg.request_info.query_string, 'xcode') and 0 or 1)~=0
+XCODE=tonumber(mg.get_var(mg.request_info.query_string, 'xcode') and 0 or 1)~=0
 -- 変換コマンド
-XCMD=ffmpeg..' -i pipe:0 '..ffmpegoption
+quality=mg.get_var(mg.request_info.query_string, 'quality') or nil
+
+if quality then
+  XOPT=edcb.GetPrivateProfile('MOVIE',quality,'-vcodec libvpx -b 1800k -quality realtime -cpu-used 2 -vf yadif=0:-1:1  -s 960x540 -r 30000/1001 -acodec libvorbis -ab 128k -f webm -',path)
+else
+  XOPT=edcb.GetPrivateProfile('SET','ffmpegoption','-vcodec libvpx -b 896k -quality realtime -cpu-used 1 -vf yadif=0:-1:1 -s 512x288 -r 30000/1001 -acodec libvorbis -ab 128k -f webm -',path)
+end
+XCMD=ffmpeg..' -i pipe:0 '..XOPT
 -- 変換後の拡張子
 XEXT='.webm'
 -- 転送開始前に変換しておく量(bytes)
-XPREPARE=0+edcb.GetPrivateProfile('SET','xprepare',48128,path)
+XPREPARE=tonumber(edcb.GetPrivateProfile('SET','xprepare',48128,path))
 
 fname=mg.get_var(mg.request_info.query_string,'fname') or nil
 
 -- ts以外を除外
-if fname and not string.find(fname, '.ts$') then
+if fname and not (string.find(fname, '%.ts$') or string.find(fname, '%.mp4$') or string.find(fname, '%.webm$')) then
    fname=nil
 end
 
@@ -38,7 +50,7 @@ elseif v then
 end
 
 -- 転送開始位置(99分率)(容量確保録画には未対応)
-offset=0+(mg.get_var(mg.request_info.query_string,'offset') or 0)
+offset=tonumber(mg.get_var(mg.request_info.query_string,'offset')) or 0
 
 f=nil
 if fname then

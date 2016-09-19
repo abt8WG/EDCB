@@ -5,6 +5,14 @@ if (isTouch){
 	document.write('<link href="' + path + 'css/pc.css" rel="stylesheet" type="text/css">');
 }
 
+function showSpinner(visible){
+	if (visible){
+		$('#spinner').addClass('is-visible').children().addClass('is-active');
+	}else{
+		$('#spinner').removeClass('is-visible').children().removeClass('is-active');
+	}
+}
+
 //予約一覧
 function rec(){
 	var date = new Date().getTime();
@@ -61,6 +69,24 @@ function tab(tab){
 		}
 	}
 }
+
+function delPreset(obj){
+	obj=$(obj).parent();
+	obj.addClass('hidden');
+	var remove = function(){obj.remove();};
+	var clear = setTimeout(remove, 2500);
+	var data = {
+		message: '削除しました',
+		timeout: 2000,
+		actionHandler: function(){
+			clearInterval(clear);
+			obj.removeClass('hidden');
+		},
+    	actionText: '元に戻す'
+	}
+	$('.mdl-js-snackbar').get(0).MaterialSnackbar.showSnackbar(data);
+}
+
 $(function(){
 	var notification = document.querySelector('.mdl-js-snackbar');
 
@@ -73,10 +99,10 @@ $(function(){
 		});
 		
 		//タブ移動
-		$('main').hammer().on('swiperight', function(){
+		$('.tab-swipe').hammer().on('swiperight', function(){
 			tab( $('.mdl-layout__tab.is-active').prev() );
 		});
-		$('main').hammer().on('swipeleft', function(){
+		$('.tab-swipe').hammer().on('swipeleft', function(){
 			tab( $('.mdl-layout__tab.is-active').next() );
 		});
 	}
@@ -111,7 +137,9 @@ $(function(){
 	$('.mdl-layout__tab').click(function(){
 		$('main').scrollTop(0);
 		if ($(this).hasClass('play') && !$('video').data('load')){
-			$('video').load().data('load', true);
+			loadMovie($('#video'));
+			$('#video').load().data('load', true);
+			$('#volume').get(0).MaterialSlider.change(localStorage.getItem('volume'));
 		}
 	});
 
@@ -273,6 +301,39 @@ $(function(){
 		}
 	});
 
+	//マクロ補助
+	$(window).on('load resize', function(){
+		if ($(window).width() > 700){
+			$('.shrink-phone').show();
+			$('.check-shrink-phone').prop('checked', true);
+			$('.drawer-separator.mdl-cell--hide-desktop').hide();
+		}else{
+			$('.shrink-phone').hide();
+			$('.check-shrink-phone').prop('checked', false);
+			$('.drawer-separator.mdl-cell--hide-desktop').show();
+		}
+	});
+	function macro(obj){
+		$(obj).prevAll('input').addClass('is-active');
+		$('#popup').addClass('is-visible');
+	}
+	$('.addmacro').click(function(){
+		macro(this);
+	});
+	$('.close.macro').click(function(){
+		$('input.is-active').removeClass('is-active');
+		$('#popup').removeClass('is-visible');
+	});
+	$('.macro-item').click(function(){
+		var elem = $('input.is-active').get(0);
+		var start = elem.selectionStart;
+		var end = elem.selectionEnd;
+		var def = $('input.is-active').val();
+		var val = def.substr(0, start) + $(this).data('macro') + def.substr(end, def.length);
+		$('input.is-active').val(val).removeClass('is-active').parent().addClass('is-dirty');
+		$('#popup').removeClass('is-visible');
+	});
+
 
 
 	//検索バーのアイコンクリックで検索
@@ -289,14 +350,6 @@ $(function(){
 
 
 
-	//ポップアップ閉じ
-	$('.close.mdl-badge').click(function(){
-		$('#popup').removeClass('is-visible');
-		$('#video').get(0).pause();
-	});
-
-
-
 	//録画設定
 	//プリセット読み込み
 	$('[name=presetID]').change(function(){
@@ -306,15 +359,15 @@ $(function(){
 
 		if ($(this).val() != 65535){
 			preset = $($('html').data('preset'));
-		        id=$(this).val();
+			id = $(this).val();
 		}else{
 			preset = $($('html').data('xml'));
 			if($(this).data('reseveid')){
-				id=$(this).data('reseveid');
-				tag='reserveinfo'
-				tagid='ID'
+				id = $(this).data('reseveid');
+				tag = 'reserveinfo';
+				tagid = 'ID';
 			}else{
-				id=$(this).data('autoaddid');
+				id = $(this).data('autoaddid');
 			}
 		}
 
@@ -387,69 +440,219 @@ $(function(){
 					}
 					//使用チューナー強制指定
 					$('[name=tunerID]').val(recset.children('tunerID').text());
+					
 					//プリセット
 					//録画後実行bat
 					var batFilePath = recset.children('batFilePath').text();
-					batFilePath = batFilePath != '' ? batFilePath : '－';
-					$('.preset').empty();
-					var recFolderList = recset.children('recFolderList');
-					var wrap = $('<div>').addClass('mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing');
-					var before = $('<div>').addClass('mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--middle');
-					var after = $('<div>').addClass('mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop');
-					var annotation = '<div>※プリセットによる変更のみ</div>';
 
-					$('#preset').append(annotation).append( wrap.clone().append( before.clone().text('録画後実行bat') ).append( after.clone().text(batFilePath) ) );
-					
-					$("[name=recTag]").val($(this).find('recTag').text());			//録画タグ
-					
-					if (recFolderList.text().length > 0){
-						$(recFolderList).children('recFolderInfo').each(function(i){
-							var recFolder = $(this).children('recFolder').text();
-							var writePlugIn = $(this).children('writePlugIn').text();
-							var recNamePlugIn = $(this).children('recNamePlugIn').text();
-							var recNamePlugIndll, recNamePlugInoption;
+					var div = '<div>'
+					var container = 'mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing';
+					var head = 'mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet';
+					var content = 'mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop';
+					var select = content + ' pulldown mdl-grid mdl-grid--no-spacing';
+					var textfield = content + ' mdl-textfield mdl-js-textfield';
+					var delbtn = 'delPreset mdl-button mdl-button--icon mdl-button--mini-icon mdl-js-button';
+					var middle = ' mdl-cell--middle';
+					$('.preset').remove();
+					if ($('#preset').data('lfs')){
+						if (!$('[name="batFilePath"] option[value="' + batFilePath.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&') + '"]').length > 0){
+							$('[name="batFilePath"]').append($('<option>', {value: batFilePath, text: batFilePath}));
+						}
+						$('[name="batFilePath"]').val(batFilePath);
+						$("[name=recTag]").val($(this).find('recTag').text());			//録画タグ
+						var recFolderList = recset.children('recFolderList');
+						if (recFolderList.text().length > 0){
+							$(recFolderList).children('recFolderInfo').each(function(i){
+								var recFolder = $(this).children('recFolder').text();
+								var writePlugIn = $(this).children('writePlugIn').text();
+								var recNamePlugIn = $(this).children('recNamePlugIn').text();
+								var recNamePlugInoption;
 
-							if($(this).children('recNamePlugIndll').text() != ''){
-								recNamePlugIndll = $(this).children('recNamePlugIndll').text();
-								recNamePlugInoption = $(this).children('recNamePlugInoption').text();
+								if ($('#preset').data('option')){
+									recNamePlugIn = $(this).children('recNamePlugIndll').text();
+									recNamePlugInoption = $(this).children('recNamePlugInoption').text();
 
-								var div = document.createElement('div');
-								div.className = 'recFolderList mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield';
-								
-								var input = document.createElement('input');
-								input.id = 'recName' + i;
-								input.setAttribute('type', 'text');
-								input.name = 'recName';
-								input.value = recNamePlugInoption;
-								input.className = 'mdl-textfield__input';
-								div.appendChild(input);
+									recNamePlugInoption = $(div, {class: container}).append(
+											$(div, {class: head + middle, text: 'オプション'}) ).append(
+											$(div, {class: textfield}).append(
+												$('<input>', {class: 'has-icon mdl-textfield__input', type: 'text', name: 'recName', value: recNamePlugInoption, id: 'recName'+i}) ).append(
+												$('<label>', {class: 'mdl-textfield__label', for: 'recName'+i, text: 'ファイル名PlugIn'}) ).append(
+												$('<i>', {class: 'addmacro material-icons', text: 'add', on: {click: function(){macro(this)} } }) ) );
+								}
 
-								var label = document.createElement('label');
-								var textNode = document.createTextNode('ファイル名オプション')
-								label.setAttribute('for', 'recName' + i);
-								label.className = 'mdl-textfield__label';
-								label.appendChild(textNode);
-								div.appendChild(label);
+								$('#preset .addPreset').before(
+									$(div, {class: 'preset '+container}).append(
+										$(div, {class: delbtn, on: {click: function(){delPreset(this)}} }).append(
+											$('<i>', {class: 'material-icons', text: 'delete'}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: 'フォルダ'}) ).append(
+											$(div, {class: content, text: recFolder}) ).append(
+											$('<input>', {class: 'recFolderList', type: 'hidden', name:'recFolder', value: recFolder}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head + middle, text: '出力PlugIn'}) ).append(
+											$(div, {class: select}).append(
+												$('<select>', {name: 'writePlugIn'}).append(
+													$('#Write').html()).val(writePlugIn) ) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head + middle, text: 'ファイル名PlugIn'}) ).append(
+											$(div, {class: select}).append(
+												$('<select>', {name: 'recNamePlugIn'}).append(
+													$('#RecName').html() ).val(recNamePlugIn) ) ) ).append(
+										recNamePlugInoption ) );
+							});
+						}
+						//部分受信プリセット
+						var partialRecFolder = recset.children('partialRecFolder');
+						if (partialRecFolder.text().length > 0){
+							$(partialRecFolder).children('recFolderInfo').each(function(i){
+								var recFolder = $(this).children('recFolder').text();
+								var writePlugIn = $(this).children('writePlugIn').text();
+								var recNamePlugIn = $(this).children('recNamePlugIn').text();
+								var recNamePlugInoption;
 
-								componentHandler.upgradeElement(div);
-								
-								recNamePlugInoption = wrap.clone();
-								before.clone().text('オプション').appendTo(recNamePlugInoption).after(div);
-							}else{
-								recNamePlugIndll = recNamePlugIn != '' ? recNamePlugIn : '－';
-								recNamePlugInoption = '';
-							}
-							$('#preset').append('<input type=hidden name="recFolder" value="' + recFolder + '"><input type=hidden name="writePlugIn" value="' + writePlugIn + '"><input type=hidden name="recNamePlugIn" value="' + recNamePlugIndll + '">')
-							  .append( wrap.clone().append( before.clone().text('フォルダ') ).append( after.clone().text(recFolder) ) )
-							  .append( wrap.clone().append( before.clone().text('出力PlugIn') ).append( after.clone().text(writePlugIn) ) )
-							  .append( wrap.clone().append( before.clone().text('ファイル名PlugIn') ).append( after.clone().text(recNamePlugIndll) ) )
-							  .append( recNamePlugInoption ); 
-						});
+								if ($('#preset').data('option')){
+									recNamePlugIn = $(this).children('recNamePlugIndll').text();
+									recNamePlugInoption = $(this).children('recNamePlugInoption').text();
+
+									recNamePlugInoption = $(div, {class: container}).append(
+											$(div, {class: head + middle, text: 'オプション'}) ).append(
+											$(div, {class: textfield}).append(
+												$('<input>', {class: 'has-icon mdl-textfield__input', type: 'text', name: 'partialrecName', value: recNamePlugInoption, id: 'partialrecName'+i}) ).append(
+												$('<label>', {class: 'mdl-textfield__label', for: 'partialrecName'+i, text: 'ファイル名PlugIn'}) ).append(
+												$('<i>', {class: 'addmacro material-icons', text: 'add', on: {click: function(){macro(this)} } }) ) );
+								}
+
+								$('#partialpreset .addPreset').before(
+									$(div, {class: 'preset '+container}).append(
+										$(div, {class: delbtn, on: {click: function(){delPreset(this)}} }).append(
+											$('<i>', {class: 'material-icons', text: 'delete'}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: 'フォルダ'}) ).append(
+											$(div, {class: content, text: recFolder}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head + middle, text: '出力PlugIn'}) ).append(
+											$(div, {class: select}).append(
+												$('<select>', {name: 'partialwritePlugIn'}).append(
+													$('#Write').html() ).val(writePlugIn) ) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head + middle, text: 'ファイル名PlugIn'}) ).append(
+											$(div, {class: select}).append(
+												$('<select>', {name: 'partialrecNamePlugIn'}).append(
+													$('#RecName').html() ).val(recNamePlugIn) ) ) ).append(
+										recNamePlugInoption ) );
+							});
+						}
 					}else{
-						$('#preset').append( wrap.clone().append( before.clone().text('フォルダ') ).append( after.clone().text('－') ) )
-							  .append( wrap.clone().append( before.clone().text('出力PlugIn') ).append( after.clone().text('－') ) )
-							  .append( wrap.clone().append( before.clone().text('ファイル名PlugIn') ).append( after.clone().text('－') ) );
+						var recFolderList = recset.children('recFolderList');
+
+						$('#preset').append(
+							$(div, {class: 'preset '+container}).append(
+								$(div, {class: container}).append(
+									$(div, {class: head, text: '録画後実行bat'}) ).append(
+									$(div, {class: content, text: (batFilePath != '' ? batFilePath : '－')}) ).append(
+									$('<input>', {type: 'hidden', name: 'batFilePath', value: batFilePath}) ) ) );
+
+						if (recFolderList.text().length > 0){
+							$(recFolderList).children('recFolderInfo').each(function(i){
+								var recFolder = $(this).children('recFolder').text();
+								var writePlugIn = $(this).children('writePlugIn').text();
+								var recNamePlugIn = $(this).children('recNamePlugIn').text();
+								var recNamePlugInoption;
+
+								if ($('#preset').data('option') && recNamePlugIn != ''){
+									recNamePlugIn = $(this).children('recNamePlugIndll').text();
+									recNamePlugInoption = $(this).children('recNamePlugInoption').text();
+
+									recNamePlugInoption = $(div, {class: container}).append(
+											$(div, {class: head + middle, text: 'オプション'}) ).append(
+											$(div, {class: textfield}).append(
+												$('<input>', {class: 'mdl-textfield__input', type: 'text', name: 'recName', value: recNamePlugInoption, id: 'recName'+i}) ).append(
+												$('<label>', {class: 'mdl-textfield__label', for: 'recName'+i, text: 'ファイル名PlugIn'}) ).append(
+												$('<i>', {class: 'addmacro material-icons', text: 'add', on: {click: function(){macro(this)} } }) ) );
+								}
+
+								$('#preset').append(
+									$(div, {class: 'preset '+container}).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: 'フォルダ'}) ).append(
+											$(div, {class: content, text: recFolder}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: '出力PlugIn'}) ).append(
+											$(div, {class: content, text: writePlugIn}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: 'ファイル名PlugIn'}) ).append(
+											$(div, {class: content, text: (recNamePlugIn != '' ? recNamePlugIn : '－')}) ) ).append(
+										recNamePlugInoption ).append(
+										$('<input>', {type: 'hidden', name:'recFolder', value: recFolder}) ).append(
+										$('<input>', {type: 'hidden', name:'writePlugIn', value: writePlugIn}) ).append(
+										$('<input>', {type: 'hidden', name:'recNamePlugIn', value: recNamePlugIn}) ) );
+							});
+						}else{
+							$('#preset').append(
+								$(div, {class: 'preset '+container}).append(
+									$(div, {class: container}).append(
+										$(div, {class: head, text: 'フォルダ'}) ).append(
+										$(div, {class: content, text: '－'}) ) ).append(
+									$(div, {class: container}).append(
+										$(div, {class: head, text: '出力PlugIn'}) ).append(
+										$(div, {class: content, text: '－'}) ) ).append(
+									$(div, {class: container}).append(
+										$(div, {class: head, text: 'ファイル名PlugIn'}) ).append(
+										$(div, {class: content, text: '－'}) ) ) );
+						}
+
+						//部分受信プリセット
+						var partialRecFolder = recset.children('partialRecFolder');
+						if (partialRecFolder.text().length > 0){
+							$(partialRecFolder).children('recFolderInfo').each(function(i){
+								var recFolder = $(this).children('recFolder').text();
+								var writePlugIn = $(this).children('writePlugIn').text();
+								var recNamePlugIn = $(this).children('recNamePlugIn').text();
+								var recNamePlugInoption;
+
+								if ($('#preset').data('option') && recNamePlugIn != ''){
+									recNamePlugIn = $(this).children('recNamePlugIndll').text();
+									recNamePlugInoption = $(this).children('recNamePlugInoption').text();
+
+									recNamePlugInoption = $(div, {class: container}).append(
+											$(div, {class: head + middle, text: 'オプション'}) ).append(
+											$(div, {class: textfield}).append(
+												$('<input>', {class: 'mdl-textfield__input', type: 'text', name: 'partialrecName', value: recNamePlugInoption, id: 'recName'+i}) ).append(
+												$('<label>', {class: 'mdl-textfield__label', for: 'recName'+i, text: 'ファイル名PlugIn'}) ).append(
+												$('<i>', {class: 'addmacro material-icons', text: 'add', on: {click: function(){macro(this)} } }) ) );
+								}
+
+								$('#partialpreset').append(
+									$(div, {class: 'preset '+container}).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: 'フォルダ'}) ).append(
+											$(div, {class: content, text: recFolder}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: '出力PlugIn'}) ).append(
+											$(div, {class: content, text: writePlugIn}) ) ).append(
+										$(div, {class: container}).append(
+											$(div, {class: head, text: 'ファイル名PlugIn'}) ).append(
+											$(div, {class: content, text: (recNamePlugIn != '' ? recNamePlugIn : '－')}) ) ).append(
+										recNamePlugInoption ).append(
+										$('<input>', {type: 'hidden', name:'partialrecFolder', value: recFolder}) ).append(
+										$('<input>', {type: 'hidden', name:'partialwritePlugIn', value: writePlugIn}) ).append(
+										$('<input>', {type: 'hidden', name:'partialrecNamePlugIn', value: recNamePlugIn}) ) );
+							});
+						}else{
+							$('#partialpreset').append(
+								$(div, {class: 'preset '+container}).append(
+									$(div, {class: container}).append(
+										$(div, {class: head, text: 'フォルダ'}) ).append(
+										$(div, {class: content, text: '－'}) ) ).append(
+									$(div, {class: container}).append(
+										$(div, {class: head, text: '出力PlugIn'}) ).append(
+										$(div, {class: content, text: '－'}) ) ).append(
+									$(div, {class: container}).append(
+										$(div, {class: head, text: 'ファイル名PlugIn'}) ).append(
+										$(div, {class: content, text: '－'}) ) ) );
+						}
 					}
+					componentHandler.upgradeDom();
 					//部分受信サービス
 					if (recset.children('partialRecFlag').text() == 1){
 						$('[name=partialRecFlag]').prop('checked', true).parent().addClass('is-checked');
@@ -457,57 +660,6 @@ $(function(){
 					}else{
 						$('[name=partialRecFlag]').prop('checked', false).parent().removeClass('is-checked');
 						$('#partialpreset').hide();
-					}
-					//部分受信プリセット
-					$('#partialpreset').append(annotation);
-					var partialRecFolder = recset.children('partialRecFolder');
-					if (partialRecFolder.text().length > 0){
-						$(partialRecFolder).children('recFolderInfo').each(function(i){
-							var recFolder = $(this).children('recFolder').text();
-							var writePlugIn = $(this).children('writePlugIn').text();
-							var recNamePlugIn = $(this).children('recNamePlugIn').text();
-							var recNamePlugIndll, recNamePlugInoption;
-
-							if($(this).children('recNamePlugIndll').length > 0){
-								recNamePlugIndll = $(this).children('recNamePlugIndll').text();
-								recNamePlugInoption = $(this).children('recNamePlugInoption').text();
-
-								var div = document.createElement('div');
-								div.className = 'recFolderList mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop mdl-textfield mdl-js-textfield';
-								
-								var input = document.createElement('input');
-								input.id = 'partialrecName' + i;
-								input.setAttribute('type', 'text');
-								input.name = 'partialrecName';
-								input.value = recNamePlugInoption;
-								input.className = 'mdl-textfield__input';
-								div.appendChild(input);
-
-								var label = document.createElement('label');
-								var textNode = document.createTextNode('ファイル名オプション')
-								label.setAttribute('for', 'partialrecName' + i);
-								label.className = 'mdl-textfield__label';
-								label.appendChild(textNode);
-								div.appendChild(label);
-
-								componentHandler.upgradeElement(div);
-								
-								recNamePlugInoption = wrap.clone();
-								before.clone().text('オプション').appendTo(recNamePlugInoption).after(div);
-							}else{
-								recNamePlugIndll = recNamePlugIn;
-								recNamePlugInoption = '';
-							}
-							$('#partialpreset').append('<input type=hidden name="partialrecFolder" value="' + recFolder + '"><input type=hidden name="partialwritePlugIn" value="' + writePlugIn + '"><input type=hidden name="partialrecNamePlugIn" value="' + recNamePlugIndll + '">')
-							  .append( wrap.clone().append( before.clone().text('フォルダ') ).append( after.clone().text(recFolder) ) )
-							  .append( wrap.clone().append( before.clone().text('出力PlugIn') ).append( after.clone().text(writePlugIn) ) )
-							  .append( wrap.clone().append( before.clone().text('ファイル名PlugIn') ).append( after.clone().text(recNamePlugIndll) ) )
-							  .append( recNamePlugInoption ); 
-						});
-					}else{
-						$('#partialpreset').append( wrap.clone().append( before.clone().text('フォルダ') ).append( after.clone().text('－') ) )
-							  .append( wrap.clone().append( before.clone().text('出力PlugIn') ).append( after.clone().text('－') ) )
-							  .append( wrap.clone().append( before.clone().text('ファイル名PlugIn') ).append( after.clone().text('－') ) );
 					}
 					var name;
 					if($(this).children('name').text().length > 0){
@@ -549,7 +701,7 @@ $(function(){
 
 	//予約処理
 	function reserve(obj){
-		$('#spinner').addClass('is-visible').children().addClass('is-active');
+		showSpinner(true);
 		var url;
 		var data = obj.parents('td').data();
 
@@ -630,7 +782,7 @@ $(function(){
 					}
 					notification.MaterialSnackbar.showSnackbar({message: xml.find('err').text()});
 				}
-				$('#spinner').removeClass('is-visible').children().removeClass('is-active');
+				showSpinner(false);
 			}
 		});
 	}
@@ -652,12 +804,12 @@ $(function(){
 
 	//通信エラー
 	$(document).ajaxError(function(e,xhr, textStatus, errorThrown){
-		notification.MaterialSnackbar.showSnackbar({message: xhr.status+" Error : "+xhr.statusText});
+		notification.MaterialSnackbar.showSnackbar({message: xhr.status + 'Error : ' + xhr.statusText});
 	});
 
 	//サブミット
 	$('.submit').click(function(){
-		$('#spinner').addClass('is-visible').children().addClass('is-active');
+		showSpinner(true);
 		var form = $( $(this).data('form') );
 		$.ajax({
 			url: form.attr('action'),
@@ -677,11 +829,64 @@ $(function(){
 						setTimeout('location.reload()',2500);
 					}
 				}else{
-					notification.MaterialSnackbar.showSnackbar({message: xml.find('err').text()});
+					notification.MaterialSnackbar.showSnackbar({message: 'Error : ' + xml.find('err').text()});
 				}
-				$('#spinner').removeClass('is-visible').children().removeClass('is-active');
+				showSpinner(false);
 			}
 		});
 	});
 	
+	$('.delPreset').click(function(){
+		delPreset(this);
+	});
+	$('.addPreset').click(function(){
+		var div = '<div>'
+		var container = 'mdl-cell mdl-cell--12-col mdl-grid mdl-grid--no-spacing';
+		var head = 'mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet';
+		var content = 'mdl-cell mdl-cell--6-col mdl-cell--9-col-desktop';
+		var select = content + ' pulldown mdl-grid mdl-grid--no-spacing';
+		var textfield = content + ' mdl-textfield mdl-js-textfield';
+		var delbtn = 'delPreset mdl-button mdl-button--icon mdl-button--mini-icon mdl-js-button';
+		var middle = ' mdl-cell--middle';
+		var recNamePlugInoption;
+		
+		var partial = '';
+		if ($(this).hasClass('partial')){
+			partial = 'partial';
+		}
+
+		if ($('#preset').data('option')){
+			recNamePlugIn = $(this).children('recNamePlugIndll').text();
+			recNamePlugInoption = $(this).children('recNamePlugInoption').text();
+
+			recNamePlugInoption = $(div, {class: container}).append(
+				$(div, {class: head + middle, text: 'オプション'}) ).append(
+				$(div, {class: textfield}).append(
+					$('<input>', {class: 'has-icon mdl-textfield__input', type: 'text', name: partial+'recName', value: recNamePlugInoption, id: 'recName'}) ).append(
+					$('<label>', {class: 'mdl-textfield__label', for: 'recName', text: 'ファイル名PlugIn'}) ).append(
+					$('<i>', {class: 'addmacro material-icons', text: 'add', on: {click: function(){macro(this)} } }) ) );
+		}
+
+		$(this).before(
+			$(div, {class: 'preset '+container}).append(
+				$(div, {class: delbtn, on: {click: function(){delPreset(this)}} }).append(
+					$('<i>', {class: 'material-icons', text: 'delete'}) ) ).append(
+				$(div, {class: container}).append(
+					$(div, {class: head, text: 'フォルダ'}) ).append(
+					$(div, {class: content, text: '!Default'}) ).append(
+					$('<input>', {class: 'recFolderList', type: 'hidden', name: partial+'recFolder', value: ''}) ) ).append(
+				$(div, {class: container}).append(
+					$(div, {class: head + middle, text: '出力PlugIn'}) ).append(
+					$(div, {class: select}).append(
+						$('<select>', {name: partial+'writePlugIn'}).append(
+							$('#Write').html() ).val('Write_Default.dll') ) ) ).append(
+				$(div, {class: container}).append(
+					$(div, {class: head + middle, text: 'ファイル名PlugIn'}) ).append(
+					$(div, {class: select}).append(
+						$('<select>', {name: partial+'recNamePlugIn'}).append(
+							$('#RecName').html() ) ) ) ).append(
+				recNamePlugInoption ) );
+
+		componentHandler.upgradeDom();
+	});
 });
