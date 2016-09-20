@@ -6,10 +6,11 @@ LibraryPath=tonumber(edcb.GetPrivateProfile('SET','LibraryPath',0,path))~=0 and 
 
 ct={'<?xml version="1.0" encoding="UTF-8" ?'..'><entry>'}
 
-if status then
+--if status then
   id=0
   function attrdir(path)
     local filelist={}
+if status then
     for file in lfs.dir(path) do
       if file ~= '.' and file ~= '..' then
         f=path..'\\'..file
@@ -38,6 +39,40 @@ if status then
         end
       end
     end
+else
+    local fp=io.popen('dir "'..path:gsub('"','')..'" /b /ad & echo *%errorlevel%& dir "'..path:gsub('"','')..'" /b /a-d & echo *%errorlevel%')
+    local dirs,files=fp:read('*a'):match('^(.*)%*0\n(.*)*0\n$')
+    fp:close()
+    for file in (dirs or ''):gmatch('([^\n]+)\n') do
+      if file ~= '.' and file ~= '..' then
+        f=path..'\\'..file
+        file=edcb.Convert('utf-8', 'cp932', file)
+        if file ~= 'chapters' then
+          id=id+1
+          table.insert(ct, '<dir><name>'..file:gsub('&', '&amp;')..'</name><id>'..id..'</id>')
+          attrdir(f)
+          table.insert(ct, '</dir>')
+        end
+      end
+    end
+    for file in (files or ''):gmatch('([^\n]+)\n') do
+      if file ~= '.' and file ~= '..' then
+        f=path..'\\'..file
+        file=edcb.Convert('utf-8', 'cp932', file)
+        if string.find(file, '%.ts$') or string.find(file, '%.mp4$') or string.find(file, '%.webm$') then
+          thumbs=io.open(edcb.Convert('cp932', 'utf-8', mg.document_root..'\\thumbs\\'..file:gsub('.[^.]*$', '')..'.jpg'), 'rb')
+          if thumbs then
+            thumbs:close()
+          end
+          table.insert(filelist, '<file><name>'..file:gsub('&', '&amp;')..'</name>'
+            ..'<path>'..mg.url_encode(edcb.Convert('utf-8', 'cp932', f)):gsub('%%2f', '/')..'</path>'
+            ..(Public and  '<public>'..mg.url_encode(Public..'/'..file):gsub('%%2f', '/')..'</public>' or '')
+            ..'<thumbs>'..(thumbs and mg.url_encode(file:gsub('.[^.]*$', '')..'.jpg') or 0)..'</thumbs>'
+            ..'</file>')
+        end
+      end
+    end
+end
     table.insert(ct, table.concat(filelist))
   end
 
@@ -55,9 +90,9 @@ if status then
   end
 
   table.insert(ct, '</dir></entry>')
-else
-  table.insert(ct, '<error>"lfs.dll"がありません</error></entry>')
-end
+--else
+--  table.insert(ct, '<error>"lfs.dll"がありません</error></entry>')
+--end
 
 cl=0
 for i,v in ipairs(ct) do cl=cl+#v end
