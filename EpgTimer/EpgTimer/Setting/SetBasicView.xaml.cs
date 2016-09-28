@@ -117,9 +117,9 @@ namespace EpgTimer.Setting
                 // 保存できない項目は IsEnabled = false にする
                 ViewUtil.ChangeChildren(tabItem3, IniFileHandler.CanUpdateInifile);
 
-                comboBox_HH.DataContext = CommonManager.Instance.HourDictionary.Values;
+                comboBox_HH.DataContext = System.Linq.Enumerable.Range(0, 24);
                 comboBox_HH.SelectedIndex = 0;
-                comboBox_MM.DataContext = CommonManager.Instance.MinDictionary.Values;
+                comboBox_MM.DataContext = System.Linq.Enumerable.Range(0, 60);
                 comboBox_MM.SelectedIndex = 0;
 
                 serviceList = new List<ServiceViewItem>();
@@ -819,8 +819,8 @@ namespace EpgTimer.Setting
             {
                 if (comboBox_HH.SelectedItem != null && comboBox_MM.SelectedItem != null)
                 {
-                    UInt16 hh = (UInt16)comboBox_HH.SelectedItem;
-                    UInt16 mm = (UInt16)comboBox_MM.SelectedItem;
+                    int hh = comboBox_HH.SelectedIndex;
+                    int mm = comboBox_MM.SelectedIndex;
                     String time = hh.ToString("D2") + ":" + mm.ToString("D2");
                     int wday = comboBox_wday.SelectedIndex;
                     if (1 <= wday && wday <= 7)

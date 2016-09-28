@@ -469,7 +469,7 @@ namespace EpgTimer
                 r.Read(ref RecFileNameList);
                 r.Read(ref UnusedParam1);
             }
-            if (!r.EOF && version >= 6)
+            if (version >= 6 && r.RemainSize() > 0)
             {
                 r.Read(ref AutoAddInfo);
             }
@@ -695,7 +695,7 @@ namespace EpgTimer
             {
                 r.Read(ref ProtectFlag);
             }
-            if (!r.EOF && version >= 6)
+            if (version >= 6 && r.RemainSize() > 2)
             {
                 r.Read(ref FileExist);
                 r.Read(ref AutoAddInfoFlag);
@@ -1469,11 +1469,24 @@ namespace EpgTimer
                 r.Read(ref chkRecEnd);
                 r.Read(ref chkRecDay);
             }
-            if (!r.EOF && version >= 5)
+            if (version >= 5 && r.RemainSize() >= 5)
             {
                 r.Read(ref chkRecNoService);
                 r.Read(ref chkDurationMin);
                 r.Read(ref chkDurationMax);
+
+#if false // xtne6f版
+                if (chkRecNoService != 0)
+                {
+                    chkRecDay = (ushort)(chkRecDay % 10000 + 40000);
+                }
+                if (chkDurationMin > 0 || chkDurationMax > 0)
+                {
+                    andKey = andKey.Insert(
+                        System.Text.RegularExpressions.Regex.Match(andKey, @"^(?:\^!\{999\})?(?:C!\{999\})?").Length,
+                        "D!{" + ((10000 + Math.Min((int)chkDurationMin, 9999)) * 10000 + Math.Min((int)chkDurationMax, 9999)) + "}");
+                }
+#endif
             }
             r.End();
         }
@@ -1532,7 +1545,7 @@ namespace EpgTimer
             {
                 r.Read(ref addCount);
             }
-            if (!r.EOF && version >= 6)
+            if (version >= 6 && r.RemainSize() > 0)
             {
                 r.Read(ref reserveList);
                 r.Read(ref recFileList);

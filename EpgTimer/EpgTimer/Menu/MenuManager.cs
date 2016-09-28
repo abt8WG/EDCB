@@ -74,8 +74,8 @@ namespace EpgTimer
             var cm_ChgPriorityMenu = new CtxmItemData("優先度", EpgCmdsEx.ChgPriorityMenu);
             for (int i = 1; i <= 5; i++)
             {
-                cm_ChgPriorityMenu.Items.Add(new CtxmItemData(
-                    CommonManager.Instance.PriorityDictionary[(byte)i].DisplayName.Insert(1, string.Format(" (_{0})", i)), EpgCmds.ChgPriority, i));
+				cm_ChgPriorityMenu.Items.Add(new CtxmItemData(
+					CommonManager.Instance.PriorityDictionary[i - 1].Insert(1, string.Format(" (_{0})", i)), EpgCmds.ChgPriority, i));
             }
 
             ////イベントリレー変更
@@ -83,7 +83,7 @@ namespace EpgTimer
             for (int i = 0; i <= 1; i++)
             {
                 cm_ChgRelayMenu.Items.Add(new CtxmItemData(string.Format("{0} (_{1})"
-                    , CommonManager.Instance.YesNoDictionary[(byte)i].DisplayName, i), EpgCmds.ChgRelay, i));
+                    , CommonManager.Instance.YesNoDictionary[(byte)i], i), EpgCmds.ChgRelay, i));
             }
 
             ////ぴったり変更
@@ -91,7 +91,7 @@ namespace EpgTimer
             for (int i = 0; i <= 1; i++)
             {
                 cm_ChgPittariMenu.Items.Add(new CtxmItemData(string.Format("{0} (_{1})"
-                    , CommonManager.Instance.YesNoDictionary[(byte)i].DisplayName, i), EpgCmds.ChgPittari, i));
+                    , CommonManager.Instance.YesNoDictionary[(byte)i], i), EpgCmds.ChgPittari, i));
             }
 
             ////チューナー変更、実行時、セパレータ以降に一覧を展開する。

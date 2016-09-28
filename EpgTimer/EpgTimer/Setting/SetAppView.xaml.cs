@@ -223,6 +223,10 @@ namespace EpgTimer.Setting
 
                 //デバッグ出力をファイルに保存する
                 checkBox_srvSaveDebugLog.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "SaveDebugLog", 0, SettingPath.TimerSrvIniPath) == 1;
+
+                //EpgTimerSrvの応答をtkntrec版互換にする
+                checkBox_srvCompatTkntrec.Tag = IniFileHandler.GetPrivateProfileInt("SET", "CompatFlags", 0, SettingPath.TimerSrvIniPath);
+                checkBox_srvCompatTkntrec.IsChecked = (int)checkBox_srvCompatTkntrec.Tag % 4096 == 4095;
             }
 
             // 検索条件のデフォルト値 - button_searchDef
@@ -452,6 +456,15 @@ namespace EpgTimer.Setting
 
             //デバッグ出力をファイルに保存する
             SaveSettingIfIsEnabled(checkBox_srvSaveDebugLog, "SaveDebugLog");
+
+            //EpgTimerSrvの応答をtkntrec版互換にする
+            if (checkBox_srvCompatTkntrec.IsEnabled)
+            {
+                int compatFlags = (int)checkBox_srvCompatTkntrec.Tag;
+                IniFileHandler.WritePrivateProfileString("SET", "CompatFlags",
+                    "" + (checkBox_srvCompatTkntrec.IsChecked == false ? (compatFlags % 4096 == 4095 ? 0 : compatFlags) : (compatFlags % 4096 == 4095 ? compatFlags : 4095)),
+                    SettingPath.TimerSrvIniPath);
+            }
 
             Settings.Instance.CloseMin = (bool)checkBox_closeMin.IsChecked;
             Settings.Instance.WakeMin = (bool)checkBox_minWake.IsChecked;

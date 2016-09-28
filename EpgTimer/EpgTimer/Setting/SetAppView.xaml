@@ -274,6 +274,9 @@
                                 <CheckBox Name="checkBox_srvSaveDebugLog" Margin="0,3,0,0">
                                     <TextBlock TextWrapping="Wrap" Text="デバッグ出力をファイルに保存する" />
                                 </CheckBox>
+                                <CheckBox Name="checkBox_srvCompatTkntrec" Margin="0,3,0,0" IsEnabled="false">
+                                    <TextBlock TextWrapping="Wrap" Text="EpgTimerSrvの応答をtkntrec版互換にする" />
+                                </CheckBox>
                                 </StackPanel>
                             </StackPanel>
                         </GroupBox>

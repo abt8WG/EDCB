@@ -41,6 +41,10 @@ namespace EpgTimer.Setting
                 textBox_minHeight.Text = Settings.Instance.MinHeight.ToString();
                 textBox_dragScroll.Text = Settings.Instance.DragScroll.ToString();
                 textBox_minimumHeight.Text = Settings.Instance.MinimumHeight.ToString();
+                checkBox_descToolTip.IsChecked = Settings.Instance.EpgToolTip;
+                checkBox_title_indent.IsChecked = Settings.Instance.EpgTitleIndent;
+                checkBox_toolTip_noView_only.IsChecked = Settings.Instance.EpgToolTipNoViewOnly;
+                textBox_toolTipWait.Text = Settings.Instance.EpgToolTipViewWait.ToString();
                 checkBox_epg_popup.IsChecked = Settings.Instance.EpgPopup;
                 epgPopupRadioBtns = new RadioBtnSelect(radioButton_epg_popup_onOver, radioButton_epg_popup_onClick, radioButton_epg_popup_resOnly);
                 epgPopupRadioBtns.Value = Settings.Instance.EpgPopupMode;
@@ -281,6 +285,9 @@ namespace EpgTimer.Setting
                 Settings.Instance.MinimumHeight = MenuUtil.MyToNumerical(textBox_minimumHeight, Convert.ToDouble, double.MaxValue, 0, 0);
                 Settings.Instance.DragScroll = MenuUtil.MyToNumerical(textBox_dragScroll, Convert.ToDouble, 1.5);
                 Settings.Instance.EpgTitleIndent = (checkBox_title_indent.IsChecked == true);
+                Settings.Instance.EpgToolTip = (checkBox_descToolTip.IsChecked == true);
+                Settings.Instance.EpgToolTipNoViewOnly = (checkBox_toolTip_noView_only.IsChecked == true);
+                Settings.Instance.EpgToolTipViewWait = Convert.ToInt32(textBox_toolTipWait.Text);
                 Settings.Instance.EpgPopup = (checkBox_epg_popup.IsEnabled == true) && (checkBox_epg_popup.IsChecked == true);
                 Settings.Instance.EpgPopupMode = epgPopupRadioBtns.Value;
                 Settings.Instance.EpgGradation = (checkBox_gradation.IsChecked == true);

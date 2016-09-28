@@ -621,7 +621,7 @@ namespace EpgTimer
                         value = recSettings.All(info => info.PittariFlag == recSettings[0].PittariFlag) ? recSettings[0].PittariFlag : byte.MaxValue;
                         format = "ぴったり（？）録画 : {0}";
                     }
-                    subMenu.Header = string.Format(format, value == byte.MaxValue ? "*" : CommonManager.Instance.YesNoDictionary[value].DisplayName);
+                    subMenu.Header = string.Format(format, value == byte.MaxValue ? "*" : CommonManager.Instance.YesNoDictionary[value]);
                     SetCheckmarkSubMenus(subMenu, value);
                     subMenu.IsEnabled = listr.Any(info => info.IsManual == false);
                     subMenu.ToolTip = (subMenu.IsEnabled != true ? "プログラム予約は対象外" : null);

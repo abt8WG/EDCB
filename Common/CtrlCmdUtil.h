@@ -63,10 +63,9 @@ inline DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const SYSTEMTIM
 inline BOOL ReadVALUE( WORD ver, SYSTEMTIME* val, const BYTE* buff, DWORD buffSize, DWORD* readSize ){ CCUTIL_BASETYPE_READ_; }
 
 DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const FILE_DATA& val );
-BOOL ReadVALUE( WORD ver, FILE_DATA* val, const BYTE* buff, DWORD buffSize, DWORD* readSize );
-
+//BOOL ReadVALUE( WORD ver, FILE_DATA* val, const BYTE* buff, DWORD buffSize, DWORD* readSize );
 inline DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const vector<FILE_DATA>& val ){ CCUTIL_VECTOR_WRITE_; }
-inline BOOL ReadVALUE( WORD ver, vector<FILE_DATA>* val, const BYTE* buff, DWORD buffSize, DWORD* readSize ){ CCUTIL_VECTOR_READ_; }
+//inline BOOL ReadVALUE( WORD ver, vector<FILE_DATA>* val, const BYTE* buff, DWORD buffSize, DWORD* readSize ){ CCUTIL_VECTOR_READ_; }
 
 DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const REC_SETTING_DATA& val );
 BOOL ReadVALUE( WORD ver, REC_SETTING_DATA* val, const BYTE* buff, DWORD buffSize, DWORD* readSize );

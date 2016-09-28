@@ -270,13 +270,13 @@ bool CReserveManager::GetReserveData(DWORD id, RESERVE_DATA* reserveData, bool g
 	return false;
 }
 
-bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus, bool noReportNotify)
+bool CReserveManager::AddReserveData(const vector<RESERVE_DATA>& reserveList, bool setReserveStatus, bool noReportNotify)
 {
 	CBlockLock lock(&this->managerLock);
-	return AddReserveData2(reserveList, setComment, setReserveStatus, noReportNotify).size() > 0;
+	return AddReserveData2(reserveList, setReserveStatus, noReportNotify).size() > 0;
 }
 
-vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setComment, bool setReserveStatus, bool noReportNotify)
+vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERVE_DATA>& reserveList, bool setReserveStatus, bool noReportNotify)
 {
 	// nekopanda: EPG自動予約登録と、登録された予約、および録画済みファイルとの関連付けを実装
 	vector<const RESERVE_DATA*> addList;
@@ -288,9 +288,6 @@ vector<const RESERVE_DATA*> CReserveManager::AddReserveData2(const vector<RESERV
 		RESERVE_DATA r = reserveList[i];
 		//すでに終了していないか
 		if( now < ConvertI64Time(r.startTime) + r.durationSecond * I64_1SEC ){
-			if( setComment == false ){
-				r.comment.clear();
-			}
 			r.presentFlag = FALSE;
 			r.overlapMode = RESERVE_EXECUTE;
 			if( setReserveStatus == false ){
@@ -336,7 +333,6 @@ bool CReserveManager::ChgReserveData(const vector<RESERVE_DATA>& reserveList, bo
 		map<DWORD, RESERVE_DATA>::const_iterator itr = this->reserveText.GetMap().find(r.reserveID);
 		if( itr != this->reserveText.GetMap().end() ){
 			//変更できないフィールドを上書き
-			//r.comment = itr->second.comment;プログラム予約に変更する場合があるので許可(tknerec版)
 			r.presentFlag = itr->second.presentFlag;
 			r.startTimeEpg = itr->second.startTimeEpg;
 			if( setReserveStatus == false ){
@@ -1215,7 +1211,7 @@ void CReserveManager::CheckTuijyuTuner()
 			ChgReserveData(chgList, true);
 		}
 		if( relayAddList.empty() == false ){
-			AddReserveData(relayAddList, false, true);
+			AddReserveData(relayAddList, true);
 		}
 	}
 }
@@ -1958,12 +1954,19 @@ bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPG
 				infoEventName = (LPCWSTR)rpl == NULL ? L"" : (LPCWSTR)rpl;
 			}
 			if( infoEventName.empty() == false && info.StartTimeFlag != 0 ){
+				WORD chkDay = key.chkRecDay;
+				int chkDayActual = chkDay >= 20000 ? chkDay % 10000 : chkDay;
 				map<DWORD, PARSE_REC_INFO2_ITEM>::const_iterator itr;
 				for( itr = this->recInfo2Text.GetMap().begin(); itr != this->recInfo2Text.GetMap().end(); itr++ ){
-					if( ( key.chkRecNoService == 1 || itr->second.originalNetworkID == info.original_network_id &&
-						itr->second.transportStreamID == info.transport_stream_id &&
-						itr->second.serviceID == info.service_id ) &&
-						ConvertI64Time(itr->second.startTime) + key.chkRecDay*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
+					//if( ( key.chkRecNoService == 1 || itr->second.originalNetworkID == info.original_network_id &&
+					//	itr->second.transportStreamID == info.transport_stream_id &&
+					//	itr->second.serviceID == info.service_id ) &&
+					//	ConvertI64Time(itr->second.startTime) + key.chkRecDay*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
+					/* xtne6f */
+					if( (chkDay >= 40000 || itr->second.originalNetworkID == info.original_network_id) &&
+					    (chkDay >= 30000 || itr->second.transportStreamID == info.transport_stream_id) &&
+					    (chkDay >= 20000 || itr->second.serviceID == info.service_id) &&
+					    ConvertI64Time(itr->second.startTime) + chkDayActual*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
 						wstring eventName = itr->second.eventName;
 						if( this->recInfo2RegExp.empty() == false ){
 							_bstr_t rpl = regExp->Replace(_bstr_t(eventName.c_str()), _bstr_t());
@@ -2187,7 +2190,7 @@ bool CReserveManager::AutoAddReserveEPG(
 		}
 	}
 	if( setList.empty() == false ){
-		auto addTmp = AddReserveData2(setList, true, false, noReportNotify);
+		auto addTmp = AddReserveData2(setList, false, noReportNotify);
 		if (addTmp.size() > 0) {
 			modified = true;
 			addList.insert(addList.end(), addTmp.begin(), addTmp.end());

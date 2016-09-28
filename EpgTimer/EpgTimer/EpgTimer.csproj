@@ -156,7 +156,6 @@
       <DependentUpon>ColorSetWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Common\CopyObj.cs" />
-    <Compile Include="Common\EAAFileClass.cs" />
     <Compile Include="Common\IEPGFileClass.cs" />
     <Compile Include="Menu\MenuUtil.cs" />
     <Compile Include="Common\ViewUtil.cs" />
@@ -231,9 +230,6 @@
     <Compile Include="Common\ChSet5Class.cs" />
     <Compile Include="Common\ColorDefClass.cs" />
     <Compile Include="DefineClass\IEPGStationInfo.cs" />
-    <Compile Include="DefineClass\PriorityInfo.cs" />
-    <Compile Include="DefineClass\RecModeInfo.cs" />
-    <Compile Include="DefineClass\YesNoInfo.cs" />
     <Compile Include="EpgDataViewItem.xaml.cs">
       <DependentUpon>EpgDataViewItem.xaml</DependentUpon>
     </Compile>
@@ -469,9 +465,7 @@
     <Compile Include="Common\DBManagerClass.cs" />
     <Compile Include="Common\DefineEnum.cs" />
     <Compile Include="Common\SettingClass.cs" />
-    <Compile Include="DefineClass\ComponentKindInfo.cs" />
     <Compile Include="DefineClass\ContentKindInfo.cs" />
-    <Compile Include="DefineClass\DayOfWeekInfo.cs" />
     <Compile Include="DefineClass\CustomEpgTabInfo.cs" />
     <Compile Include="EpgView\DateView.xaml.cs">
       <DependentUpon>DateView.xaml</DependentUpon>

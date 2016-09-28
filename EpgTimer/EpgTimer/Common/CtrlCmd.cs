@@ -224,7 +224,12 @@ namespace EpgTimer
             Stream.Seek(tailPos, SeekOrigin.Begin);
             tailPos = long.MaxValue;
         }
-        public bool EOF { get { return (Stream.Position == tailPos); } }
+        /// <summary>C++構造体型オブジェクトの読み込みに利用できる残サイズを取得する</summary>
+        public long RemainSize()
+        {
+            return tailPos - Stream.Position;
+        }
+        //public bool EOF { get { return RemainSize() > 0; } }
     }
 
     public enum CtrlCmd : uint

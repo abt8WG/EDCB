@@ -406,7 +406,7 @@ public:
 		DWORD* resValSize
 		);
 
-	//指定ファイルをまとめて転送する (tkntrec氏版)
+	/*/指定ファイルをまとめて転送する (tkntrec氏版)
 	//戻り値：
 	// エラーコード
 	//引数：
@@ -417,7 +417,7 @@ public:
 		vector<FILE_DATA>* resVal
 		){
 		return SendAndReceiveCmdData2(CMD2_EPG_SRV_FILE_COPY2, list, resVal);
-	}
+	}//*/
 
 	//PlugInファイルの一覧を取得する
 	//戻り値：

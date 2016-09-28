@@ -2,9 +2,12 @@
 
 #include "../../Common/StructDef.h"
 #include "../../Common/EpgDataCap3Def.h"
+#include "../../Common/BlockLock.h"
 #include "../../Common/Measure.h"
 
 #import "RegExp.tlb" no_namespace named_guids
+
+extern DWORD g_compatFlags;
 
 class CEpgDBManager
 {
@@ -33,17 +36,49 @@ public:
 
 	BOOL SearchEpg(vector<EPGDB_SEARCH_KEY_INFO>* key, vector<SEARCH_RESULT_EVENT_DATA>* result);
 
-	BOOL SearchEpg(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumProc)(vector<SEARCH_RESULT_EVENT>*, void*), void* param);
+	//P = [](vector<SEARCH_RESULT_EVENT>&) -> void
+	template<class P>
+	BOOL SearchEpg(vector<EPGDB_SEARCH_KEY_INFO>* key, P enumProc) {
+		CBlockLock lock(&this->epgMapLock);
+		vector<SEARCH_RESULT_EVENT> result;
+		CoInitialize(NULL);
+		{
+			IRegExpPtr regExp;
+			for( size_t i = 0; i < key->size(); i++ ){
+				SearchEvent(&(*key)[i], result, regExp);
+			}
+		}
+		CoUninitialize();
+		enumProc(result);
+		return TRUE;
+	}
 
-	BOOL SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumProc)(vector<SEARCH_RESULT_EVENT>*, void*), void* param);
+	//BOOL SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumProc)(vector<SEARCH_RESULT_EVENT>*, void*), void* param);
 
 	BOOL GetServiceList(vector<EPGDB_SERVICE_INFO>* list);
 
-	BOOL EnumEventInfo(LONGLONG serviceKey, vector<EPGDB_EVENT_INFO>* result);
+	//P = [](const vector<EPGDB_EVENT_INFO>&) -> void
+	template<class P>
+	BOOL EnumEventInfo(LONGLONG serviceKey, P enumProc) const {
+		CBlockLock lock(&this->epgMapLock);
+		map<LONGLONG, EPGDB_SERVICE_EVENT_INFO>::const_iterator itr = this->epgMap.find(serviceKey);
+		if( itr == this->epgMap.end() || itr->second.eventList.empty() ){
+			return FALSE;
+		}
+		enumProc(itr->second.eventList);
+		return TRUE;
+	}
 
-	BOOL EnumEventInfo(LONGLONG serviceKey, void (*enumProc)(const vector<EPGDB_EVENT_INFO>*, void*), void* param);
-
-	BOOL EnumEventAll(void (*enumProc)(vector<const EPGDB_SERVICE_EVENT_INFO*>*, void*), void* param);
+	//P = [](const map<LONGLONG, EPGDB_SERVICE_EVENT_INFO>&) -> void
+	template<class P>
+	BOOL EnumEventAll(P enumProc) const {
+		CBlockLock lock(&this->epgMapLock);
+		if( this->epgMap.empty() ){
+			return FALSE;
+		}
+		enumProc(this->epgMap);
+		return TRUE;
+	}
 
 	BOOL SearchEpg(
 		WORD ONID,
@@ -71,6 +106,8 @@ public:
 
 	static void ConvertSearchText(wstring& str);
 
+	// MAP : map<LONGLONG, EPGDB_SERVICE_EVENT_INFO>
+	//       map<LONGLONG, REC_EVENT_SERVICE_DATA>
 	template <typename MAP, typename RESULT_CB>
 	static void SearchEvent(EPGDB_SEARCH_KEY_INFO* key, const MAP& epgMap, const RESULT_CB& onResultEvent, IRegExpPtr& regExp)
 	{
@@ -93,6 +130,29 @@ public:
 			//大小文字を区別するキーワードが指定されている
 			andKey.erase(0, 7);
 			caseFlag = TRUE;
+		}
+
+#if false /* xtne6f版 */
+		DWORD chkDurationMinSec = 0;
+		DWORD chkDurationMaxSec = MAXDWORD;
+		if( andKey.compare(0, 4, L"D!{1") == 0 ){
+			LPWSTR endp;
+			DWORD dur = wcstoul(andKey.c_str() + 3, &endp, 10);
+			if( endp - andKey.c_str() == 12 && endp[0] == L'}' ){
+				//番組長を絞り込むキーワードが指定されている
+				andKey.erase(0, 13);
+				chkDurationMinSec = dur / 10000 % 10000 * 60;
+				chkDurationMaxSec = dur % 10000 == 0 ? MAXDWORD : dur % 10000 * 60;
+			}
+		}
+#endif
+		if( andKey.size() == 0 && key->notKey.size() == 0 && key->contentList.size() == 0 && key->videoList.size() == 0 && key->audioList.size() == 0){
+			//キーワードもジャンル指定もないので検索しない
+			if( g_compatFlags & 0x02 ){
+				//互換動作: キーワードなしの検索を許可する
+			}else{
+				return;
+			}
 		}
 
 		//キーワード分解
@@ -137,6 +197,12 @@ public:
 			}
 		}
 
+		// vector ではなく map を使うので不要
+		//size_t resultSize = result.size();
+		//auto compareResult = [](const SEARCH_RESULT_EVENT& a, const SEARCH_RESULT_EVENT& b) -> bool {
+		//	return _Create64Key2(a.info->original_network_id, a.info->transport_stream_id, a.info->service_id, a.info->event_id) <
+		//		_Create64Key2(b.info->original_network_id, b.info->transport_stream_id, b.info->service_id, b.info->event_id);
+		//};
 		wstring targetWord;
 
 		//サービスごとに検索
@@ -269,6 +335,18 @@ public:
 					}
 
 					//番組長で絞り込み
+#if false /* xtne6f版 */
+					if( itrEvent->second->DurationFlag == FALSE ){
+						//不明なので絞り込みされていれば対象外
+						if( 0 < chkDurationMinSec || chkDurationMaxSec < MAXDWORD ){
+							continue;
+						}
+					}else{
+						if( itrEvent->second->durationSec < chkDurationMinSec || chkDurationMaxSec < itrEvent->second->durationSec ){
+							continue;
+						}
+					}
+#else /* tkntrec版 */
 					if( key->chkDurationMin != 0 ){
 						if( (LONGLONG)key->chkDurationMin * 60 > itrEvent->second->durationSec || itrEvent->second->DurationFlag == FALSE){
 							continue;
@@ -279,6 +357,7 @@ public:
 							continue;
 						}
 					}
+#endif
 
 					//キーワード確認
 					if( itrEvent->second->shortInfo == NULL || itrEvent->second->shortInfo->event_name.empty() ){
@@ -287,7 +366,7 @@ public:
 							continue;
 						}
 					}else if( andKeyList.size() != 0 || notKeyList.size() != 0 ){
-						// 検索キー毎に結果を保存するための検索キーハッシュ値を生成する
+						// abt8WG: 検索キー毎に結果を保存するための検索キーハッシュ値を生成する
 						std::hash<int> hash_int;
 						std::hash<wstring> hash_wstr;
 						int flags = (key->titleOnlyFlag ? 1 : 0) | (key->regExpFlag ? 2 : 0) | (key->aimaiFlag ? 4 : 0) | (caseFlag ? 8 : 0);
@@ -330,6 +409,7 @@ public:
 								targetWord += itrEvent->second->search_text_char;
 							}
 #else
+							//検索対象の文字列作成
 							targetWord = itrEvent->second->shortInfo->event_name;
 							if( key->titleOnlyFlag == FALSE ){
 								targetWord += L"\r\n";
@@ -373,6 +453,11 @@ public:
 					SEARCH_RESULT_EVENT addItem;
 					addItem.findKey = matchKey;
 					addItem.info = itrEvent->second;
+					////resultSizeまで(既ソート)に存在しないときだけ追加
+					//auto itrResult = std::lower_bound(result.begin(), result.begin() + resultSize, addItem, compareResult);
+					//if( itrResult == result.begin() + resultSize || compareResult(addItem, *itrResult) ){
+					//	result.push_back(addItem);
+					//}
 					onResultEvent(addItem);
 				}
 			}
@@ -397,7 +482,7 @@ public:
 		*/
 	}
 protected:
-	CRITICAL_SECTION epgMapLock;
+	mutable CRITICAL_SECTION epgMapLock;
 
 	HANDLE loadThread;
 	BOOL loadStop;
@@ -411,7 +496,7 @@ protected:
 	static UINT WINAPI LoadThread_(LPVOID param);
 
 	UINT LoadThread();
-	void SearchEvent(EPGDB_SEARCH_KEY_INFO* key, map<ULONGLONG, SEARCH_RESULT_EVENT>* resultMap, IRegExpPtr& regExp);
+	void SearchEvent(EPGDB_SEARCH_KEY_INFO* key, vector<SEARCH_RESULT_EVENT>& result, IRegExpPtr& regExp);
 	static BOOL IsEqualContent(vector<EPGDB_CONTENT_DATA>* searchKey, vector<EPGDB_CONTENT_DATA>* eventData);
 	static BOOL IsInDateTime(const vector<EPGDB_SEARCH_DATE_INFO>& dateList, const SYSTEMTIME& time);
 	static BOOL IsFindKeyword(BOOL regExpFlag, IRegExpPtr& regExp, BOOL caseFlag, const vector<wstring>* keyList, const wstring& word, BOOL andMode, wstring* findKey = NULL);

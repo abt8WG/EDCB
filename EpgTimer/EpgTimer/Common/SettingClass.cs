@@ -739,8 +739,14 @@ namespace EpgTimer
         public bool TunerColorModeUse { get; set; }
         /// <summary>使用予定チューナーで無効の予約も表示する</summary>
         public bool TunerDisplayOffReserve { get; set; }
+        /// <summary></summary>
+        public bool EpgToolTip { get; set; }
         /// <summary>番組表の番組名と番組内容の表示位置をあわせる</summary>
         public bool EpgTitleIndent { get; set; }
+        /// <summary></summary>
+        public bool EpgToolTipNoViewOnly { get; set; }
+        /// <summary></summary>
+        public int EpgToolTipViewWait { get; set; }
         /// <summary>番組表の番組内容をポップアップ表示する</summary>
         public bool EpgPopup { get; set; }
         /// <summary>番組表の予約のある番組のみポップアップする</summary>
@@ -1156,7 +1162,10 @@ namespace EpgTimer
             TunerInfoSingleClick = false;
             TunerColorModeUse = false;
             TunerDisplayOffReserve = false;
+            EpgToolTip = false;
             EpgTitleIndent = true;
+            EpgToolTipNoViewOnly = true;
+            EpgToolTipViewWait = 1500;
             EpgPopup = true;
             EpgPopupMode = 0;
             EpgGradation = true;

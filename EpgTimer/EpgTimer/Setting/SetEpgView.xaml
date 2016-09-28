@@ -118,6 +118,12 @@
                                             <Label Content="サービス１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                             <TextBox Name="textBox_service_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
+
+                                        <CheckBox Name="checkBox_descToolTip" Content="詳細をツールチップ表示する" Margin="9,4" />
+                                        <CheckBox Name="checkBox_toolTip_noView_only" Content="番組名を表示しきれない物のみ表示する" Margin="9,4" VerticalAlignment="Top" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" />
+                                        <Label Content="ツールチップを表示するまでの時間(ミリ秒)" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBox Name="textBox_toolTipWait" Style="{StaticResource NumberBox}" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" />
+
                                         <CheckBox Name="checkBox_epg_popup" Content="番組内容のポップアップ表示" Margin="9,4">
                                             <CheckBox.IsEnabled>
                                                 <MultiBinding Converter="{StaticResource orConverter}">
