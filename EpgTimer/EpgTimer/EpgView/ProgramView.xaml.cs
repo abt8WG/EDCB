@@ -13,7 +13,15 @@ namespace EpgTimer.EpgView
     /// </summary>
     public partial class ProgramView : EpgTimer.UserCtrlView.PanelViewBase
     {
-        protected override bool IsSingleClickOpen { get { return Settings.Instance.EpgInfoSingleClick; } }
+        protected override bool IsSingleClickOpen
+        {
+            get
+            {
+                return Settings.Instance.EpgInfoSingleClick &&
+                    // クリックでポップアップするときは除外
+                    !(Settings.Instance.EpgPopup && Settings.Instance.EpgPopupMode != 0);
+            }
+        }
         protected override double DragScroll { get { return Settings.Instance.DragScroll; } }
         protected override bool IsMouseScrollAuto { get { return Settings.Instance.MouseScrollAuto; } }
         protected override double ScrollSize { get { return Settings.Instance.ScrollSize; } }

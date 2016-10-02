@@ -145,6 +145,9 @@ namespace EpgTimer.UserCtrlView
         // PopUp が画面内に収まるように調整する
         protected void UpdatePopupPosition(ViewPanelItemBase popInfo)
         {
+            // ツールチップ表示中だったら消す
+            TooltipClear();
+
             // offsetHが正のとき右にはみ出している
             double offsetH = popInfo.LeftPos + Popup.ActualWidth - (scroll.ContentHorizontalOffset + scroll.ViewportWidth);
             // 右にはみ出した分だけ左にずらす
@@ -178,6 +181,9 @@ namespace EpgTimer.UserCtrlView
         protected virtual void TooltipWork()
         {
             if (IsTooltipEnabled == false) return;
+
+            // ポップアップ表示中だったらツールチップを出さない
+            if (Popup.Visibility == Visibility.Visible) return;
 
             try
             {

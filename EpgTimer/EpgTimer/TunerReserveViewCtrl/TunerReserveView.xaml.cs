@@ -13,7 +13,15 @@ namespace EpgTimer.TunerReserveViewCtrl
     /// </summary>
     public partial class TunerReserveView : EpgTimer.UserCtrlView.PanelViewBase
     {
-        protected override bool IsSingleClickOpen { get { return Settings.Instance.TunerInfoSingleClick; } }
+        protected override bool IsSingleClickOpen
+        {
+            get
+            {
+                return Settings.Instance.TunerInfoSingleClick &&
+                    // クリックでポップアップするときは除外
+                    !(Settings.Instance.TunerPopup && Settings.Instance.TunerPopupMode != 0);
+            }
+        }
         protected override double DragScroll { get { return Settings.Instance.TunerDragScroll; } }
         protected override bool IsMouseScrollAuto { get { return Settings.Instance.TunerMouseScrollAuto; } }
         protected override double ScrollSize { get { return Settings.Instance.TunerScrollSize; } }
