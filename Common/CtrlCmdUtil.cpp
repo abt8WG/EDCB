@@ -812,15 +812,9 @@ DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const EPGDB_SEARCH_KEY
 	}
 #ifdef CTRL_CMD_UTIL_USE_COMPAT_FLAGS
 	if( ver >= 5 && compatFlag ){
-#if false /* xtne6f”Å */
 		pos += WriteVALUE(ver, buff, pos, (BYTE)(val.chkRecDay >= 40000 ? 1 : 0));
 		pos += WriteVALUE(ver, buff, pos, durMin);
 		pos += WriteVALUE(ver, buff, pos, durMax);
-#else /* tkntrec”Å */
-		pos += WriteVALUE(ver, buff, pos, val.chkRecNoService);
-		pos += WriteVALUE(ver, buff, pos, val.chkDurationMin);
-		pos += WriteVALUE(ver, buff, pos, val.chkDurationMax);
-#endif
 	}
 #endif
 	WriteVALUE(0, buff, buffOffset, pos - buffOffset);
@@ -857,28 +851,22 @@ BOOL ReadVALUE( WORD ver, EPGDB_SEARCH_KEY_INFO* val, const BYTE* buff, DWORD bu
 			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkRecDay );
 		}
 		if( ver >= 5 && buffSize - pos >= 5 ){
-#if false /* xtne6f”Å */
 			BYTE recNoService;
-			READ_VALUE_OR_FAIL(ver, buff, buffSize, pos, size, &recNoService);
-			if (recNoService) {
+			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &recNoService );
+			if( recNoService ){
 				val->chkRecDay = val->chkRecDay % 10000 + 40000;
 			}
 			WORD durMin;
 			WORD durMax;
-			READ_VALUE_OR_FAIL(ver, buff, buffSize, pos, size, &durMin);
-			READ_VALUE_OR_FAIL(ver, buff, buffSize, pos, size, &durMax);
-			if (durMin > 0 || durMax > 0) {
+			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &durMin );
+			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &durMax );
+			if( durMin > 0 || durMax > 0 ){
 				WCHAR dur[32];
 				swprintf_s(dur, L"D!{%d}", (10000 + min(max(durMin, 0), 9999)) * 10000 + min(max(durMax, 0), 9999));
 				size_t durPos = val->andKey.compare(0, 7, L"^!{999}") ? 0 : 7;
 				durPos += val->andKey.compare(durPos, 7, L"C!{999}") ? 0 : 7;
 				val->andKey.insert(durPos, dur);
 			}
-#else /* tkntrec”Å */
-			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkRecNoService );
-			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkDurationMin );
-			READ_VALUE_OR_FAIL( ver, buff, buffSize, pos, size, &val->chkDurationMax );
-#endif
 		}
 	}
 
@@ -1102,7 +1090,7 @@ BOOL ReadVALUE( WORD ver, SET_CTRL_REC_STOP_RES_PARAM* val, const BYTE* buff, DW
 	return TRUE;
 }
 
-DWORD WriteVALUE(WORD ver, BYTE* buff, DWORD buffOffset, const REC_FILE_BASIC_INFO& val)
+DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const REC_FILE_BASIC_INFO& val )
 {
 	DWORD pos = buffOffset + sizeof(DWORD);
 	pos += WriteVALUE(ver, buff, pos, val.id);
@@ -1212,7 +1200,7 @@ BOOL ReadVALUE( WORD ver, REC_FILE_INFO* val, const BYTE* buff, DWORD buffSize, 
 	return TRUE;
 }
 
-DWORD WriteVALUE(WORD ver, BYTE* buff, DWORD buffOffset, const REC_FOLDER_INFO& val)
+DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const REC_FOLDER_INFO& val )
 {
 	DWORD pos = buffOffset + sizeof(DWORD);
 	pos += WriteVALUE(ver, buff, pos, val.recFolder);

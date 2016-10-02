@@ -101,8 +101,8 @@ namespace EpgTimer
             //深夜時間関係は、comboBoxの表示だけ変更する手もあるが、
             //オプション変更タイミングなどいろいろ面倒なので、実際の値で処理することにする。
             comboBox_service.ItemsSource = ChSet5.ChList.Values;
-            comboBox_sh.ItemsSource = Enumerable.Range(0, Settings.Instance.LaterTimeUse == true ? 37 : 24);
-            comboBox_eh.ItemsSource = Enumerable.Range(0, Settings.Instance.LaterTimeUse == true ? 37 : 24);
+            comboBox_sh.ItemsSource = CommonManager.CustomHourList;
+            comboBox_eh.ItemsSource = CommonManager.CustomHourList;
             comboBox_sm.ItemsSource = Enumerable.Range(0, 60);
             comboBox_em.ItemsSource = Enumerable.Range(0, 60);
             comboBox_ss.ItemsSource = Enumerable.Range(0, 60);
@@ -158,6 +158,9 @@ namespace EpgTimer
         private void SetResModeProgram()
         {
             bool resModeProgram = (ReserveMode == UIReserveMode.Program);
+
+            //radioButton_Epg.IsChecked = !resModeProgram;
+            //radioButton_Program.IsChecked = resModeProgram;
 
             textBox_title.IsEnabled = resModeProgram;
             comboBox_service.IsEnabled = resModeProgram;
@@ -223,14 +226,14 @@ namespace EpgTimer
             //放映時刻情報に対してEPGデータ無い場合もあるので、resInfoDisplayとは別にeventInfoDisplayを管理する
             if (CtrlCmdDefEx.EqualsPg(eventInfoDisplay, info) == false)
             {
-                richTextBox_descInfo.Document = CommonManager.Instance.ConvertDisplayText(info);
+                richTextBox_descInfo.Document = CommonManager.ConvertDisplayText(info);
             }
             eventInfoDisplay = info;
         }
 
         private void ResetProgramContent()
         {
-            richTextBox_descInfo.Document = CommonManager.Instance.ConvertDisplayText(null);
+            richTextBox_descInfo.Document = CommonManager.ConvertDisplayText(null);
             eventInfoDisplay = null;
         }
 
@@ -259,6 +262,7 @@ namespace EpgTimer
 
                 SetReserveTimeInfo(reserveInfo);
             }
+            SetResModeProgram();
 
             ResetProgramContent();                  //番組詳細を初期表示
             tabControl.SelectedIndex = openMode;
@@ -469,6 +473,27 @@ namespace EpgTimer
 
             DialogResult = true;
         }
+
+#if false
+        //一応大丈夫だが、クリックのたびに実行されないようにしておく。
+        private void radioButton_Epg_Click(object sender, RoutedEventArgs e)
+        {
+            if (resModeProgram == true && radioButton_Epg.IsChecked == true)
+            {
+                SetResModeProgram(false);
+                ReserveModeChanged();
+            }
+        }
+
+        private void radioButton_Program_Click(object sender, RoutedEventArgs e)
+        {
+            if (resModeProgram == false && radioButton_Program.IsChecked == true)
+            {
+                SetResModeProgram(true);
+                ReserveModeChanged();
+            }
+        }
+#endif
 
         private void ReserveModeChanged()
         {

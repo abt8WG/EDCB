@@ -82,7 +82,7 @@ bool CEpgTimerSrvMain::Main(bool serviceFlag_)
 
 	wstring iniPath;
 	GetModuleIniPath(iniPath);
-	g_compatFlags = GetPrivateProfileInt(L"SET", L"CompatFlags", 0, iniPath.c_str());
+	g_compatFlags = GetPrivateProfileInt(L"SET", L"CompatFlags", 4095, iniPath.c_str());
 
 	DWORD awayMode;
 	OSVERSIONINFOEX osvi;
@@ -446,7 +446,6 @@ LRESULT CALLBACK CEpgTimerSrvMain::MainWndProc(HWND hwnd, UINT uMsg, WPARAM wPar
 					ctx->sys->reserveManager.AddNotifyAndPostBat(NOTIFY_UPDATE_RESERVE_INFO);
 				}
 				ctx->sys->reserveManager.AddNotifyAndPostBat(NOTIFY_UPDATE_EPGDATA);
-				ctx->sys->reserveManager.AddNotifyAndPostBat(NOTIFY_UPDATE_RESERVE_INFO);
 
 				if( ctx->sys->useSyoboi ){
 					//しょぼいカレンダー対応
@@ -996,6 +995,9 @@ bool CEpgTimerSrvMain::AutoAddReserveEPG(const EPG_AUTO_ADD_DATA& data, bool noR
 	vector<RESERVE_DATA> reserveData;
 	bool ret = reserveManager.AutoAddReserveEPG(data, this->autoAddHour, this->chkGroupEvent, &reserveData, noReportNotify);
 
+	//addCountは参考程度の情報。保存もされないので更新を通知する必要はない
+	//this->epgAutoAdd.SetAddCount(data.dataID, addCount);
+
 	// nekopanda: EPG自動予約登録と、登録された予約、および録画済みファイルとの関連付けを実装
 	vector<RESERVE_BASIC_DATA> reserveBasic; reserveBasic.resize(reserveData.size());
 	std::copy(reserveData.begin(), reserveData.end(), reserveBasic.begin());
@@ -1167,7 +1169,7 @@ bool CEpgTimerSrvMain::ChgAutoAdd(vector<EPG_AUTO_ADD_DATA>& val) {
 	if (modified) {
 		bool addReserve = false;
 		for (size_t i = 0; i < val.size(); i++) {
-			addReserve |= AutoAddReserveEPG(val[i]);
+			addReserve |= AutoAddReserveEPG(val[i], true);
 		}
 		RemoveNolinkedReserve(reserveList);
 		notifyManager.AddNotify(NOTIFY_UPDATE_AUTOADD_EPG);
@@ -1191,7 +1193,7 @@ bool CEpgTimerSrvMain::AddAutoAdd(vector<EPG_AUTO_ADD_DATA>& val) {
 	}
 	bool addReserve = false;
 	for (size_t i = 0; i < val.size(); i++) {
-		addReserve |= AutoAddReserveEPG(val[i]/*, true*/);
+		addReserve |= AutoAddReserveEPG(val[i], true);
 	}
 	notifyManager.AddNotify(NOTIFY_UPDATE_AUTOADD_EPG);
 	if( addReserve ){
@@ -1268,7 +1270,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 	resParam->dataSize = 0;
 	resParam->param = CMD_ERR;
 
-	if( sys->CtrlCmdProcessCompatible(*cmdParam, *resParam) ){
+	if( sys->CtrlCmdProcessCompatible(*cmdParam, *resParam, tcpFlag) ){
 		return 0;
 	}
 
@@ -1339,18 +1341,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			}
 		}
 		break;
-/*
-	case CMD2_EPG_SRV_ISREGIST_GUI_TCP:
-		{
-			REGIST_TCP_INFO val;
-			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) ){
-				BOOL registered = sys->notifyManager.IsRegistTCP(val);
-				resParam->data = NewWriteVALUE(registered, resParam->dataSize);
-				resParam->param = CMD_SUCCESS;
-			}
-		}
-		break;
-*/
 	case CMD2_EPG_SRV_ENUM_RESERVE:
 		resParam->data = NewWriteVALUE(sys->reserveManager.GetReserveDataAll(), resParam->dataSize);
 		resParam->param = CMD_SUCCESS;
@@ -1551,7 +1541,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 				}
 				bool addReserve = false;
 				for( size_t i = 0; i < val.size(); i++ ){
-					addReserve |= sys->AutoAddReserveProgram(val[i]/*, true*/);
+					addReserve |= sys->AutoAddReserveProgram(val[i], true);
 				}
 				sys->notifyManager.AddNotify(NOTIFY_UPDATE_AUTOADD_MANUAL);
 				if( addReserve ){
@@ -1590,7 +1580,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 				}
 				bool addReserve = false;
 				for( size_t i = 0; i < val.size(); i++ ){
-					addReserve |= sys->AutoAddReserveProgram(val[i]);
+					addReserve |= sys->AutoAddReserveProgram(val[i], true);
 				}
 				sys->notifyManager.AddNotify(NOTIFY_UPDATE_AUTOADD_MANUAL);
 				if( addReserve ){
@@ -1604,30 +1594,13 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		resParam->data = NewWriteVALUE(sys->reserveManager.GetTunerReserveAll(), resParam->dataSize);
 		resParam->param = CMD_SUCCESS;
 		break;
-	case CMD2_EPG_SRV_FILE_COPY: /* abt8WG版 改変 */
+	case CMD2_EPG_SRV_FILE_COPY:
 		{
 			wstring val;
-			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) ){
+			if( ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) && CompareNoCase(val, L"ChSet5.txt") == 0 ){
 				wstring path;
-				DWORD flags;
-				if( CompareNoCase(val, L"ChSet5.txt") == 0 ){
-					GetSettingPath(path);
-					path += L"\\ChSet5.txt";
-					flags = OPEN_EXISTING;
-				}else if( CompareNoCase(val, L"Common.ini") == 0 ){
-					GetCommonIniPath(path);
-					flags = OPEN_ALWAYS;
-				}else if( CompareNoCase(val, L"EpgTimerSrv.ini") == 0 ){
-					GetEpgTimerSrvIniPath(path);
-					flags = OPEN_ALWAYS;
-				}else if( CompareNoCase(val, L"EpgDataCap_Bon.ini") == 0 ){
-					GetModuleFolderPath(path);
-					path += L"\\EpgDataCap_Bon.ini";
-					flags = OPEN_EXISTING;
-				}else{
-					break;
-				}
-				HANDLE hFile = CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, flags, FILE_ATTRIBUTE_NORMAL, NULL);
+				GetSettingPath(path);
+				HANDLE hFile = CreateFile((path + L"\\ChSet5.txt").c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				if( hFile != INVALID_HANDLE_VALUE ){
 					DWORD dwFileSize = GetFileSize(hFile, NULL);
 					if( dwFileSize != INVALID_FILE_SIZE && dwFileSize != 0 ){
@@ -1638,127 +1611,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 						}
 					}
 					CloseHandle(hFile);
-					resParam->param = CMD_SUCCESS;
-				}
-			}
-		}
-		break;
-	case CMD2_EPG_SRV_UPDATE_SETTING: /* abt8WG版*/
-		{
-			resParam->param = CMD_ERR;
-			wstring val;
-			if (ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL)) {
-				bool needToUpdate = false;
-				wstring path;
-				wstring section;
-				wstring key;
-				wstring value;
-				string text[1];	// 0:ChSet5.txt
-				struct ignorecase_compare {
-					bool operator()(const wstring& a, const wstring& b) const { return CompareNoCase(a, b) < 0; }
-				};
-				map<wstring, std::function<bool()>, ignorecase_compare> specialKey;
-				int indexText = -1;
-				size_t pos = 0, found;
-				while ((found = val.find_first_of(L'\n', pos)) != wstring::npos) {
-					wstring line = wstring(val, pos, found - pos);
-					if (line.at(line.length() - 1) == L'\r')
-						line.resize(line.length() - 1);
-					pos = found + 1;
-
-					// ファイル名の取得 ";<filename>" 
-					if (line.length() > 3 && line[0] == L';' && line[1] == L'<' && line.find_first_of(L'>') == line.length() - 1) {
-						wstring filename = wstring(line, 2, line.length() - 3);
-						section.clear();
-						specialKey.clear();
-						indexText = -1;
-						if (CompareNoCase(filename, L"ChSet5.txt") == 0) {
-							indexText = 0;
-						}
-						else if (CompareNoCase(filename, L"Common.ini") == 0) {
-							GetCommonIniPath(path);
-						}
-						else if (CompareNoCase(filename, L"EpgTimerSrv.ini") == 0) {
-							GetEpgTimerSrvIniPath(path);
-							specialKey.insert(pair<wstring, std::function<bool()>>(L"TCPAccessPassword", [&](){
-								wstring temp;
-								if (tcpFlag) return false;
-								if (CCryptUtil::Decrypt(value, temp)) return true;
-								return value.length() <= MAX_PASSWORD_LENGTH && CCryptUtil::Encrypt(value, value);
-							}));
-						}
-						else if (CompareNoCase(val, L"EpgDataCap_Bon.ini") == 0) {
-							GetModuleFolderPath(path);
-							path += L"\\EpgDataCap_Bon.ini";
-						}
-						else {
-							break;
-						}
-					}
-					else if (indexText >= 0) {
-						// テキストファイル形式
-						string str;
-						WtoA(line, str);
-						text[indexText] += str + "\r\n";
-					}
-					else if (path.length() > 0) {
-						// INIファイル形式
-						// セクション名の取得 "[section]" 
-						if (line.length() > 2 && line[0] == L'[') {
-							if (line.find_first_of(L']') != line.length() - 1) {
-								break;
-							}
-							section = wstring(line, 1, line.length() - 2);
-						}
-						else if (section.length() > 0) {
-							// キー＆バリューの取得
-							size_t delim = line.find_first_of(L'=');
-							if (delim == 0 || delim == wstring::npos)
-								break;
-							key = wstring(line, 0, delim);
-							value = wstring(line, delim + 1);
-							int nOffset = key.at(0) == L';' ? 1 : 0;
-							auto itr = specialKey.find(key.c_str() + nOffset);
-							if (itr != specialKey.end() && !itr->second())
-								continue;
-							if (nOffset == 1) {
-								// ";key=" の書式のとき、キーの削除をする
-								if (!value.empty())
-									break;
-								WritePrivateProfileStringW(section.c_str(), key.c_str()+1, NULL, path.c_str());
-								needToUpdate = true;
-							}
-							else {
-								WritePrivateProfileStringW(section.c_str(), key.c_str(), value.c_str(), path.c_str());
-								needToUpdate = true;
-							}
-						}
-						else {
-							break;
-						}
-					}
-					else {
-						break;
-					}
-				}
-				if (found == wstring::npos) {
-					if (text[0].length() > 0)
-					{
-						// ChSet5.txt の更新
-						GetSettingPath(path);
-						path += L"\\ChSet5.txt";
-						HANDLE hFile = CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-						if (hFile != INVALID_HANDLE_VALUE) {
-							DWORD dwWrite;
-							WriteFile(hFile, text[0].c_str(), (DWORD)text[0].length(), &dwWrite, NULL);
-							CloseHandle(hFile);
-							needToUpdate = true;
-						}
-					}
-					if (needToUpdate) {
-						sys->ReloadSetting();
-						sys->notifyManager.AddNotify(NOTIFY_UPDATE_PROFILE);
-					}
 					resParam->param = CMD_SUCCESS;
 				}
 			}
@@ -1775,44 +1627,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 				resParam->param = CMD_SUCCESS;
 				resParam->data = NewWriteVALUE(valp, resParam->dataSize);
 			});
-		}
-		break;
-	case CMD2_EPG_SRV_ENUM_REC_FOLDER: /* abt8WG版 */
-		{
-			vector<REC_FOLDER_INFO> resultList;
-			wstring val;
-			if (ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL)) {
-				int i = 0;
-				if (val.empty()) {
-					GetRecFolderPath(val, i++);
-				}
-				do {
-					if (val.empty()) continue;
-
-					// C: などドライブ名のみの場合、末尾に "\\" が無ければ追加する。
-					if (val.size() == 2 && val.compare(1, 1, L":") == 0) {
-						val += L"\\";
-					}
-
-					REC_FOLDER_INFO rfi = {};
-					rfi.recFolder = val;
-
-					// UNC の場合、末尾に "\\" が無ければ追加する。GetDiskFreeSpaceEx の要求仕様。
-					if (*val.rbegin() != L'\\' && val.compare(0, 2, L"\\\\") == 0) {
-						val += L"\\";
-					}
-
-					ULARGE_INTEGER free;
-					ULARGE_INTEGER total;
-					if (GetDiskFreeSpaceEx(val.c_str(), &free, &total, NULL) != 0) {
-						rfi.freeBytes = free.QuadPart;
-						rfi.totalBytes = total.QuadPart;
-						resultList.push_back(rfi);
-					}
-				} while (i && GetRecFolderPath(val, i++));
-				resParam->data = NewWriteVALUE(resultList, resParam->dataSize);
-				resParam->param = CMD_SUCCESS;
-			}
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_PLUGIN:
@@ -1870,13 +1684,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			}
 		}
 		break;
-/*
-	case CMD2_EPG_SRV_PROFILE_UPDATE:
-		{
-			sys->notifyManager.AddNotify(NOTIFY_UPDATE_PROFILE);
-		}
-		break;
-*/
 	case CMD2_EPG_SRV_NWTV_SET_CH:
 		{
 			SET_CH_INFO val;
@@ -1989,18 +1796,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			}
 		}
 		break;
-/*
-	case CMD2_EPG_SRV_GET_NETWORK_PATH:
-		{
-			wstring val, resVal;
-			if (ReadVALUE(&val, cmdParam->data, cmdParam->dataSize, NULL) &&
-				GetNetworkPath(val, resVal)) {
-				resParam->data = NewWriteVALUE(resVal, resParam->dataSize);
-				resParam->param = CMD_SUCCESS;
-			}
-		}
-		break;
-*/
 
 	////////////////////////////////////////////////////////////
 	//CMD_VER対応コマンド
@@ -2067,36 +1862,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 	case CMD2_EPG_SRV_GET_EPG_FILE2:
 		resParam->param = CMD_NON_SUPPORT;
 		break;
-/*
-	case CMD2_EPG_SRV_SEARCH_PG2:
-		if( sys->epgDB.IsInitialLoadingDataDone() == FALSE ){
-			resParam->param = CMD_ERR_BUSY;
-		}else{
-			DWORD readSize;
-			if( ReadVALUE(&CommitedVerForNewCMD, cmdParam->data, cmdParam->dataSize, &readSize) ){
-				vector<EPGDB_SEARCH_KEY_INFO> key;
-				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
-					sys->epgDB.SearchEpg(&key, SearchPg2Callback, resParam);
-				}
-			}
-		}
-		break;
-*/
-/*
-	case CMD2_EPG_SRV_SEARCH_PG_BYKEY2:
-		if( sys->epgDB.IsInitialLoadingDataDone() == FALSE ){
-			resParam->param = CMD_ERR_BUSY;
-		}else{
-			DWORD readSize;
-			if( ReadVALUE(&CommitedVerForNewCMD, cmdParam->data, cmdParam->dataSize, &readSize) ){
-				vector<EPGDB_SEARCH_KEY_INFO> key;
-				if( ReadVALUE2(CommitedVerForNewCMD, &key, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
-					sys->epgDB.SearchEpgByKey(&key, SearchPgByKey2Callback, resParam);
-				}
-			}
-		}
-		break;
-*/
 	case CMD2_EPG_SRV_ENUM_AUTO_ADD2:
 		{
 			WORD ver;
@@ -2222,23 +1987,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			}
 		}
 		break;
-/*
-	case CMD2_EPG_SRV_GET_RECINFO_LIST2:
-		{
-			OutputDebugString(L"CMD2_EPG_SRV_GET_RECINFO_LIST2\r\n");
-			WORD ver;
-			DWORD readSize;
-			if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
-				vector<DWORD> idList;
-				if( ReadVALUE2(ver, &idList, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
-					resParam->data = NewWriteVALUE2WithVersion(ver,
-						sys->reserveManager.GetRecFileInfoList(idList), resParam->dataSize);
-					resParam->param = CMD_SUCCESS;
-				}
-			}
-		}
-		break;
-*/
 	case CMD2_EPG_SRV_GET_RECINFO2:
 		{
 			WORD ver;
@@ -2267,70 +2015,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			}
 		}
 		break;
-/*
-    case CMD2_EPG_SRV_FILE_COPY2:
-        {
-            WORD ver;
-            DWORD readSize;
-            if( ReadVALUE(&ver, cmdParam->data, cmdParam->dataSize, &readSize) ){
-                vector<wstring> list;
-                if( ReadVALUE2(ver, &list, cmdParam->data.get() + readSize, cmdParam->dataSize - readSize, NULL) ){
-                    vector<FILE_DATA> result;
-                    vector<wstring>::iterator itr;
-                    for( itr = list.begin(); itr != list.end(); itr++ ){
-                        FILE_DATA data1;
-                        data1.Name = *itr;
-
-                        wstring path=L"";
-                        if( CompareNoCase(*itr, L"ChSet5.txt") == 0 ){
-                            GetSettingPath(path);
-                            path += L"\\" + *itr;
-                        }else if( CompareNoCase(*itr, L"EpgTimerSrv.ini") == 0 ){
-                            GetEpgTimerSrvIniPath(path);
-                        }else if( CompareNoCase(*itr, L"Common.ini") == 0 ){
-                            GetCommonIniPath(path);
-                        }else if( CompareNoCase(*itr, L"EpgDataCap_Bon.ini") == 0 
-                            || CompareNoCase(*itr, L"BonCtrl.ini") == 0
-                            || CompareNoCase(*itr, L"Bitrate.ini") == 0 ){
-                            GetModuleFolderPath(path);
-                            path += L"\\" + *itr;
-                        }
-
-                        if(path != L""){
-                            HANDLE hFile = CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-                            if( hFile != INVALID_HANDLE_VALUE ){
-                                DWORD dwFileSize = GetFileSize(hFile, NULL);
-                                if( dwFileSize != INVALID_FILE_SIZE && dwFileSize != 0 ){
-                                    DWORD dwRead;
-                                    BYTE* buff = new BYTE[dwFileSize];
-                                    if( ReadFile(hFile, buff, dwFileSize, &dwRead, NULL) && dwRead != 0 ){
-                                        data1.Size = dwFileSize;
-                                        data1.Data = buff;
-                                    }
-                                    else{
-                                        delete[] buff;
-                                    }
-                                }
-                                CloseHandle(hFile);
-                            }
-                        }
-
-                        result.push_back(data1);
-                    }
-
-                    resParam->data = NewWriteVALUE2WithVersion(ver, result, resParam->dataSize);
-                    resParam->param = CMD_SUCCESS;
-
-                    vector<FILE_DATA>::iterator itr2;
-                    for( itr2 = result.begin(); itr2 != result.end(); itr2++ ){
-                        delete[] itr2->Data;
-                        itr2->Data = NULL;
-                    }
-                }
-            }
-        }
-        break;
-*/
 	case CMD2_EPG_SRV_GET_STATUS_NOTIFY2:
 		{
 			WORD ver;
@@ -2490,7 +2174,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 	return 0;
 }
 
-bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM& resParam)
+bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM& resParam, bool tcpFlag)
 {
 	//※この関数はtkntrec版( https://github.com/tkntrec/EDCB )を参考にした
 
@@ -2524,42 +2208,6 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 			wstring path;
 			if( ReadVALUE(&path, cmdParam.data, cmdParam.dataSize, NULL) ){
 				wstring netPath;
-/*
-				//UNCパスはそのまま返す
-				if( path.compare(0, 2, L"\\\\") == 0 ){
-					netPath = path;
-				}else{
-					DWORD resume = 0;
-					for( NET_API_STATUS res = ERROR_MORE_DATA; netPath.empty() && res == ERROR_MORE_DATA; ){
-						PSHARE_INFO_502 bufPtr;
-						DWORD er, tr;
-						res = NetShareEnum(NULL, 502, (BYTE**)&bufPtr, MAX_PREFERRED_LENGTH, &er, &tr, &resume);
-						if( res != ERROR_SUCCESS && res != ERROR_MORE_DATA ){
-							break;
-						}
-						for( PSHARE_INFO_502 p = bufPtr; p < bufPtr + er; p++ ){
-							//共有名が$で終わるのは隠し共有
-							if( p->shi502_netname[0] && p->shi502_netname[wcslen(p->shi502_netname) - 1] != L'$' ){
-								wstring shiPath = p->shi502_path;
-								ChkFolderPath(shiPath);
-								if( path.size() >= shiPath.size() &&
-								    CompareNoCase(shiPath, path.substr(0, shiPath.size())) == 0 &&
-								    (path.size() == shiPath.size() || path[shiPath.size()] == L'\\') ){
-									//共有パスそのものか配下にある
-									WCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1];
-									DWORD len = MAX_COMPUTERNAME_LENGTH + 1;
-									if( GetComputerName(computerName, &len) ){
-										netPath = wstring(L"\\\\") + computerName + L'\\' + p->shi502_netname + path.substr(shiPath.size());
-										break;
-									}
-								}
-							}
-						}
-						NetApiBufferFree(bufPtr);
-					}
-				}
-				if( netPath.empty() == false ){
-*/
 				if( GetNetworkPath(path, netPath) ){
 					resParam.data = NewWriteVALUE(netPath, resParam.dataSize);
 					resParam.param = CMD_SUCCESS;
@@ -2701,6 +2349,205 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 				}
 			}
 			return true;
+		}
+		break;
+
+	case CMD2_EPG_SRV_FILE_COPY: /* abt8WG版 改変 */
+		{
+			wstring val;
+			if( ReadVALUE(&val, cmdParam.data, cmdParam.dataSize, NULL) ){
+				wstring path;
+				DWORD flags;
+				if( CompareNoCase(val, L"ChSet5.txt") == 0 ){
+					GetSettingPath(path);
+					path += L"\\ChSet5.txt";
+					flags = OPEN_EXISTING;
+				}else if( CompareNoCase(val, L"Common.ini") == 0 ){
+					GetCommonIniPath(path);
+					flags = OPEN_ALWAYS;
+				}else if( CompareNoCase(val, L"EpgTimerSrv.ini") == 0 ){
+					GetEpgTimerSrvIniPath(path);
+					flags = OPEN_ALWAYS;
+				}else if( CompareNoCase(val, L"EpgDataCap_Bon.ini") == 0 ){
+					GetModuleFolderPath(path);
+					path += L"\\EpgDataCap_Bon.ini";
+					flags = OPEN_EXISTING;
+				}else{
+					break;
+				}
+				HANDLE hFile = CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, flags, FILE_ATTRIBUTE_NORMAL, NULL);
+				if( hFile != INVALID_HANDLE_VALUE ){
+					DWORD dwFileSize = GetFileSize(hFile, NULL);
+					if( dwFileSize != INVALID_FILE_SIZE && dwFileSize != 0 ){
+						resParam.data.reset(new BYTE[dwFileSize]);
+						DWORD dwRead;
+						if( ReadFile(hFile, resParam.data.get(), dwFileSize, &dwRead, NULL) && dwRead == dwFileSize ){
+							resParam.dataSize = dwRead;
+						}
+					}
+					CloseHandle(hFile);
+					resParam.param = CMD_SUCCESS;
+				}
+			}
+		}
+		break;
+	case CMD2_EPG_SRV_UPDATE_SETTING: /* abt8WG版*/
+		{
+			resParam.param = CMD_ERR;
+			wstring val;
+			if (ReadVALUE(&val, cmdParam.data, cmdParam.dataSize, NULL)) {
+				bool needToUpdate = false;
+				wstring path;
+				wstring section;
+				wstring key;
+				wstring value;
+				string text[1];	// 0:ChSet5.txt
+				struct ignorecase_compare {
+					bool operator()(const wstring& a, const wstring& b) const { return CompareNoCase(a, b) < 0; }
+				};
+				map<wstring, std::function<bool()>, ignorecase_compare> specialKey;
+				int indexText = -1;
+				size_t pos = 0, found;
+				while ((found = val.find_first_of(L'\n', pos)) != wstring::npos) {
+					wstring line = wstring(val, pos, found - pos);
+					if (line.at(line.length() - 1) == L'\r')
+						line.resize(line.length() - 1);
+					pos = found + 1;
+
+					// ファイル名の取得 ";<filename>" 
+					if (line.length() > 3 && line[0] == L';' && line[1] == L'<' && line.find_first_of(L'>') == line.length() - 1) {
+						wstring filename = wstring(line, 2, line.length() - 3);
+						section.clear();
+						specialKey.clear();
+						indexText = -1;
+						if (CompareNoCase(filename, L"ChSet5.txt") == 0) {
+							indexText = 0;
+						}
+						else if (CompareNoCase(filename, L"Common.ini") == 0) {
+							GetCommonIniPath(path);
+						}
+						else if (CompareNoCase(filename, L"EpgTimerSrv.ini") == 0) {
+							GetEpgTimerSrvIniPath(path);
+							specialKey.insert(pair<wstring, std::function<bool()>>(L"TCPAccessPassword", [&](){
+								wstring temp;
+								if (tcpFlag) return false;
+								if (CCryptUtil::Decrypt(value, temp)) return true;
+								return value.length() <= MAX_PASSWORD_LENGTH && CCryptUtil::Encrypt(value, value);
+							}));
+						}
+						else if (CompareNoCase(val, L"EpgDataCap_Bon.ini") == 0) {
+							GetModuleFolderPath(path);
+							path += L"\\EpgDataCap_Bon.ini";
+						}
+						else {
+							break;
+						}
+					}
+					else if (indexText >= 0) {
+						// テキストファイル形式
+						string str;
+						WtoA(line, str);
+						text[indexText] += str + "\r\n";
+					}
+					else if (path.length() > 0) {
+						// INIファイル形式
+						// セクション名の取得 "[section]" 
+						if (line.length() > 2 && line[0] == L'[') {
+							if (line.find_first_of(L']') != line.length() - 1) {
+								break;
+							}
+							section = wstring(line, 1, line.length() - 2);
+						}
+						else if (section.length() > 0) {
+							// キー＆バリューの取得
+							size_t delim = line.find_first_of(L'=');
+							if (delim == 0 || delim == wstring::npos)
+								break;
+							key = wstring(line, 0, delim);
+							value = wstring(line, delim + 1);
+							int nOffset = key.at(0) == L';' ? 1 : 0;
+							auto itr = specialKey.find(key.c_str() + nOffset);
+							if (itr != specialKey.end() && !itr->second())
+								continue;
+							if (nOffset == 1) {
+								// ";key=" の書式のとき、キーの削除をする
+								if (!value.empty())
+									break;
+								WritePrivateProfileStringW(section.c_str(), key.c_str()+1, NULL, path.c_str());
+								needToUpdate = true;
+							}
+							else {
+								WritePrivateProfileStringW(section.c_str(), key.c_str(), value.c_str(), path.c_str());
+								needToUpdate = true;
+							}
+						}
+						else {
+							break;
+						}
+					}
+					else {
+						break;
+					}
+				}
+				if (found == wstring::npos) {
+					if (text[0].length() > 0)
+					{
+						// ChSet5.txt の更新
+						GetSettingPath(path);
+						path += L"\\ChSet5.txt";
+						HANDLE hFile = CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+						if (hFile != INVALID_HANDLE_VALUE) {
+							DWORD dwWrite;
+							WriteFile(hFile, text[0].c_str(), (DWORD)text[0].length(), &dwWrite, NULL);
+							CloseHandle(hFile);
+							needToUpdate = true;
+						}
+					}
+					if (needToUpdate) {
+						ReloadSetting();
+						notifyManager.AddNotify(NOTIFY_UPDATE_PROFILE);
+					}
+					resParam.param = CMD_SUCCESS;
+				}
+			}
+		}
+		break;
+	case CMD2_EPG_SRV_ENUM_REC_FOLDER: /* abt8WG版 */
+		{
+			vector<REC_FOLDER_INFO> resultList;
+			wstring val;
+			if (ReadVALUE(&val, cmdParam.data, cmdParam.dataSize, NULL)) {
+				int i = 0;
+				if (val.empty()) {
+					GetRecFolderPath(val, i++);
+				}
+				do {
+					if (val.empty()) continue;
+
+					// C: などドライブ名のみの場合、末尾に "\\" が無ければ追加する。
+					if (val.size() == 2 && val.compare(1, 1, L":") == 0) {
+						val += L"\\";
+					}
+
+					REC_FOLDER_INFO rfi = {};
+					rfi.recFolder = val;
+
+					// UNC の場合、末尾に "\\" が無ければ追加する。GetDiskFreeSpaceEx の要求仕様。
+					if (*val.rbegin() != L'\\' && val.compare(0, 2, L"\\\\") == 0) {
+						val += L"\\";
+					}
+
+					ULARGE_INTEGER free;
+					ULARGE_INTEGER total;
+					if (GetDiskFreeSpaceEx(val.c_str(), &free, &total, NULL) != 0) {
+						rfi.freeBytes = free.QuadPart;
+						rfi.totalBytes = total.QuadPart;
+						resultList.push_back(rfi);
+					}
+				} while (i && GetRecFolderPath(val, i++));
+				resParam.data = NewWriteVALUE(resultList, resParam.dataSize);
+				resParam.param = CMD_SUCCESS;
+			}
 		}
 		break;
 	}

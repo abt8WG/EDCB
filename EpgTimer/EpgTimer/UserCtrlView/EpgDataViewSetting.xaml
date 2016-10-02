@@ -34,11 +34,11 @@
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Margin="6,4,0,0">
                     <StackPanel Orientation="Horizontal" >
-                        <CheckBox Name="checkBox_searchMode" Content="検索による絞り込みを行う" Margin="0,0,20,0" />
-                        <Button Name="button_searchKey" Content="検索条件" Click="button_searchKey_Click" />
-                        <CheckBox Name="checkBox_searchServiceFromView" Content="表示サービスで検索する" Margin="12,0,0,0" />
+						<Button Name="button_searchKey" Content="検索条件" Click="button_searchKey_Click" />
+						<CheckBox Name="checkBox_searchMode" Content="検索による絞り込みを行う" Margin="12,0,0,0" />
+                        <CheckBox Name="checkBox_searchServiceFromView" Content="ジャンルは「表示ジャンル」と別条件で絞り込む" Margin="12,0,0,0" />
                     </StackPanel>
-                    <Label Name="label4" Content="(表示ジャンルは検索条件のものを使用。表示サービスは並び順のために設定が必要です。)" />
+                    <!-- Label Name="label4" Content="(表示ジャンルは検索条件のものを使用。表示サービスは並び順のために設定が必要です。)" /-->
                 </StackPanel>
                 <TabControl Grid.Row="1" Margin="6,0,6,6" Name="tabControl1" >
                     <TabItem Header="表示サービス" Name="tabItem_service">
@@ -124,27 +124,30 @@
                         </Grid>
                     </TabItem>
                     <TabItem Header="表示ジャンル" Name="tabItem_content">
-                        <Grid>
+                        <Grid Margin="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto" />
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
+                                <ColumnDefinition Width="6*" />
                                 <ColumnDefinition Width="auto" />
-                                <ColumnDefinition />
+								<ColumnDefinition Width="4*" />
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Grid.Row="0" Name="label30" Content="表示ジャンル(未登録で全ジャンル対象)" Margin="10,10,0,0" />
-                            <ListBox Grid.Column="0" Grid.Row="1" Name="listBox_jyanruView" Margin="10,0,0,6" DisplayMemberPath="ListBoxView" SelectionMode="Extended" />
+                            <WrapPanel Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="0" >
+                                <Label Content="表示ジャンル(未登録で全ジャンル対象)" Margin="0,0,10,0"/>
+                                <CheckBox Name="checkBox_notContent" Content="NOT扱いとする" />
+                            </WrapPanel>
+                            <ListBox Grid.Column="0" Grid.Row="1" Name="listBox_jyanruView" DisplayMemberPath="ListBoxView" SelectionMode="Extended" />
                             <StackPanel Grid.Column="1" Grid.Row="1" >
-                                <Button Name="button_jyanru_addAll" Content="全追加" Margin="10,3" />
-                                <Button Name="button_jyanru_add"    Content="追加"   Margin="10,3" />
-                                <Button Name="button_jyanru_ins"    Content="挿入"   Margin="10,3" />
-                                <Button Name="button_jyanru_del"    Content="削除"   Margin="10,3" />
-                                <Button Name="button_jyanru_delAll" Content="全削除" Margin="10,3" />
+                                <Button Name="button_jyanru_addAll" Content="全追加" Margin="6,3" />
+                                <Button Name="button_jyanru_add"    Content="追加"   Margin="6,3" />
+                                <Button Name="button_jyanru_ins"    Content="挿入"   Margin="6,3" />
+                                <Button Name="button_jyanru_del"    Content="削除"   Margin="6,3" />
+                                <Button Name="button_jyanru_delAll" Content="全削除" Margin="6,3" />
                             </StackPanel>
-                            <Label Grid.Column="2" Grid.Row="0" Name="label33" Content="ジャンル一覧" Margin="0,10,10,0" />
-                            <ListBox Grid.Column="2" Grid.Row="1" Name="listBox_jyanru" Margin="0,0,10,6" SelectionMode="Extended" />
+                            <Label Grid.Column="2" Grid.Row="0" Content="ジャンル一覧" />
+                            <ListBox Grid.Column="2" Grid.Row="1" Name="listBox_jyanru" SelectionMode="Extended" />
                         </Grid>
                     </TabItem>
                 </TabControl>

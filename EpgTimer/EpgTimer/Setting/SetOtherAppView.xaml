@@ -95,17 +95,17 @@
                             <RowDefinition Height="auto" />
                             <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
-                        <Label Grid.Column="0" Grid.Row="0" Name="label6" Content="再生アプリのexeパス" Margin="4" />
-                        <TextBox Grid.Column="1" Grid.Row="0" Name="textBox_playExe" Margin="4" />
-                        <Button Grid.Column="2" Grid.Row="0" Name="button_playExe" Content="開く" Margin="10,4" Click="button_playExe_Click" />
-                        <Label Grid.Column="0" Grid.Row="1" Name="label7" Content="コマンドライン引数" Margin="4" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Name="textBox_playCmd" Margin="4" />
+                        <Label    Grid.Column="0" Grid.Row="0" Name="label6" Content="再生アプリのexeパス" Margin="4" />
+                        <TextBox  Grid.Column="1" Grid.Row="0" Name="textBox_playExe" Margin="4" />
+                        <Button   Grid.Column="2" Grid.Row="0" Name="button_playExe" Content="開く" Margin="10,4" Click="button_playExe_Click" />
+                        <Label    Grid.Column="0" Grid.Row="1" Name="label7" Content="コマンドライン引数" Margin="4" />
+                        <TextBox  Grid.Column="1" Grid.Row="1" Name="textBox_playCmd" Margin="4" />
                         <CheckBox Grid.Column="1" Grid.Row="2" Name="checkBox_playOnAirWithExe" Margin="4">
                             <TextBlock Text="追っかけ再生にも使用する" TextWrapping="Wrap" />
                         </CheckBox>
                         <TextBlock Grid.Column="1" Grid.Row="3" Name="label8" TextWrapping="Wrap" Margin="5" LineHeight="20">
                         再生アプリのexeパスが未指定の場合は規定の再生アプリを使用します。<LineBreak/>
-                        コマンドラインでは、$FilePath$:ファイルパス、$FileNameExt$:ファイル名、が使用出来ます。<LineBreak/>
+                        コマンドラインでは、$FilePath$:パス+ファイル名、$FileNameExt$:ファイル名のみ、が使用出来ます。<LineBreak/>
                         ※再生アプリが未指定の場合も、コマンドラインをファイル名として展開します。<LineBreak/>
                         ※空白は$FilePath$相当です。
                         </TextBlock>

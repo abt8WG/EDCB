@@ -91,7 +91,7 @@ namespace EpgTimer
                 listBox_service.ItemsSource = null;
                 serviceList.Clear();
 
-                foreach (UInt64 id in viewCustServiceList)
+                foreach (UInt64 id in setViewInfo.ViewServiceList)
                 {
                     if (serviceEventList.ContainsKey(id) == true)
                     {
@@ -133,7 +133,7 @@ namespace EpgTimer
                         foreach (EpgEventInfo eventInfo in serviceEventList[info.ID].eventList)
                         {
                             //ジャンル絞り込み
-                            if (ViewUtil.ContainsContent(eventInfo, this.viewCustContentKindList) == false)
+                            if (ViewUtil.ContainsContent(eventInfo, this.viewCustContentKindList, this.setViewInfo.ViewNotContentFlag) == false)
                             {
                                 continue;
                             }
@@ -197,7 +197,7 @@ namespace EpgTimer
             {
                 var item = listView_event.SelectedItem as SearchItem;
                 EpgEventInfo eventInfo = item.EventInfo;
-                richTextBox_eventInfo.Document = CommonManager.Instance.ConvertDisplayText(eventInfo);
+                richTextBox_eventInfo.Document = CommonManager.ConvertDisplayText(eventInfo);
             }
         }
 

@@ -115,28 +115,25 @@ namespace EpgTimer.EpgView
                                 {
                                     continue;
                                 }
-                                //totalHeight += useHeight + 4; // 詳細との間隔は 4px にする
                             }
 
                             //詳細
-//                            if (info.EventInfo.ExtInfo != null)
-//                            {
-//                                if (info.EventInfo.ExtInfo.text_char.Length > 0)
-//                                {
-//                                    if (RenderText(info.EventInfo.ExtInfo.text_char, ref textDrawList, ItemFontNormal, sizeNormal, width - widthOffset, height - totalHeight, x + widthOffset, y + totalHeight + baselineNormal, ref useHeight, colorNormal, m) == false)
-//                                    {
-//                                        continue;
-//                                    }
-//                                    totalHeight += useHeight;
-//                                }
-//                            }
+                            if (Settings.Instance.EpgExtInfoTable == true && info.EventInfo.ExtInfo != null && info.EventInfo.ExtInfo.text_char.Length > 0)
+                            {
+                                totalHeight += Math.Floor(useHeight + 4); // 説明との間隔は 4px にする
+                                if (RenderText(info.EventInfo.ExtInfo.text_char, ref textDrawList, ItemFontNormal, sizeNormal, width - indentNormal, height - totalHeight, x + indentNormal, y + totalHeight + baselineNormal, ref useHeight, colorNormal, m) == false)
+                                {
+                                    continue;
+                                }
+                                //totalHeight += useHeight + sizeNormal;
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -285,7 +282,7 @@ namespace EpgTimer.EpgView
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
     }

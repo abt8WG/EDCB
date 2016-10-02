@@ -21,8 +21,9 @@ public:
 	void StopMain();
 	//休止／スタンバイに移行して構わない状況かどうか
 	bool IsSuspendOK(); //const;
-private:
-	enum {
+
+	enum
+	{
 		WM_RESET_SERVER = WM_APP,
 		WM_RELOAD_EPG_CHK,
 		WM_REQUEST_SHUTDOWN,
@@ -32,6 +33,7 @@ private:
 		WM_SHOW_TRAY,
 	};
 
+private:
 	//メインウィンドウ
 	static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	//シャットダウン問い合わせダイアログ
@@ -72,7 +74,7 @@ private:
 	static int CALLBACK CtrlCmdPipeCallback(void* param, CMD_STREAM* cmdParam, CMD_STREAM* resParam);
 	static int CALLBACK CtrlCmdTcpCallback(void* param, CMD_STREAM* cmdParam, CMD_STREAM* resParam);
 	static int CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STREAM* resParam, bool tcpFlag);
-	bool CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM& resParam);
+	bool CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM& resParam, bool tcpFlag);
 	static int InitLuaCallback(lua_State* L);
 	//Lua-edcb空間のコールバック
 	class CLuaWorkspace

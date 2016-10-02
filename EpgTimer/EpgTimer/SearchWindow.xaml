@@ -34,14 +34,14 @@
         </TabControl>
         <GridSplitter Grid.Row="0" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" BorderBrush="DarkGray" Background="DarkGray" />
         <StackPanel Grid.Row="1" Name="stackPanel_button" Orientation="Horizontal" Margin="0,3,0,0">
-            <Button Name="button_search"          Content="検索"               Margin="10,0,0,0" />
-            <Button Name="button_add_reserve"     Content="予約"               Margin="20,0,0,0" />
-            <Button Name="button_delall_reserve"  Content="予約全削除"         Margin="5,0,0,0" />
-            <Button Name="button_add_epgAutoAdd"  Content="自動予約登録を追加" Margin="20,0,0,0" />
-            <Button Name="button_chg_epgAutoAdd"  Content="自動予約登録を変更" Margin="5,0,0,0" />
-            <Button Name="button_del_epgAutoAdd"  Content="自動予約登録を削除" Margin="5,0,0,0" />
-            <Button Name="button_up_epgAutoAdd"   Content="前へ"               Margin="20,0,0,0" />
-            <Button Name="button_down_epgAutoAdd" Content="次へ"               Margin="5,0,0,0" />
+            <Button Name="button_search"          Content="検索"                 Margin="10,0,0,0" />
+            <Button Name="button_add_reserve"     Content="予約"                 Margin="20,0,0,0" />
+            <Button Name="button_delall_reserve"  Content="予約全削除"           Margin="5,0,0,0" />
+            <Button Name="button_add_epgAutoAdd"  Content="キーワード予約を追加" Margin="20,0,0,0" />
+            <Button Name="button_chg_epgAutoAdd"  Content="キーワード予約を変更" Margin="5,0,0,0" />
+            <Button Name="button_del_epgAutoAdd"  Content="キーワード予約を削除" Margin="5,0,0,0" />
+            <Button Name="button_up_epgAutoAdd"   Content="前へ"                 Margin="20,0,0,0" />
+            <Button Name="button_down_epgAutoAdd" Content="次へ"                 Margin="5,0,0,0" />
         </StackPanel>
         <ListView Grid.Row="2" Name="listView_result" Margin="10,10,10,5" Style="{StaticResource DataListViewStyle}" >
             <ListView.View>

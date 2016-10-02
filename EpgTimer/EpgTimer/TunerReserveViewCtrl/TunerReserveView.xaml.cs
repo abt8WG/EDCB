@@ -21,7 +21,10 @@ namespace EpgTimer.TunerReserveViewCtrl
         protected override bool PopOnOver { get { return Settings.Instance.TunerPopupMode == 0; } }
         protected override bool PopOnClick { get { return Settings.Instance.TunerPopupMode == 1; } }
         protected override FrameworkElement Popup { get { return popupItem; } }
-        protected override double PopWidth { get { return Settings.Instance.TunerWidth; } }
+        protected override double PopWidth { get { return Settings.Instance.TunerWidth * Settings.Instance.TunerPopupWidth; } }
+
+        protected override bool IsTooltipEnabled { get { return Settings.Instance.TunerToolTip == true; } }
+        protected override int TooltipViweWait { get { return Settings.Instance.TunerToolTipViewWait; } }
 
         public TunerReserveView()
         {
@@ -45,11 +48,9 @@ namespace EpgTimer.TunerReserveViewCtrl
                 reserveViewPanel.InvalidateVisual();
 
                 PopUpWork();
+                TooltipWork();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
         }
 
         protected override ViewPanelItemBase GetPopupItem(Point cursorPos, bool onClick)
@@ -58,11 +59,8 @@ namespace EpgTimer.TunerReserveViewCtrl
 
             return reserveViewPanel.Items.Find(pg => pg.IsPicked(cursorPos));
         }
-
         protected override void SetPopup(ViewPanelItemBase item)
         {
-            base.SetPopup(item);
-
             var viewInfo = (ReserveViewItem)item;
             var resItem = new ReserveItem(viewInfo.ReserveInfo);
 
@@ -152,6 +150,15 @@ namespace EpgTimer.TunerReserveViewCtrl
             infoText.Foreground = colorNormal;
             infoText.Margin = new Thickness(2 + indentNormal, 0, 0, 2);
             infoText.LineHeight = Math.Max(Settings.Instance.TunerFontHeight, sizeNormal + 2);
+        }
+
+        protected override ViewPanelItemBase GetTooltipItem(Point cursorPos)
+        {
+            return GetPopupItem(cursorPos, false);
+        }
+        protected override void SetTooltip(ViewPanelItemBase toolInfo)
+        {
+            Tooltip.ToolTip = new ReserveItem((toolInfo as ReserveViewItem).ReserveInfo).ToolTipViewAlways;
         }
 
     }

@@ -46,12 +46,12 @@ namespace EpgTimer
             {
                 recSetting = Settings.Instance.RecPresetList[0].RecPresetData.Clone();
 
-				comboBox_recMode.DataContext = CommonManager.Instance.RecModeDictionary;
-				comboBox_tuijyu.DataContext = CommonManager.Instance.YesNoDictionary;
-				comboBox_pittari.DataContext = CommonManager.Instance.YesNoDictionary;
-				comboBox_priority.DataContext = CommonManager.Instance.PriorityDictionary;
+                comboBox_recMode.DataContext = CommonManager.RecModeList;
+                comboBox_tuijyu.DataContext = CommonManager.YesNoList;
+                comboBox_pittari.DataContext = CommonManager.YesNoList;
+                comboBox_priority.DataContext = CommonManager.PriorityList;
 
-				recEndModeRadioBtns = new RadioBtnSelect(radioButton_non, radioButton_standby, radioButton_suspend, radioButton_shutdown);
+                recEndModeRadioBtns = new RadioBtnSelect(radioButton_non, radioButton_standby, radioButton_suspend, radioButton_shutdown);
 
                 tunerList.Add(new TunerSelectInfo("自動", 0));
                 foreach (TunerReserveInfo info in CommonManager.Instance.DB.TunerReserveList.Values)
@@ -191,10 +191,10 @@ namespace EpgTimer
 
             var setInfo = new RecSettingData();
 
-			setInfo.RecMode = (byte)comboBox_recMode.SelectedIndex;
-			setInfo.Priority = (byte)comboBox_priority.SelectedIndex;
-			setInfo.TuijyuuFlag = (byte)comboBox_tuijyu.SelectedIndex;
-			setInfo.PittariFlag = (byte)comboBox_pittari.SelectedIndex;
+            setInfo.RecMode = (byte)comboBox_recMode.SelectedIndex;
+            setInfo.Priority = (byte)(comboBox_priority.SelectedIndex + 1);
+            setInfo.TuijyuuFlag = (byte)comboBox_tuijyu.SelectedIndex;
+            setInfo.PittariFlag = (byte)comboBox_pittari.SelectedIndex;
 
             setInfo.ServiceModeIsDefault = checkBox_serviceMode.IsChecked == true;
             setInfo.ServiceCaption = checkBox_serviceCaption.IsChecked == true;
@@ -281,10 +281,16 @@ namespace EpgTimer
             OnUpdatingView = true;
             try
             {
-				comboBox_recMode.SelectedItem = comboBox_recMode.Items[recSetting.RecMode];
-				comboBox_priority.SelectedItem = comboBox_priority.Items[recSetting.Priority];
-				comboBox_tuijyu.SelectedItem = comboBox_tuijyu.Items[recSetting.TuijyuuFlag];
-				comboBox_pittari.SelectedItem = comboBox_pittari.Items[recSetting.PittariFlag];
+                if (IniFileHandler.CanUpdateInifile)
+                {
+                    button_add_preset.IsEnabled = false;
+                    button_chg_preset.IsEnabled = false;
+                    button_del_preset.IsEnabled = false;
+                }
+                comboBox_recMode.SelectedIndex = Math.Min((int)recSetting.RecMode, 5);
+                comboBox_priority.SelectedIndex = Math.Min(Math.Max((int)recSetting.Priority, 1), 5) - 1;
+                comboBox_tuijyu.SelectedIndex = recSetting.TuijyuuFlag != 0 ? 1 : 0;
+                comboBox_pittari.SelectedIndex = recSetting.PittariFlag != 0 ? 1 : 0;
                 checkBox_serviceMode.IsChecked = null;//切り替え時のイベント発生のために必要
                 checkBox_serviceMode.IsChecked = recSetting.ServiceModeIsDefault;
                 textBox_bat.Text = recSetting.BatFilePath;

@@ -53,8 +53,6 @@ public:
 		return TRUE;
 	}
 
-	//BOOL SearchEpgByKey(vector<EPGDB_SEARCH_KEY_INFO>* key, void (*enumProc)(vector<SEARCH_RESULT_EVENT>*, void*), void* param);
-
 	BOOL GetServiceList(vector<EPGDB_SERVICE_INFO>* list);
 
 	//P = [](const vector<EPGDB_EVENT_INFO>&) -> void
@@ -132,7 +130,6 @@ public:
 			caseFlag = TRUE;
 		}
 
-#if false /* xtne6f版 */
 		DWORD chkDurationMinSec = 0;
 		DWORD chkDurationMaxSec = MAXDWORD;
 		if( andKey.compare(0, 4, L"D!{1") == 0 ){
@@ -145,7 +142,6 @@ public:
 				chkDurationMaxSec = dur % 10000 == 0 ? MAXDWORD : dur % 10000 * 60;
 			}
 		}
-#endif
 		if( andKey.size() == 0 && key->notKey.size() == 0 && key->contentList.size() == 0 && key->videoList.size() == 0 && key->audioList.size() == 0){
 			//キーワードもジャンル指定もないので検索しない
 			if( g_compatFlags & 0x02 ){
@@ -335,7 +331,6 @@ public:
 					}
 
 					//番組長で絞り込み
-#if false /* xtne6f版 */
 					if( itrEvent->second->DurationFlag == FALSE ){
 						//不明なので絞り込みされていれば対象外
 						if( 0 < chkDurationMinSec || chkDurationMaxSec < MAXDWORD ){
@@ -346,18 +341,6 @@ public:
 							continue;
 						}
 					}
-#else /* tkntrec版 */
-					if( key->chkDurationMin != 0 ){
-						if( (LONGLONG)key->chkDurationMin * 60 > itrEvent->second->durationSec || itrEvent->second->DurationFlag == FALSE){
-							continue;
-						}
-					}
-					if( key->chkDurationMax != 0 ){
-						if( (LONGLONG)key->chkDurationMax * 60 < itrEvent->second->durationSec || itrEvent->second->DurationFlag == FALSE){
-							continue;
-						}
-					}
-#endif
 
 					//キーワード確認
 					if( itrEvent->second->shortInfo == NULL || itrEvent->second->shortInfo->event_name.empty() ){
@@ -462,25 +445,8 @@ public:
 				}
 			}
 		}
-		/*
-		for( itrService = this->epgMap.begin(); itrService != this->epgMap.end(); itrService++ ){
-			map<WORD, EPGDB_EVENT_INFO*>::iterator itrEvent;
-			for( itrEvent = itrService->second->eventMap.begin(); itrEvent != itrService->second->eventMap.end(); itrEvent++ ){
-				if( itrEvent->second->shortInfo != NULL ){
-					if( itrEvent->second->shortInfo->search_event_name.find(key->andKey) != string::npos ){
-						ULONGLONG mapKey = _Create64Key2(
-							itrEvent->second->original_network_id,
-							itrEvent->second->transport_stream_id,
-							itrEvent->second->service_id,
-							itrEvent->second->event_id);
-
-						resultMap->insert(pair<ULONGLONG, EPGDB_EVENT_INFO*>(mapKey, itrEvent->second));
-					}
-				}
-			}
-		}
-		*/
 	}
+
 protected:
 	mutable CRITICAL_SECTION epgMapLock;
 

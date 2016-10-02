@@ -492,7 +492,6 @@ BOOL CEpgDBManager::IsEqualContent(vector<EPGDB_CONTENT_DATA>* searchKey, vector
 			c.content_nibble_level_2 = 0x01;
 		}
 		for( size_t j=0; j<eventData->size(); j++ ){
-			//*本来の比較コード(CS用ジャンルコード対応に修正済))
 			if( c.content_nibble_level_1 == (*eventData)[j].content_nibble_level_1 ){
 				if( c.content_nibble_level_2 == 0xFF ){
 					//中分類すべて
@@ -514,7 +513,6 @@ BOOL CEpgDBManager::IsEqualContent(vector<EPGDB_CONTENT_DATA>* searchKey, vector
 					}
 				}
 			}
-			//*/
 		}
 	}
 	return FALSE;

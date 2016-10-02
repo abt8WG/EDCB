@@ -103,8 +103,8 @@
                             <GroupBox Header="表示設定" Margin="6,6,6,0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition MinWidth="210"/>
-                                        <ColumnDefinition Width="1.5*" />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                         <WrapPanel>
@@ -118,27 +118,71 @@
                                             <Label Content="サービス１つの幅" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                             <TextBox Name="textBox_service_width" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-
-                                        <CheckBox Name="checkBox_descToolTip" Content="詳細をツールチップ表示する" Margin="9,4" />
-                                        <CheckBox Name="checkBox_toolTip_noView_only" Content="番組名を表示しきれない物のみ表示する" Margin="9,4" VerticalAlignment="Top" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" />
-                                        <Label Content="ツールチップを表示するまでの時間(ミリ秒)" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" />
-                                        <TextBox Name="textBox_toolTipWait" Style="{StaticResource NumberBox}" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" />
-
                                         <CheckBox Name="checkBox_epg_popup" Content="番組内容のポップアップ表示" Margin="9,4">
                                             <CheckBox.IsEnabled>
                                                 <MultiBinding Converter="{StaticResource orConverter}">
                                                     <Binding Path="IsEnabled" ElementName="checkBox_singleOpen" Converter="{StaticResource notConverter}" />
                                                     <Binding Path="IsChecked" ElementName="checkBox_singleOpen" Converter="{StaticResource notConverter}" />
                                                     <Binding Path="IsChecked" ElementName="radioButton_epg_popup_onClick" Converter="{StaticResource notConverter}" />
-                                            </MultiBinding>
+                                                </MultiBinding>
                                             </CheckBox.IsEnabled>
                                         </CheckBox>
-                                        <WrapPanel Margin="25,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup, UpdateSourceTrigger=PropertyChanged}" >
+                                        <WrapPanel Margin="25,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup, UpdateSourceTrigger=PropertyChanged}">
                                             <RadioButton Name="radioButton_epg_popup_onOver" Content="マウスオーバー" Margin="0,0,20,4" />
                                             <RadioButton Name="radioButton_epg_popup_onClick" Content="クリックしたとき" Margin="0,0,20,4" />
                                             <RadioButton Name="radioButton_epg_popup_resOnly" Margin="0,0,20,4">
                                                 <TextBlock Text="予約のみマウスオーバーで、他はクリックしたとき" TextWrapping="Wrap" />
                                             </RadioButton>
+                                        </WrapPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_epg_popup, UpdateSourceTrigger=PropertyChanged}">
+                                            <Label Content="ポップアップの幅　サービスの幅 ×" />
+                                            <TextBox Name="textBox_epg_popup_Width" Style="{StaticResource NumberBox}" />
+                                            <Label Content="倍" />
+                                        </StackPanel>
+                                        <CheckBox Name="checkBox_descToolTip" Content="詳細をツールチップ表示する" Margin="9,4" />
+                                        <CheckBox Name="checkBox_toolTip_noView_only" Content="番組名を表示しきれない物のみ表示する" Margin="25,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" />
+                                        <WrapPanel Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}">
+                                            <Label Content="ツールチップを表示するまでの時間" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBox Name="textBox_toolTipWait" Margin="20,0,0,0" Style="{StaticResource NumberBox}" />
+                                                <Label Content="ミリ秒" />
+                                            </StackPanel>
+                                        </WrapPanel>
+                                        <Label Content="番組内容を詳しく表示する" Margin="4" />
+                                        <WrapPanel Margin="25,0,0,0" >
+                                            <CheckBox Name="checkBox_epg_ExtInfo_table"   Content="番組表"       Margin="0,0,10,0" />
+                                            <CheckBox Name="checkBox_epg_ExtInfo_popup"   Content="ポップアップ" Margin="0,0,10,0" />
+                                            <CheckBox Name="checkBox_epg_ExtInfo_tooltip" Content="ツールチップ" Margin="0,0,10,0" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <WrapPanel>
+                                            <StackPanel Margin="4" Orientation="Horizontal">
+                                                <Label Content="1分あたりの高さ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
+                                                <TextBox Name="textBox_minHeight" Style="{StaticResource NumberBox}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="4" Orientation="Horizontal">
+                                                <Label Content="最低表示行数" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
+                                                <TextBox Name="textBox_minimumHeight" Style="{StaticResource NumberBox}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="4" Orientation="Horizontal">
+                                                <Label Content="ドラッグスクロール倍率" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
+                                                <TextBox Name="textBox_dragScroll" Style="{StaticResource NumberBox}" />
+                                            </StackPanel>
+                                        </WrapPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="4">
+                                            <Label Name="label_MaxWidth" Content="グラデーション表示を行う" />
+                                        </StackPanel>
+                                        <WrapPanel Margin="25,0,0,0">
+                                            <CheckBox Name="checkBox_gradation"       Content="番組"              Margin="0,0,10,0" />
+                                            <CheckBox Name="checkBox_gradationHeader" Content="サービス・時刻軸"  Margin="0,0,10,0" />
+                                        </WrapPanel>
+                                        <WrapPanel Margin="9,4,0,0">
+                                            <CheckBox Name="checkBox_epgNoDisplayOld" Content="古い番組データの表示を抑制する" ToolTip="通常はチェック不要です。" />
+                                            <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                                <TextBox Name="textBox_epgNoDisplayOldDays" Style="{StaticResource NumberBox}" />
+                                                <Label Content="日前まで表示" />
+                                            </StackPanel>
                                         </WrapPanel>
                                         <CheckBox Name="checkBox_singleOpen" Margin="9,4">
                                             <CheckBox.IsEnabled>
@@ -159,34 +203,6 @@
                                         <CheckBox Name="checkBox_displayNotifyChange" Margin="9,4">
                                             <TextBlock Text="番組表の切り替え時にも強調表示をする" TextWrapping="Wrap" />
                                         </CheckBox>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1">
-                                        <WrapPanel>
-                                            <StackPanel Margin="4" Orientation="Horizontal">
-                                                <Label Content="1分あたりの高さ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_minHeight" Style="{StaticResource NumberBox}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="4" Orientation="Horizontal">
-                                                <Label Content="最低表示行数" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_minimumHeight" Style="{StaticResource NumberBox}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="4" Orientation="Horizontal">
-                                                <Label Content="ドラッグスクロール倍率" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_dragScroll" Style="{StaticResource NumberBox}" />
-                                            </StackPanel>
-                                        </WrapPanel>
-                                        <WrapPanel Margin="4,4,0,0">
-                                            <Label Name="label_MaxWidth" Content="グラデーション表示を行う" Margin="0,0,-130,4"/>
-                                            <CheckBox Name="checkBox_gradation" Content="番組" Margin="130,0,-100,4" />
-                                            <CheckBox Name="checkBox_gradationHeader" Margin="130,0,0,4">
-                                                <TextBlock Text="サービス・時刻軸" TextWrapping="Wrap" />
-                                            </CheckBox>
-                                        </WrapPanel>
-                                        <WrapPanel Margin="9,4,0,0">
-                                            <CheckBox Name="checkBox_epgNoDisplayOld" Content="古い番組データの表示を抑制する" Margin="0,0,20,0" ToolTip="通常はチェック不要です。" />
-                                            <TextBox Name="textBox_epgNoDisplayOldDays" Style="{StaticResource NumberBox}" />
-                                            <Label Content="日前まで表示" Margin="12,0,0,0" />
-                                        </WrapPanel>
                                     </StackPanel>
                                 </Grid>
                             </GroupBox>
@@ -458,8 +474,8 @@
                             <GroupBox Header="表示設定" Margin="6,6,6,0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition MinWidth="210"/>
-                                        <ColumnDefinition Width="1.5*"/>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                         <WrapPanel>
@@ -479,16 +495,45 @@
                                                     <Binding Path="IsEnabled" ElementName="checkBox_tunerSingleOpen" Converter="{StaticResource notConverter}" />
                                                     <Binding Path="IsChecked" ElementName="checkBox_tunerSingleOpen" Converter="{StaticResource notConverter}" />
                                                     <Binding Path="IsChecked" ElementName="radioButton_tuner_popup_onClick" Converter="{StaticResource notConverter}" />
-                                            </MultiBinding>
+                                                </MultiBinding>
                                             </CheckBox.IsEnabled>
                                         </CheckBox>
-                                        <WrapPanel Margin="25,0">
+                                        <WrapPanel Margin="25,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup, UpdateSourceTrigger=PropertyChanged}">
                                             <RadioButton Name="radioButton_tuner_popup_onOver"  Content="マウスオーバー" Margin="0,0,20,4" />
                                             <RadioButton Name="radioButton_tuner_popup_onClick" Content="クリックしたとき" Margin="0,0,20,4" />
                                         </WrapPanel>
                                         <CheckBox Name="checkBox_tuner_popup_recInfo" Margin="25,0,0,4" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup, UpdateSourceTrigger=PropertyChanged}">
                                             <TextBlock Text="ポップアップに優先度と録画モードを表示する" TextWrapping="Wrap"></TextBlock>
                                         </CheckBox>
+                                        <StackPanel Orientation="Horizontal" Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tuner_popup, UpdateSourceTrigger=PropertyChanged}">
+                                            <Label Content="ポップアップの幅　チューナの幅 ×" />
+                                            <TextBox Name="textBox_tuner_popup_Width" Style="{StaticResource NumberBox}" />
+                                            <Label Content="倍" />
+                                        </StackPanel>
+                                        <CheckBox Name="checkBox_tunerDescToolTip" Content="詳細をツールチップ表示する" Margin="9,4" />
+                                        <WrapPanel Margin="20,0,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_tunerDescToolTip, UpdateSourceTrigger=PropertyChanged}" >
+                                            <Label Content="ツールチップを表示するまでの時間" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBox Name="textBox_tunerToolTipWait" Margin="20,0,0,0" Style="{StaticResource NumberBox}" />
+                                                <Label Content="ミリ秒" />
+                                            </StackPanel>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <WrapPanel>
+                                            <StackPanel Margin="4" Orientation="Horizontal">
+                                                <Label Content="1分あたりの高さ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
+                                                <TextBox Name="textBox_tuner_minHeight" Style="{StaticResource NumberBox}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="4" Orientation="Horizontal">
+                                                <Label Content="最低表示行数" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
+                                                <TextBox Name="textBox_tunerMinLineHeight" Style="{StaticResource NumberBox}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="4" Orientation="Horizontal">
+                                                <Label Content="ドラッグスクロール倍率" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
+                                                <TextBox Name="textBox_tunerDdragScroll" Style="{StaticResource NumberBox}" />
+                                            </StackPanel>
+                                        </WrapPanel>
                                         <CheckBox Name="checkBox_tunerSingleOpen" Margin="9,4">
                                             <CheckBox.IsEnabled>
                                                 <MultiBinding Converter="{StaticResource orConverter}">
@@ -506,22 +551,6 @@
                                             <TextBlock Text="サービス名と番組名の表示位置をあわせる" TextWrapping="Wrap" />
                                         </CheckBox>
                                         <CheckBox Name="checkBox_tuner_service_nowrap" Content="サービス名を改行しない" Margin="9,4" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1">
-                                        <WrapPanel>
-                                            <StackPanel Margin="4" Orientation="Horizontal">
-                                                <Label Content="1分あたりの高さ" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_tuner_minHeight" Style="{StaticResource NumberBox}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="4" Orientation="Horizontal">
-                                                <Label Content="最低表示行数" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_tunerMinLineHeight" Style="{StaticResource NumberBox}" />
-                                            </StackPanel>
-                                            <StackPanel Margin="4" Orientation="Horizontal">
-                                                <Label Content="ドラッグスクロール倍率" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
-                                                <TextBox Name="textBox_tunerDdragScroll" Style="{StaticResource NumberBox}" />
-                                            </StackPanel>
-                                        </WrapPanel>
                                         <CheckBox Name="checkBox_tuner_display_offres" Content="無効の予約も表示する" Margin="9,4" />
                                     </StackPanel>
                                 </Grid>
@@ -700,6 +729,13 @@
                                 <WrapPanel Margin="8,2">
                                     <CheckBox Name="checkBox_NotNoStyle" Content="テーマを適用する" Checked="checkBox_NotNoStyle_Checked" Unchecked="checkBox_NotNoStyle_Unchecked"/>
                                     <ComboBox Name="comboBox_Style" Margin="20,0" Width="200" IsEnabled="{Binding IsChecked, ElementName=checkBox_NotNoStyle}" SelectionChanged="comboBox_Style_SelectionChanged" />
+                                </WrapPanel>
+                                <WrapPanel Margin="8,2" Orientation="Horizontal" >
+                                    <CheckBox Name="checkBox_toolTips" Content="詳細情報のツールチップを表示する" ToolTip="番組表、使用予定チューナー画面、その他一部画面は個別にツールチップの表示設定があります。" />
+                                    <StackPanel Orientation="Horizontal" Margin="20,0" IsEnabled="{Binding IsChecked, ElementName=checkBox_toolTips}" ToolTip="{Binding ToolTip, ElementName=checkBox_toolTips}">
+                                        <Label Content="ツールチップの幅" />
+                                        <TextBox Name="textBox_ToolTipsWidth" Style="{StaticResource NumberBox}" />
+                                    </StackPanel>
                                 </WrapPanel>
                                 <WrapPanel Margin="8,2">
                                     <CheckBox Name="checkBox_displayStatus" Content="ステータス表示をする" />

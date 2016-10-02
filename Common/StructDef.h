@@ -4,17 +4,6 @@
 //転送ファイルデータ
 typedef struct _FILE_DATA{
 	wstring Name;				//ファイル名
-	/*
-	DWORD Size;					//ファイルサイズ
-	DWORD Status;				//ファイルステータス(とりあえず未使用)
-	BYTE* Data;					//ファイルデータ
-	_FILE_DATA(void){
-		Name = L"";
-		Size = 0;
-		Status = 0;
-		Data = NULL;
-	};
-	*/
 	vector<BYTE> Data;			//ファイルデータ
 } FILE_DATA;
 
@@ -510,14 +499,6 @@ typedef struct _EPGDB_SEARCH_KEY_INFO{
 	//自動予約登録の条件専用
 	BYTE chkRecEnd;					//録画済かのチェックあり
 	WORD chkRecDay;					//録画済かのチェック対象期間（+20000=SID無視,+30000=TS|SID無視,+40000=ON|TS|SID無視）
-#if false /* xtne6f版 */
-#else /* tkntrec版 */
-	// tkntrec: EPG予約の同一番組無効予約に同一サービス確認を省略するオプションを追加(部分適用)
-	BYTE chkRecNoService;			//録画済かのチェックの際、同一サービスのチェックを省略する
-	// tkntrec: 検索/EPG予約に番組長による絞り込みを追加(部分適用)
-	WORD chkDurationMin;			//最低番組長(分/0は無制限)
-	WORD chkDurationMax;			//最大番組長(分/0は無制限)
-#endif
 	// abt8WG: 検索処理の高速化 (メモリー使用量の削減)
 	mutable DWORD searchKeyHash;	// AUTO_ADD_DATA の検索キーの場合はハッシュ値を入れる。他の検索時は 0
 	_EPGDB_SEARCH_KEY_INFO(void){
@@ -531,12 +512,6 @@ typedef struct _EPGDB_SEARCH_KEY_INFO{
 		freeCAFlag = 0;
 		chkRecEnd = 0;
 		chkRecDay = 6;
-#if false /* xtne6f版 */
-#else /* tkntrec版 */
-		chkRecNoService = 0;
-		chkDurationMin = 0;
-		chkDurationMax = 0;
-#endif
 		searchKeyHash = 0;
 	};
 }EPGDB_SEARCH_KEY_INFO;

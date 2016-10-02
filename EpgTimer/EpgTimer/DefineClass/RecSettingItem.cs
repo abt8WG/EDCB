@@ -86,7 +86,7 @@ namespace EpgTimer
             {
                 if (RecSettingInfo == null) return "";
                 //
-                return CommonManager.Instance.ConvertRecModeText(RecSettingInfo.RecMode);
+                return CommonManager.ConvertRecModeText(RecSettingInfo.RecMode);
             }
         }
         public virtual String Priority
@@ -104,7 +104,7 @@ namespace EpgTimer
             {
                 if (RecSettingInfo == null) return "";
                 //
-                return CommonManager.Instance.YesNoDictionary[RecSettingInfo.TuijyuuFlag];
+                return CommonManager.ConvertYesNoText(RecSettingInfo.TuijyuuFlag);
             }
         }
         public virtual String Pittari
@@ -113,7 +113,7 @@ namespace EpgTimer
             {
                 if (RecSettingInfo == null) return "";
                 //
-                return CommonManager.Instance.YesNoDictionary[RecSettingInfo.PittariFlag];
+                return CommonManager.ConvertYesNoText(RecSettingInfo.PittariFlag);
             }
         }
         public virtual String Tuner
@@ -122,7 +122,7 @@ namespace EpgTimer
             {
                 if (RecSettingInfo == null) return "";
                 //
-                return CommonManager.Instance.ConvertTunerText(RecSettingInfo.TunerID);
+                return CommonManager.ConvertTunerText(RecSettingInfo.TunerID);
             }
         }
         public virtual List<String> RecFolder

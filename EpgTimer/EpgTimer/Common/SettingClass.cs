@@ -664,6 +664,8 @@ namespace EpgTimer
         //public bool FontBoldTitle { get; set; }
         /// <summary>ツールチップの表示を抑制する</summary>
         public bool NoToolTip { get; set; }
+        /// <summary>詳細情報のツールチップを表示する  ツールチップの幅</summary>
+        public double ToolTipWidth { get; set; }
         /// <summary>バルーンチップでの動作通知を抑制する</summary>
         public bool NoBallonTips { get; set; }
         /// <summary>指定タイムアウトでバルーンチップを強制的に閉じる[秒]</summary>
@@ -727,25 +729,31 @@ namespace EpgTimer
         public bool TunerServiceNoWrap { get; set; }
         /// <summary>使用予定チューナーのサービス名と番組名の表示位置をあわせる</summary>
         public bool TunerTitleIndent { get; set; }
+        /// <summary>使用予定チューナーの詳細をツールチップ表示する</summary>
+        public bool TunerToolTip { get; set; }
+        /// <summary>使用予定チューナーのツールチップを表示するまでの時間(ミリ秒)</summary>
+        public int TunerToolTipViewWait { get; set; }
         /// <summary>使用予定チューナーの予約をポップアップ表示する</summary>
         public bool TunerPopup { get; set; }
-        /// <summary>予約のポップアップ表示 (マウスオーバー/クリックしたとき)</summary>
+        /// <summary>使用予定チューナーの予約のポップアップ表示 (マウスオーバー/クリックしたとき)</summary>
         public int TunerPopupMode { get; set; }
         /// <summary>使用予定チューナーのポップアップに優先度と録画モードを表示する</summary>
         public bool TunerPopupRecinfo { get; set; }
+        /// <summary>使用予定チューナーのポップアップの幅　チューナの幅 n 倍</summary>
+        public double TunerPopupWidth { get; set; }
         /// <summary>使用予定チューナーのシングルクリックで予約ダイアログを開く</summary>
         public bool TunerInfoSingleClick { get; set; }
         /// <summary>使用予定チューナーのサービスのフォント色を優先度で変える</summary>
         public bool TunerColorModeUse { get; set; }
         /// <summary>使用予定チューナーで無効の予約も表示する</summary>
         public bool TunerDisplayOffReserve { get; set; }
-        /// <summary></summary>
-        public bool EpgToolTip { get; set; }
         /// <summary>番組表の番組名と番組内容の表示位置をあわせる</summary>
         public bool EpgTitleIndent { get; set; }
-        /// <summary></summary>
+        /// <summary>番組表の詳細をツールチップ表示する</summary>
+        public bool EpgToolTip { get; set; }
+        /// <summary>番組表の番組名を表示しきれない物のみ表示する</summary>
         public bool EpgToolTipNoViewOnly { get; set; }
-        /// <summary></summary>
+        /// <summary>番組表のツールチップを表示するまでの時間(ミリ秒)</summary>
         public int EpgToolTipViewWait { get; set; }
         /// <summary>番組表の番組内容をポップアップ表示する</summary>
         public bool EpgPopup { get; set; }
@@ -753,6 +761,14 @@ namespace EpgTimer
         public bool EpgPopupResOnly { get; set; }
         /// <summary>番組内容のポップアップ表示 (マウスオーバー/クリックしたとき/予約のみマウスオーバーで、他はクリックしたとき)</summary>
         public int EpgPopupMode { get; set; }
+        /// <summary>番組内容のポップアップの幅　サービスの幅 n 倍</summary>
+        public double EpgPopupWidth { get; set; }
+        /// <summary>番組内容を詳しく表示する / 番組表</summary>
+        public bool EpgExtInfoTable { get; set; }
+        /// <summary>番組内容を詳しく表示する / ポップアップ</summary>
+        public bool EpgExtInfoPopup { get; set; }
+        /// <summary>番組内容を詳しく表示する / ツールチップ</summary>
+        public bool EpgExtInfoTooltip { get; set; }
         /// <summary>番組表の番組内容をグラデーション表示する</summary>
         public bool EpgGradation { get; set; }
         /// <summary>番組表のサービス・時刻軸をグラデーション表示する</summary>
@@ -1122,6 +1138,7 @@ namespace EpgTimer
             fontSizeTitle = 12;
             fontBoldTitle = true;
             NoToolTip = false;
+            ToolTipWidth = 400;
             NoBallonTips = false;
             ForceHideBalloonTipSec = 0;
             PlayDClick = false;
@@ -1156,18 +1173,25 @@ namespace EpgTimer
             TunerWidth = 150;
             TunerServiceNoWrap = true;
             TunerTitleIndent = true;
+            TunerToolTip = false;
+            TunerToolTipViewWait = 1500;
             TunerPopup = false;
             TunerPopupMode = 0;
             TunerPopupRecinfo = false;
             TunerInfoSingleClick = false;
+            TunerPopupWidth = 1;
             TunerColorModeUse = false;
             TunerDisplayOffReserve = false;
-            EpgToolTip = false;
             EpgTitleIndent = true;
+            EpgToolTip = false;
             EpgToolTipNoViewOnly = true;
             EpgToolTipViewWait = 1500;
             EpgPopup = true;
             EpgPopupMode = 0;
+            EpgPopupWidth = 1;
+            EpgExtInfoTable = false;
+            EpgExtInfoPopup = false;
+            EpgExtInfoTooltip = true;
             EpgGradation = true;
             EpgGradationHeader = true;
             EpgNoDisplayOld = false;

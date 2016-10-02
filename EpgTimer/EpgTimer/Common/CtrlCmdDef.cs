@@ -1419,6 +1419,14 @@ namespace EpgTimer
         }
         public void Write(MemoryStream s, ushort version)
         {
+            //装飾フラグをここで処理
+            ushort chkRecDay_Send = (ushort)((chkRecNoService != 0 ? 40000 : 0) + chkRecDay % 10000);
+
+            string andKey_Send = (chkDurationMin > 0 || chkDurationMax > 0 ?
+                "D!{" + ((10000 + Math.Min((int)chkDurationMin, 9999)) * 10000 + Math.Min((int)chkDurationMax, 9999)) + "}" : "") + andKey;
+            andKey_Send = (caseFlag == 1 ? "C!{999}" : "") + andKey_Send;
+            andKey_Send = (keyDisabledFlag == 1 ? "^!{999}" : "") + andKey_Send;
+
             var w = new CtrlCmdWriter(s, version);
             w.Begin();
             w.Write(andKey_);
@@ -1437,13 +1445,7 @@ namespace EpgTimer
             if (version >= 3)
             {
                 w.Write(chkRecEnd);
-                w.Write(chkRecDay);
-            }
-            if (version >= 5)
-            {
-                w.Write(chkRecNoService);
-                w.Write(chkDurationMin);
-                w.Write(chkDurationMax);
+                w.Write(chkRecDay_Send);
             }
             w.End();
         }
@@ -1471,10 +1473,6 @@ namespace EpgTimer
             }
             if (version >= 5 && r.RemainSize() >= 5)
             {
-                r.Read(ref chkRecNoService);
-                r.Read(ref chkDurationMin);
-                r.Read(ref chkDurationMax);
-
 #if false // xtne6f版
                 if (chkRecNoService != 0)
                 {
@@ -1487,8 +1485,37 @@ namespace EpgTimer
                         "D!{" + ((10000 + Math.Min((int)chkDurationMin, 9999)) * 10000 + Math.Min((int)chkDurationMax, 9999)) + "}");
                 }
 #endif
+                r.Read(ref chkRecNoService);
+                r.Read(ref chkDurationMin);
+                r.Read(ref chkDurationMax);
             }
             r.End();
+
+            //装飾フラグをここで処理
+            if (chkRecDay >= 40000)
+            {
+                chkRecNoService = (byte)(chkRecDay >= 40000 ? 1 : 0);
+                chkRecDay %= 10000;
+            }
+
+            if (andKey.StartsWith("^!{999}") == true)//"^!{999}"が前
+            {
+                keyDisabledFlag = 1;
+                andKey = andKey.Substring(7);
+            }
+            if (andKey.StartsWith("C!{999}") == true)
+            {
+                caseFlag = 1;
+                andKey = andKey.Substring(7);
+            }
+            if (andKey.Length > 13 && andKey.StartsWith("D!{1") == true && andKey[12] == '}')
+            {
+                uint dur = 0;
+                uint.TryParse(andKey.Substring(4, 8), out dur);
+                andKey = andKey.Substring(13);
+                chkDurationMin = (ushort)(dur / 10000);
+                chkDurationMax = (ushort)(dur % 10000);
+            }
         }
     }
 

@@ -189,7 +189,7 @@ namespace EpgTimer
                 nowViewTimer.Stop();
                 serviceList.Clear();
 
-                foreach (UInt64 id in viewCustServiceList)
+                foreach (UInt64 id in setViewInfo.ViewServiceList)
                 {
                     if (serviceEventList.ContainsKey(id) == true)
                     {
@@ -260,7 +260,7 @@ namespace EpgTimer
                             continue;
                         }
                         //ジャンル絞り込み
-                        if (ViewUtil.ContainsContent(eventInfo, this.viewCustContentKindList) == false)
+                        if (ViewUtil.ContainsContent(eventInfo, this.viewCustContentKindList, this.setViewInfo.ViewNotContentFlag) == false)
                         {
                             continue;
                         }

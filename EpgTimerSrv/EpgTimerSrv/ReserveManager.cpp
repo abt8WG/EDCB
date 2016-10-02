@@ -516,7 +516,7 @@ vector<REC_FILE_INFO> CReserveManager::GetRecFileInfoAll(bool getExtraInfo) cons
 	wstring folder;
 	{
 		CBlockLock lock(&this->managerLock);
-		
+
 		// 存在確認を更新
 		recEventDB.UpdateFileExist();
 
@@ -1937,7 +1937,7 @@ bool CReserveManager::GetRecFilePath(DWORD reserveID, wstring& filePath) const
 	return false;
 }
 
-bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPGDB_SEARCH_KEY_INFO& key) const
+bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, WORD chkDay) const
 {
 	CBlockLock lock(&this->managerLock);
 	bool ret = false;
@@ -1954,15 +1954,9 @@ bool CReserveManager::IsFindRecEventInfo(const EPGDB_EVENT_INFO& info, const EPG
 				infoEventName = (LPCWSTR)rpl == NULL ? L"" : (LPCWSTR)rpl;
 			}
 			if( infoEventName.empty() == false && info.StartTimeFlag != 0 ){
-				WORD chkDay = key.chkRecDay;
 				int chkDayActual = chkDay >= 20000 ? chkDay % 10000 : chkDay;
 				map<DWORD, PARSE_REC_INFO2_ITEM>::const_iterator itr;
 				for( itr = this->recInfo2Text.GetMap().begin(); itr != this->recInfo2Text.GetMap().end(); itr++ ){
-					//if( ( key.chkRecNoService == 1 || itr->second.originalNetworkID == info.original_network_id &&
-					//	itr->second.transportStreamID == info.transport_stream_id &&
-					//	itr->second.serviceID == info.service_id ) &&
-					//	ConvertI64Time(itr->second.startTime) + key.chkRecDay*24*60*60*I64_1SEC > ConvertI64Time(info.start_time) ){
-					/* xtne6f */
 					if( (chkDay >= 40000 || itr->second.originalNetworkID == info.original_network_id) &&
 					    (chkDay >= 30000 || itr->second.transportStreamID == info.transport_stream_id) &&
 					    (chkDay >= 20000 || itr->second.serviceID == info.service_id) &&
@@ -2098,6 +2092,7 @@ bool CReserveManager::AutoAddReserveEPG(
 
 	bool modified = false;
 	vector<RESERVE_DATA> setList;
+	//int addCount = 0;
 	vector<const RESERVE_DATA*> addList;
 
 	__int64 now = GetNowI64Time();
@@ -2118,6 +2113,7 @@ bool CReserveManager::AutoAddReserveEPG(
 		//時間未定でなく対象期間内かどうか
 		if( info.StartTimeFlag != 0 && info.DurationFlag != 0 &&
 		    now < ConvertI64Time(info.start_time) && ConvertI64Time(info.start_time) < now + autoAddHour_ * 60 * 60 * I64_1SEC ){
+			//addCount++;
 			DWORD reserveID = 0;
 			if( IsFindReserve(info.original_network_id, info.transport_stream_id, info.service_id, info.event_id, &reserveID) == false ){
 				bool found = false;
@@ -2168,7 +2164,7 @@ bool CReserveManager::AutoAddReserveEPG(
 					item.serviceID = info.service_id;
 					item.eventID = info.event_id;
 					item.recSetting = data.recSetting;
-					if( data.searchInfo.chkRecEnd != 0 && IsFindRecEventInfo(info, data.searchInfo) ){
+					if( data.searchInfo.chkRecEnd != 0 && IsFindRecEventInfo(info, data.searchInfo.chkRecDay) ){
 						item.recSetting.recMode = RECMODE_NO;
 					}
 					item.comment = EPG_AUTO_ADD_TEXT;
@@ -2178,7 +2174,7 @@ bool CReserveManager::AutoAddReserveEPG(
 						Replace(item.comment, L"\n", L"");
 					}
 				}
-			}else if( data.searchInfo.chkRecEnd != 0 && IsFindRecEventInfo(info, data.searchInfo) ){
+			}else if( data.searchInfo.chkRecEnd != 0 && IsFindRecEventInfo(info, data.searchInfo.chkRecDay) ){
 				//録画済みなので無効でない予約は無効にする
 				if( ChgAutoAddNoRec(info.original_network_id, info.transport_stream_id, info.service_id, info.event_id) ){
 					modified = true;

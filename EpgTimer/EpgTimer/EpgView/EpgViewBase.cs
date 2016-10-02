@@ -11,7 +11,6 @@ namespace EpgTimer.EpgView
         protected static CtrlCmdUtil cmd { get { return CommonManager.Instance.CtrlCmd; } }
 
         protected CustomEpgTabInfo setViewInfo = null;
-        protected List<UInt64> viewCustServiceList = null;
         protected Dictionary<UInt16, UInt16> viewCustContentKindList = new Dictionary<UInt16, UInt16>();
         protected Dictionary<UInt64, EpgServiceEventInfo> serviceEventList = new Dictionary<UInt64, EpgServiceEventInfo>();
 
@@ -88,13 +87,7 @@ namespace EpgTimer.EpgView
         public virtual void SetViewMode(CustomEpgTabInfo setInfo)
         {
             setViewInfo = setInfo.Clone();
-
-            this.viewCustServiceList = setInfo.ViewServiceList.ToList();
-            this.viewCustContentKindList.Clear();
-            if (setInfo.ViewContentKindList != null)
-            {
-                setInfo.ViewContentKindList.ForEach(val => this.viewCustContentKindList.Add(val, val));
-            }
+            this.viewCustContentKindList = setViewInfo.ViewContentKindList.ToDictionary(id => id, id => id);
 
             ReloadInfo = true;
         }
@@ -153,12 +146,7 @@ namespace EpgTimer.EpgView
                 {
                     //番組情報の検索
                     var list = new List<EpgEventInfo>();
-                    EpgSearchKeyInfo setKey = setViewInfo.SearchKey.Clone();
-                    if (setViewInfo.SearchServiceFromView == true)
-                    {
-                        setKey.serviceList = setViewInfo.ViewServiceList.Select(sv => (long)sv).ToList();
-                    }
-                    ErrCode err = cmd.SendSearchPg(CommonUtil.ToList(setKey), ref list);
+                    ErrCode err = cmd.SendSearchPg(CommonUtil.ToList(setViewInfo.GetSearchKeyReloadEpg()), ref list);
                     if (CommonManager.CmdErrMsgTypical(err, "EPGデータの取得") == false) return false;
 
                     //サービス毎のリストに変換
