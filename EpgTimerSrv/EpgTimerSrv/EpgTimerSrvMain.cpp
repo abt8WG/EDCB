@@ -82,7 +82,7 @@ bool CEpgTimerSrvMain::Main(bool serviceFlag_)
 
 	wstring iniPath;
 	GetModuleIniPath(iniPath);
-	g_compatFlags = GetPrivateProfileInt(L"SET", L"CompatFlags", SUPPORT_FULL, iniPath.c_str());
+	g_compatFlags = SUPPORT_FULL; //  GetPrivateProfileInt(L"SET", L"CompatFlags", SUPPORT_FULL, iniPath.c_str());
 
 	DWORD awayMode;
 	OSVERSIONINFOEX osvi;
@@ -802,8 +802,6 @@ void CEpgTimerSrvMain::ReloadSetting()
 			this->tvtestUseBon.push_back(buff);
 		}
 	}
-
-	g_compatFlags = GetPrivateProfileInt(L"SET", L"CompatFlags", SUPPORT_FULL, iniPath.c_str());
 }
 
 pair<wstring, REC_SETTING_DATA> CEpgTimerSrvMain::LoadRecSetData(WORD preset) const
