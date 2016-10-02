@@ -101,4 +101,19 @@
 #define NOTIFY_UPDATE_EPGCAP_START	107		//EPG取得開始
 #define NOTIFY_UPDATE_EPGCAP_END	108		//EPG取得終了
 
+// for g_compatFlags
+#define SUPPORT_SEARCH_IN_DETAIL            0x00000001  // CtrlCmdの検索条件に録画済チェックに関するフィールドを追加
+#define SUPPORT_SEARCH_WITHOUT_KEYWORD      0x00000002  // キーワードなしの検索を許可
+#define SUPPORT_ISREGIST_GUI_TCP            0x00000004  // TCP接続の登録状況確認コマンド
+#define SUPPORT_PROFILE_UPDATE              0x00000008  // 設定更新通知コマンド
+#define SUPPORT_GET_NETWORK_PATH            0x00000010  // ネットワークパス取得コマンド
+#define SUPPORT_SEARCH_PG2_AND_PG_BYKEY2    0x00000020  // 番組検索の追加コマンド
+#define SUPPORT_GET_RECINFO_LIST2           0x00000040  // リスト指定の録画済み一覧取得コマンド
+#define SUPPORT_FILE_COPY2                  0x00000080  // 指定ファイルをまとめて転送するコマンド
+#define SUPPORT_FILE_COPY_EX                0x00001000  // abt8WG版 CMD2_EPG_SRV_FILE_COPY
+#define SUPPORT_UPDATE_SETTING              0x00002000  // 設定ファイルの更新コマンド
+#define SUPPORT_ENUM_REC_FOLDER             0x00004000  // 録画保存フォルダのパス。空き容量、全容量の取得コマンド
+
+#define SUPPORT_FULL                        0x0000FFFF
+
 #endif

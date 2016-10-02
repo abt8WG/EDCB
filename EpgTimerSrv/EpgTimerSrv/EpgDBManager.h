@@ -3,6 +3,7 @@
 #include "../../Common/StructDef.h"
 #include "../../Common/EpgDataCap3Def.h"
 #include "../../Common/BlockLock.h"
+#include "../../Common/CommonDef.h"
 #include "../../Common/Measure.h"
 
 #import "RegExp.tlb" no_namespace named_guids
@@ -144,7 +145,7 @@ public:
 		}
 		if( andKey.size() == 0 && key->notKey.size() == 0 && key->contentList.size() == 0 && key->videoList.size() == 0 && key->audioList.size() == 0){
 			//キーワードもジャンル指定もないので検索しない
-			if( g_compatFlags & 0x02 ){
+			if( g_compatFlags & SUPPORT_SEARCH_WITHOUT_KEYWORD ){
 				//互換動作: キーワードなしの検索を許可する
 			}else{
 				return;

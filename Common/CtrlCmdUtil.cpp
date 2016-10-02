@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CtrlCmdUtil.h"
+#include "CommonDef.h"
 
 #ifdef CTRL_CMD_UTIL_USE_COMPAT_FLAGS
 extern DWORD g_compatFlags;
@@ -775,7 +776,7 @@ DWORD WriteVALUE( WORD ver, BYTE* buff, DWORD buffOffset, const EPGDB_SEARCH_KEY
 	wstring andKey_;
 	WORD durMin = 0;
 	WORD durMax = 0;
-	bool compatFlag = (g_compatFlags & 0x01) != 0;
+	bool compatFlag = (g_compatFlags & SUPPORT_SEARCH_IN_DETAIL) != 0;
 	if( compatFlag ){
 		//互換動作: CtrlCmdの検索条件に録画済チェックに関するフィールドを追加
 		chkRecDay = chkRecDay >= 40000 ? chkRecDay % 10000 : chkRecDay;

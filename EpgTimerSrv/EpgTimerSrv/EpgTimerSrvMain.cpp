@@ -82,7 +82,7 @@ bool CEpgTimerSrvMain::Main(bool serviceFlag_)
 
 	wstring iniPath;
 	GetModuleIniPath(iniPath);
-	g_compatFlags = GetPrivateProfileInt(L"SET", L"CompatFlags", 4095, iniPath.c_str());
+	g_compatFlags = GetPrivateProfileInt(L"SET", L"CompatFlags", SUPPORT_FULL, iniPath.c_str());
 
 	DWORD awayMode;
 	OSVERSIONINFOEX osvi;
@@ -802,6 +802,8 @@ void CEpgTimerSrvMain::ReloadSetting()
 			this->tvtestUseBon.push_back(buff);
 		}
 	}
+
+	g_compatFlags = GetPrivateProfileInt(L"SET", L"CompatFlags", SUPPORT_FULL, iniPath.c_str());
 }
 
 pair<wstring, REC_SETTING_DATA> CEpgTimerSrvMain::LoadRecSetData(WORD preset) const
@@ -2180,7 +2182,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 
 	switch( cmdParam.param ){
 	case CMD2_EPG_SRV_ISREGIST_GUI_TCP:
-		if( g_compatFlags & 0x04 ){
+		if( g_compatFlags & SUPPORT_ISREGIST_GUI_TCP ){
 			//互換動作: TCP接続の登録状況確認コマンドを実装する
 			REGIST_TCP_INFO val;
 			if( ReadVALUE(&val, cmdParam.data, cmdParam.dataSize, NULL) ){
@@ -2195,7 +2197,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_PROFILE_UPDATE:
-		if( g_compatFlags & 0x08 ){
+		if( g_compatFlags & SUPPORT_PROFILE_UPDATE ){
 			//互換動作: 設定更新通知コマンドを実装する
 			this->notifyManager.AddNotify(NOTIFY_UPDATE_PROFILE);
 			resParam.param = CMD_SUCCESS;
@@ -2203,7 +2205,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_GET_NETWORK_PATH:
-		if( g_compatFlags & 0x10 ){
+		if( g_compatFlags & SUPPORT_GET_NETWORK_PATH ){
 			//互換動作: ネットワークパス取得コマンドを実装する
 			wstring path;
 			if( ReadVALUE(&path, cmdParam.data, cmdParam.dataSize, NULL) ){
@@ -2217,7 +2219,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_SEARCH_PG2:
-		if( g_compatFlags & 0x20 ){
+		if( g_compatFlags & SUPPORT_SEARCH_PG2_AND_PG_BYKEY2 ){
 			//互換動作: 番組検索の追加コマンドを実装する
 			if( this->epgDB.IsInitialLoadingDataDone() == FALSE ){
 				resParam.param = CMD_ERR_BUSY;
@@ -2241,7 +2243,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_SEARCH_PG_BYKEY2:
-		if( g_compatFlags & 0x20 ){
+		if( g_compatFlags & SUPPORT_SEARCH_PG2_AND_PG_BYKEY2 ){
 			//互換動作: 番組検索の追加コマンドを実装する
 			if( this->epgDB.IsInitialLoadingDataDone() == FALSE ){
 				resParam.param = CMD_ERR_BUSY;
@@ -2275,7 +2277,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_GET_RECINFO_LIST2:
-		if( g_compatFlags & 0x40 ){
+		if( g_compatFlags & SUPPORT_GET_RECINFO_LIST2 ){
 			//互換動作: リスト指定の録画済み一覧取得コマンドを実装する
 			WORD ver;
 			DWORD readSize;
@@ -2307,7 +2309,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_FILE_COPY2:
-		if( g_compatFlags & 0x80 ){
+		if( g_compatFlags & SUPPORT_FILE_COPY2 ){
 			//互換動作: 指定ファイルをまとめて転送するコマンドを実装する
 			WORD ver;
 			DWORD readSize;
@@ -2353,7 +2355,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		break;
 
 	case CMD2_EPG_SRV_FILE_COPY: /* abt8WG版 改変 */
-		{
+		if( g_compatFlags & SUPPORT_FILE_COPY_EX ){
 			wstring val;
 			if( ReadVALUE(&val, cmdParam.data, cmdParam.dataSize, NULL) ){
 				wstring path;
@@ -2392,7 +2394,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_UPDATE_SETTING: /* abt8WG版*/
-		{
+		if( g_compatFlags & SUPPORT_UPDATE_SETTING ){
 			resParam.param = CMD_ERR;
 			wstring val;
 			if (ReadVALUE(&val, cmdParam.data, cmdParam.dataSize, NULL)) {
@@ -2513,7 +2515,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_REC_FOLDER: /* abt8WG版 */
-		{
+		if( g_compatFlags & SUPPORT_ENUM_REC_FOLDER ){
 			vector<REC_FOLDER_INFO> resultList;
 			wstring val;
 			if (ReadVALUE(&val, cmdParam.data, cmdParam.dataSize, NULL)) {
