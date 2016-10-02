@@ -450,6 +450,8 @@ namespace EpgTimer
                             //サーバー側更新ができないので、直接更新する。
                             foreach (string lpFileName in _files.Keys)
                             {
+								if (!_files[lpFileName].IsAvailable)
+									continue;
                                 foreach (string lpAppName in _files[lpFileName].Keys)
                                 {
                                     foreach (string lpKeyName in _files[lpFileName][lpAppName].UpdatedKeys)
