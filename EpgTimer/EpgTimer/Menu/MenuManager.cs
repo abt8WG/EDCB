@@ -674,7 +674,7 @@ namespace EpgTimer
 
             if (menu.IsEnabled == false) return false;
 
-            CtxmGenerateChgAutoAddMenuItem(menu, info, EpgCmds.ShowAutoAddDialog, null, Settings.Instance.MenuSet.AutoAddFazySerach);
+            CtxmGenerateChgAutoAddMenuItem(menu, info, EpgCmds.ShowAutoAddDialog, null, Settings.Instance.MenuSet.AutoAddFazySearch);
 
             if (menu.Items.Count == 0) return false;
 
@@ -709,7 +709,7 @@ namespace EpgTimer
                         menuItem.ToolTip = ViewUtil.GetTooltipBlockStandard(header);
                         header = CommonUtil.LimitLenString(header, str_max); // 長すぎる場合は省略
                     }
-                    if (Settings.Instance.MenuSet.AutoAddSerachToolTip == true)
+                    if (Settings.Instance.MenuSet.AutoAddSearchToolTip == true)
                     {
                         menuItem.ToolTip = AutoAddDataItemEx.CreateIncetance(autoAdd).ToolTipViewAlways;
                     }
