@@ -1271,8 +1271,10 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 	resParam->param = CMD_ERR;
 
 	if( sys->CtrlCmdProcessCompatible(*cmdParam, *resParam, tcpFlag) ){
-		return 0;
+		// return ‘O‚É OutputDebugCmd() ‚µ‚½‚¢‚Ì‚Å
+		//return 0;
 	}
+	else {
 
 	switch( cmdParam->param ){
 	case CMD2_EPG_SRV_RELOAD_EPG:
@@ -2168,6 +2170,7 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		resParam->param = CMD_NON_SUPPORT;
 		break;
 	}
+	}
 
 	QueryPerformanceCounter(&endTime);
 	sys->OutputDebugCmd(cmdParam->param, resParam->param, endTime.QuadPart - startTime.QuadPart);
@@ -2389,6 +2392,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 					resParam.param = CMD_SUCCESS;
 				}
 			}
+			return true;
 		}
 		break;
 	case CMD2_EPG_SRV_UPDATE_SETTING: /* abt8WG”Å*/
@@ -2510,6 +2514,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 					resParam.param = CMD_SUCCESS;
 				}
 			}
+			return true;
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_REC_FOLDER: /* abt8WG”Å */
@@ -2548,6 +2553,7 @@ bool CEpgTimerSrvMain::CtrlCmdProcessCompatible(CMD_STREAM& cmdParam, CMD_STREAM
 				resParam.data = NewWriteVALUE(resultList, resParam.dataSize);
 				resParam.param = CMD_SUCCESS;
 			}
+			return true;
 		}
 		break;
 	}
