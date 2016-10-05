@@ -579,7 +579,6 @@ namespace EpgTimer.Setting
             {
                 comboBox_Style.SelectedIndex = 0;
             }
-            checkBox_NotNoStyle.ToolTip = string.Format("チェック時、テーマファイル「{0}」があればそれを、無ければ既定のテーマ(Aero)を適用します。", System.IO.Path.GetFileName(defaultStyle));
             checkBox_NotNoStyle.IsChecked = Settings.Instance.NoStyle == 0;
         }
         public void UpdateStyle(string file)
@@ -706,7 +705,9 @@ namespace EpgTimer.Setting
 
         private void comboBox_Style_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdateStyle(checkBox_NotNoStyle.IsChecked == true ?(comboBox_Style.SelectedItem as ComboBoxItem).Tag as string : "");
+            var style = (comboBox_Style.SelectedItem as ComboBoxItem).Tag as string;
+            checkBox_NotNoStyle.ToolTip = string.Format("チェック時、テーマファイル「{0}」があればそれを、無ければ既定のテーマ(Aero)を適用します。", System.IO.Path.GetFileName(style));
+            UpdateStyle(checkBox_NotNoStyle.IsChecked == true ? style : "");
         }
     }
 }

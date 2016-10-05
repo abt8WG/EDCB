@@ -99,33 +99,31 @@ namespace EpgTimer
             // デザイン用スタイルをテーマをマージする前に削除しておく
             App.Current.Resources.MergedDictionaries.Clear();
 
-            if (!string.IsNullOrEmpty(themeFile))
+            ResourceDictionary rd = null;
+            if (System.IO.File.Exists(themeFile))
             {
-                ResourceDictionary rd = null;
-                if (System.IO.File.Exists(themeFile))
+                try
                 {
-                    try
-                    {
-                        // ResourceDictionaryを定義したファイルがあるのでロードする
-                        rd = System.Windows.Markup.XamlReader.Load(System.Xml.XmlReader.Create(themeFile)) as ResourceDictionary;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.ToString());
-                    }
+                    // ResourceDictionaryを定義したファイルがあるのでロードする
+                    rd = System.Windows.Markup.XamlReader.Load(System.Xml.XmlReader.Create(themeFile)) as ResourceDictionary;
                 }
-                else
-                {
-                    // 既定のテーマ(Aero)をロードする
-                    rd = Application.LoadComponent(new Uri("/PresentationFramework.Aero, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;component/themes/aero.normalcolor.xaml", UriKind.Relative)) as ResourceDictionary;
-                }
-                if (rd != null)
-                {
-                    // ロードしたテーマをマージする
-                    App.Current.Resources.MergedDictionaries.Add(rd);
-                }
+                catch (Exception ex) { MessageBox.Show(ex.ToString()); }
             }
-
+            else
+            {
+				try
+				{
+					// 既定のテーマ(Aero)をロードする
+					rd = Application.LoadComponent(new Uri("/PresentationFramework.Aero, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;component/themes/aero.normalcolor.xaml", UriKind.Relative)) as ResourceDictionary;
+				}
+				catch { }
+            }
+            if (rd != null)
+            {
+                // ロードしたテーマをマージする
+                App.Current.Resources.MergedDictionaries.Add(rd);
+            }
+ 
             // レイアウト用のスタイルをマージする
             App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/UserCtrlView/UiLayoutStyles.xaml") });
         }
