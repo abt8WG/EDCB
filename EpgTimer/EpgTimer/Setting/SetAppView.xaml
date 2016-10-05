@@ -294,7 +294,6 @@
                                     <CheckBox Name="checkBox_showTray" Content="タスクトレイアイコンを表示する" Margin="0,3,0,0" />
                                     <CheckBox Name="checkBox_minHide" Content="最小化時にタスクトレイに格納する" Margin="20,3,0,0" IsEnabled="{Binding Path=IsChecked, ElementName=checkBox_showTray, UpdateSourceTrigger=PropertyChanged}" />
                                 </WrapPanel>
-                                <CheckBox Name="checkBox_noToolTips" Content="ツールチップの表示を抑制する" Margin="0,3,20,0" />
                                 <WrapPanel>
                                     <CheckBox Name="checkBox_noBallonTips" Content="バルーンチップでの動作通知を抑制する" Margin="0,3,20,0" />
                                     <StackPanel Orientation="Horizontal" Margin="20,0" ToolTip="0でタイムアウト無し">
