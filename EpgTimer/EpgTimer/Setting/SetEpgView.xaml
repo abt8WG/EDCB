@@ -68,33 +68,33 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <Label Grid.Column="0" Grid.Row="0" Content="タイトル" Margin="4" VerticalAlignment="Top" />
+                                    <Label Grid.Column="0" Grid.Row="0" Content="タイトル" Margin="2" VerticalAlignment="Top" />
                                     <WrapPanel Grid.Column="1" Grid.Row="0">
-                                        <StackPanel Margin="4" Orientation="Horizontal">
+                                        <StackPanel Margin="2" Orientation="Horizontal">
                                             <Label Content="フォント" MinWidth="70" />
                                             <ComboBox Name="comboBox_fontTitle" Width="180" />
                                         </StackPanel>
-                                        <StackPanel Name="labelFontSize_MaxWidth" Margin="4,4,-70,4" Orientation="Horizontal">
+                                        <StackPanel Name="labelFontSize_MaxWidth" Margin="2,2,-70,2" Orientation="Horizontal">
                                             <Label Content="サイズ" MinWidth="70" />
                                             <TextBox Name="textBox_fontSizeTitle" Style="{StaticResource NumberBox}" />
                                             <CheckBox Name="checkBox_fontBoldTitle" Content="太字" Margin="8,0" />
                                         </StackPanel>
-                                        <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
+                                        <StackPanel Margin="75,2,0,2" Orientation="Horizontal">
                                             <ComboBox Name="comboBox_colorTitle1" Style="{StaticResource colorCombo}" Tag="0" />
                                             <Button Name="button_colorTitle1" Style="{StaticResource colorButton}" Tag="0" />
                                         </StackPanel>
                                     </WrapPanel>
-                                    <Label Grid.Column="0" Grid.Row="1" Content="タイトル以外" Margin="4" VerticalAlignment="Top" />
+                                    <Label Grid.Column="0" Grid.Row="1" Content="タイトル以外" Margin="2" VerticalAlignment="Top" />
                                     <WrapPanel Grid.Column="1" Grid.Row="1">
-                                        <StackPanel Margin="4" Orientation="Horizontal">
+                                        <StackPanel Margin="2" Orientation="Horizontal">
                                             <Label Content="フォント" MinWidth="70" />
                                             <ComboBox Name="comboBox_font" Width="180" />
                                         </StackPanel>
-                                        <StackPanel Margin="4,4,-70,4" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
+                                        <StackPanel Margin="2,2,-70,2" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
                                             <Label Content="サイズ" MinWidth="70" />
                                             <TextBox Name="textBox_fontSize" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-                                        <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
+                                        <StackPanel Margin="75,2,0,2" Orientation="Horizontal">
                                             <ComboBox Name="comboBox_colorTitle2" Style="{StaticResource colorCombo}" Tag="1" />
                                             <Button Name="button_colorTitle2" Style="{StaticResource colorButton}" Tag="1" />
                                         </StackPanel>
@@ -167,12 +167,6 @@
                                             </CheckBox.IsEnabled>
                                             <TextBlock Text="シングルクリックで予約ダイアログを開く" TextWrapping="Wrap" />
                                         </CheckBox>
-                                        <Label Content="番組内容を詳しく表示する" Margin="4,0" />
-                                        <WrapPanel Margin="25,0,0,0" >
-                                            <CheckBox Name="checkBox_epg_ExtInfo_table"   Content="番組表"       Margin="0,0,10,4" />
-                                            <CheckBox Name="checkBox_epg_ExtInfo_popup"   Content="ポップアップ" Margin="0,0,10,4" />
-                                            <CheckBox Name="checkBox_epg_ExtInfo_tooltip" Content="ツールチップ" Margin="0,0,10,4" />
-                                        </WrapPanel>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1">
                                         <WrapPanel>
@@ -188,6 +182,12 @@
                                                 <Label Content="ドラッグスクロール倍率" Width="{Binding ActualWidth, ElementName=label_MaxWidth}" />
                                                 <TextBox Name="textBox_dragScroll" Style="{StaticResource NumberBox}" />
                                             </StackPanel>
+                                        </WrapPanel>
+                                        <Label Content="番組内容を詳しく表示する" Margin="4,0" />
+                                        <WrapPanel Margin="25,0,0,0" >
+                                            <CheckBox Name="checkBox_epg_ExtInfo_table"   Content="番組表"       Margin="0,0,10,4" />
+                                            <CheckBox Name="checkBox_epg_ExtInfo_popup"   Content="ポップアップ" Margin="0,0,10,4" />
+                                            <CheckBox Name="checkBox_epg_ExtInfo_tooltip" Content="ツールチップ" Margin="0,0,10,4" />
                                         </WrapPanel>
                                         <CheckBox Name="checkBox_openInfo" Margin="9,5">
                                             <TextBlock Text="番組詳細タブを選択した状態で予約ダイアログを開く" TextWrapping="Wrap" />
@@ -416,13 +416,13 @@
                                 <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Content="表示タブ" />
                                 <ListBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Name="listBox_tab" Margin="8,4" SelectionMode="Extended" />
                                 <StackPanel Grid.Column="2" Grid.Row="1" Margin="8,4">
-                                    <Button Name="button_tab_add"    Content="追加" Margin="0,4" Click="button_tab_add_Click" />
-                                    <Button Name="button_tab_chg"    Content="変更" Margin="0,4" Click="button_tab_chg_Click" />
-                                    <Button Name="button_tab_del"    Content="削除" Margin="0,4" />
-                                    <Button Name="button_tab_top"    Content="↑↑" Margin="0,4" />
-                                    <Button Name="button_tab_up"     Content="↑"   Margin="0,4" />
-                                    <Button Name="button_tab_down"   Content="↓"   Margin="0,4" />
-                                    <Button Name="button_tab_bottom" Content="↓↓" Margin="0,4" />
+                                    <Button Name="button_tab_add"    Content="追加" Margin="0,2" Click="button_tab_add_Click" />
+                                    <Button Name="button_tab_chg"    Content="変更" Margin="0,2" Click="button_tab_chg_Click" />
+                                    <Button Name="button_tab_del"    Content="削除" Margin="0,2" />
+                                    <Button Name="button_tab_top"    Content="↑↑" Margin="0,2" />
+                                    <Button Name="button_tab_up"     Content="↑"   Margin="0,2" />
+                                    <Button Name="button_tab_down"   Content="↓"   Margin="0,2" />
+                                    <Button Name="button_tab_bottom" Content="↓↓" Margin="0,2" />
                                 </StackPanel>
                                 <Button Grid.Column="0" Grid.Row="2" Name="button_tab_clone" Content="コピー" Margin="8,4" Click="button_tab_clone_Click" />
                                 <Button Grid.Column="1" Grid.Row="2" Name="button_tab_defaultCopy" Content="デフォルト表示をコピー" Margin="8,4" Click="button_tab_defaultCopy_Click" />
@@ -447,33 +447,33 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <Label Grid.Column="0" Grid.Row="0" Content="サービス" Margin="4" VerticalAlignment="Top" />
+                                    <Label Grid.Column="0" Grid.Row="0" Content="サービス" Margin="2" VerticalAlignment="Top" />
                                     <WrapPanel Grid.Column="1" Grid.Row="0">
-                                        <StackPanel Margin="4" Orientation="Horizontal">
+                                        <StackPanel Margin="2" Orientation="Horizontal">
                                             <Label Content="フォント" MinWidth="70" />
                                             <ComboBox Name="comboBox_fontTunerService" Width="180" />
                                         </StackPanel>
-                                        <StackPanel Margin="4,4,-70,4" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
+                                        <StackPanel Margin="2,2,-70,2" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
                                             <Label Content="サイズ" MinWidth="70" />
                                             <TextBox Name="textBox_fontTunerSizeService" Style="{StaticResource NumberBox}" />
                                             <CheckBox Name="checkBox_fontTunerBoldService" Content="太字" Margin="8,0" />
                                         </StackPanel>
-                                        <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
+                                        <StackPanel Margin="75,2,0,2" Orientation="Horizontal">
                                             <ComboBox Name="comboBox_tunerFontColorService" Style="{StaticResource colorCombo}" Tag="0" />
                                             <Button Name="button_tunerFontCustColorService" Style="{StaticResource colorButton}" Tag="0" />
                                         </StackPanel>
                                     </WrapPanel>
-                                    <Label Grid.Column="0" Grid.Row="1" Content="サービス以外" Margin="4" VerticalAlignment="Top" />
+                                    <Label Grid.Column="0" Grid.Row="1" Content="サービス以外" Margin="2" VerticalAlignment="Top" />
                                     <WrapPanel Grid.Column="1" Grid.Row="1">
-                                        <StackPanel Margin="4" Orientation="Horizontal">
+                                        <StackPanel Margin="2" Orientation="Horizontal">
                                             <Label Content="フォント" MinWidth="70" />
                                             <ComboBox Name="comboBox_fontTuner" Width="180" />
                                         </StackPanel>
-                                        <StackPanel Margin="4,4,-70,4" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
+                                        <StackPanel Margin="2,2,-70,2" Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=labelFontSize_MaxWidth}">
                                             <Label Content="サイズ" MinWidth="70" />
                                             <TextBox Name="textBox_fontTunerSize" Style="{StaticResource NumberBox}" />
                                         </StackPanel>
-                                        <StackPanel Margin="75,4,0,4" Orientation="Horizontal">
+                                        <StackPanel Margin="75,2,0,2" Orientation="Horizontal">
                                             <ComboBox Style="{StaticResource colorCombo}" Tag="1"/>
                                             <Button Style="{StaticResource colorButton}" Tag="1" />
                                         </StackPanel>
@@ -738,14 +738,14 @@
                                 <CheckBox Name="checkBox_displayPresetOnSearch" Margin="8,2">
                                     <TextBlock TextWrapping="Wrap">検索/キーワード予約ダイアログの録画設定タブにプリセットを表示する</TextBlock>
                                 </CheckBox>
-                                <CheckBox Name="checkBox_nekopandaToolTip" Margin="8,2">
-                                    <TextBlock TextWrapping="Wrap">自動予約登録画面で録画予約項目をツールチップ表示する</TextBlock>
-                                </CheckBox>
                                 <WrapPanel Margin="8,2">
                                     <CheckBox Name="checkBox_NotNoStyle" Content="テーマを適用する" Checked="checkBox_NotNoStyle_Checked" Unchecked="checkBox_NotNoStyle_Unchecked"/>
                                     <ComboBox Name="comboBox_Style" Margin="20,0" Width="200" IsEnabled="{Binding IsChecked, ElementName=checkBox_NotNoStyle}" SelectionChanged="comboBox_Style_SelectionChanged" />
                                 </WrapPanel>
-                                <WrapPanel Margin="8,2" Orientation="Horizontal" >
+                                <CheckBox Name="checkBox_nekopandaToolTip" Margin="8,2">
+                                    <TextBlock TextWrapping="Wrap">自動予約登録画面で録画予約項目をツールチップ表示する</TextBlock>
+                                </CheckBox>
+                                <WrapPanel Margin="8,2" Orientation="Horizontal">
                                     <CheckBox Name="checkBox_toolTips" Content="詳細情報のツールチップを表示する" ToolTip="番組表、使用予定チューナー画面、その他一部画面は個別にツールチップの表示設定があります。" />
                                     <StackPanel Orientation="Horizontal" Margin="20,0" IsEnabled="{Binding IsChecked, ElementName=checkBox_toolTips}" ToolTip="{Binding ToolTip, ElementName=checkBox_toolTips}">
                                         <Label Content="ツールチップの幅" />
