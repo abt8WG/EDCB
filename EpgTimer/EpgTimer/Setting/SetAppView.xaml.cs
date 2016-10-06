@@ -172,6 +172,7 @@ namespace EpgTimer.Setting
             if (CommonManager.Instance.NWMode == true)
             {
                 checkBox_tcpServer.IsEnabled = false; // ネットワーク接続を許可する
+                checkBox_srvCompatTkntrec.IsEnabled = false; // EpgTimerSrvの応答をtkntrec版互換にする
 
                 checkBox_wakeReconnect.IsEnabled = true; // 起動時に前回接続サーバーに接続する
                 group_WoLWait.IsEnabled = true; // WoL設定
@@ -179,6 +180,13 @@ namespace EpgTimer.Setting
                 checkBox_ngAutoEpgLoad.IsEnabled = true; // EPGデータを自動的に読み込まない
                 checkBox_keepTCPConnect.IsEnabled = true; // EpgTimerSrvとの接続維持を試みる
             }
+            else
+            {
+                // EpgTimerSrvの応答をtkntrec版互換にする
+                // abt8WG版以外にローカル接続している場合のみ Enable にする
+                checkBox_srvCompatTkntrec.IsEnabled = !IniSetting.Instance.CanUpdateInifile;
+            }
+
             if (ServiceCtrlClass.IsStarted("EpgTimer Service") == true)
             {
                 checkBox_srvResident.IsEnabled = false;
@@ -229,6 +237,7 @@ namespace EpgTimer.Setting
                 checkBox_srvCompatTkntrec.IsChecked = (int)checkBox_srvCompatTkntrec.Tag % 4096 == 4095;
             }
 
+
             // 検索条件のデフォルト値 - button_searchDef
             defSearchKey = Settings.Instance.DefSearchKey.Clone();
 
@@ -238,8 +247,6 @@ namespace EpgTimer.Setting
 
             checkBox_showTray.IsChecked = Settings.Instance.ShowTray;
             checkBox_minHide.IsChecked = Settings.Instance.MinHide;
-
-            //checkBox_noToolTips.IsChecked = Settings.Instance.NoToolTip;
 
             checkBox_noBallonTips.IsChecked = Settings.Instance.NoBallonTips;
             textBox_ForceHideBalloonTipSec.Text = Settings.Instance.ForceHideBalloonTipSec.ToString();
@@ -472,8 +479,6 @@ namespace EpgTimer.Setting
 
             Settings.Instance.ShowTray = (bool)checkBox_showTray.IsChecked;
             Settings.Instance.MinHide = (bool)checkBox_minHide.IsChecked;
-
-            //Settings.Instance.NoToolTip = checkBox_noToolTips.IsChecked != false;
 
             Settings.Instance.NoBallonTips = checkBox_noBallonTips.IsChecked != false;
             Settings.Instance.ForceHideBalloonTipSec = MenuUtil.MyToNumerical(textBox_ForceHideBalloonTipSec, Convert.ToInt32, 255, 0, Settings.Instance.ForceHideBalloonTipSec);
