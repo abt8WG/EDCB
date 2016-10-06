@@ -174,16 +174,14 @@ namespace EpgTimer.UserCtrlView
         protected virtual void TooltipClear()
         {
             cnvs.Children.Remove(Tooltip);
-            Tooltip.ToolTip = null;
+            Tooltip.Visibility = Visibility.Hidden;
+            //Tooltip.ToolTip = null;
             lastToolInfo = null;
             toolTipTimer.Stop();
         }
         protected virtual void TooltipWork()
         {
             if (IsTooltipEnabled == false) return;
-
-            // ポップアップ表示中だったらツールチップを出さない
-            if (Popup.Visibility == Visibility.Visible) return;
 
             try
             {
@@ -192,6 +190,9 @@ namespace EpgTimer.UserCtrlView
                 {
                     TooltipClear();
                     if (toolInfo == null) return;
+
+                    // ポップアップ表示中だったらツールチップを出さない
+                    if (Popup.Visibility == Visibility.Visible) return;
 
                     lastToolInfo = toolInfo;
 
@@ -229,8 +230,9 @@ namespace EpgTimer.UserCtrlView
             Canvas.SetLeft(Tooltip, Math.Floor(toolInfo.LeftPos));
             Canvas.SetTop(Tooltip, Math.Floor(toolInfo.TopPos));
 
-            Tooltip.ToolTip = null;
+            //Tooltip.ToolTip = null;
             SetTooltip(toolInfo);
+            Tooltip.Visibility = Visibility.Visible;
             return;
         }
         protected virtual void SetTooltip(ViewPanelItemBase toolInfo) { }
