@@ -1355,7 +1355,8 @@ namespace EpgTimer
     /// <summary>検索条件</summary>
     public class EpgSearchKeyInfo : ICtrlCmdReadWrite
     {
-        private SearchAndKey andKey_;
+        public string andKey;
+        //private SearchAndKey andKey_;
         public string notKey;
         public int regExpFlag;
         public int titleOnlyFlag;
@@ -1379,26 +1380,16 @@ namespace EpgTimer
         /// <summary>最大番組長(分/0は無制限)</summary>
         public ushort chkDurationMax;
 
-        public string andKey
-        {
-            get { return andKey_.andKey; }
-            set { andKey_.andKey = value; }
-        }
+        //以下は、EpgTimerSrv側ではandKeyへの装飾で処理しているので、ここで吸収する。
+        //ほかのフラグに合わせ、byte型にしておく。
         /// <summary>大文字小文字を区別する</summary>
-        public byte caseFlag {
-            get { return andKey_.caseFlag; }
-            set { andKey_.caseFlag = value; }
-        }
+        public byte caseFlag;
         /// <summary>自動登録を無効にする</summary>
-        public byte keyDisabledFlag
-        {
-            get { return andKey_.keyDisabledFlag; }
-            set { andKey_.keyDisabledFlag = value; }
-        }
+        public byte keyDisabledFlag;
 
         public EpgSearchKeyInfo()
         {
-            andKey_ = new SearchAndKey();
+            andKey = "";
             notKey = "";
             regExpFlag = 0;
             titleOnlyFlag = 0;
@@ -1416,6 +1407,8 @@ namespace EpgTimer
             chkRecNoService = 0;
             chkDurationMin = 0;
             chkDurationMax = 0;
+            caseFlag = 0;
+            keyDisabledFlag = 0;
         }
         public void Write(MemoryStream s, ushort version)
         {
@@ -1429,7 +1422,7 @@ namespace EpgTimer
 
             var w = new CtrlCmdWriter(s, version);
             w.Begin();
-            w.Write(andKey_);
+            w.Write(andKey_Send);
             w.Write(notKey);
             w.Write(regExpFlag);
             w.Write(titleOnlyFlag);
@@ -1453,7 +1446,7 @@ namespace EpgTimer
         {
             var r = new CtrlCmdReader(s, version);
             r.Begin();
-            r.Read(ref andKey_);
+            r.Read(ref andKey);
             r.Read(ref notKey);
             r.Read(ref regExpFlag);
             r.Read(ref titleOnlyFlag);
@@ -1473,18 +1466,6 @@ namespace EpgTimer
             }
             if (version >= 5 && r.RemainSize() >= 5)
             {
-#if false // xtne6f版
-                if (chkRecNoService != 0)
-                {
-                    chkRecDay = (ushort)(chkRecDay % 10000 + 40000);
-                }
-                if (chkDurationMin > 0 || chkDurationMax > 0)
-                {
-                    andKey = andKey.Insert(
-                        System.Text.RegularExpressions.Regex.Match(andKey, @"^(?:\^!\{999\})?(?:C!\{999\})?").Length,
-                        "D!{" + ((10000 + Math.Min((int)chkDurationMin, 9999)) * 10000 + Math.Min((int)chkDurationMax, 9999)) + "}");
-                }
-#endif
                 r.Read(ref chkRecNoService);
                 r.Read(ref chkDurationMin);
                 r.Read(ref chkDurationMax);

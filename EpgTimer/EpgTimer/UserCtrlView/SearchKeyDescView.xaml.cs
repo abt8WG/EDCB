@@ -157,7 +157,8 @@ namespace EpgTimer
                 freeRadioBtns.Value = defKey.freeCAFlag;
 
                 checkBox_chkRecEnd.IsChecked = (defKey.chkRecEnd == 1);
-                textBox_chkRecDay.Text = "" + (defKey.chkRecDay >= 40000 ? defKey.chkRecDay % 10000 : defKey.chkRecDay);
+				textBox_chkRecDay.Text = defKey.chkRecDay.ToString();
+				//textBox_chkRecDay.Text = "" + (defKey.chkRecDay >= 40000 ? defKey.chkRecDay % 10000 : defKey.chkRecDay);
                 radioButton_chkRecNoService1.IsChecked = (defKey.chkRecNoService == 0);
                 radioButton_chkRecNoService2.IsChecked = (defKey.chkRecNoService != 0);
 

@@ -569,7 +569,7 @@ namespace EpgTimer
         /// <summary>指定イベントの番組情報を取得する</summary>
         public ErrCode SendGetPgInfo(ulong pgID, ref EpgEventInfo val) { object o = val; return SendAndReceiveCmdData(CtrlCmd.CMD_EPG_SRV_GET_PG_INFO, pgID, ref o); }
         /// <summary>指定キーワードで番組情報を検索する</summary>
-        //public ErrCode SendSearchPg(List<EpgSearchKeyInfo> key, ref List<EpgEventInfo> val) { object o = val; return SendAndReceiveCmdData(CtrlCmd.CMD_EPG_SRV_SEARCH_PG, key, ref o); }
+        public ErrCode SendSearchPg(List<EpgSearchKeyInfo> key, ref List<EpgEventInfo> val) { object o = val; return SendAndReceiveCmdData(CtrlCmd.CMD_EPG_SRV_SEARCH_PG, key, ref o); }
         /// <summary>番組情報一覧を取得する</summary>
         public ErrCode SendEnumPgAll(ref List<EpgServiceEventInfo> val) { object o = val;  return ReceiveCmdData(CtrlCmd.CMD_EPG_SRV_ENUM_PG_ALL, ref o); }
         /// <summary>録画保存場所一覧を取得する</summary>
@@ -668,7 +668,7 @@ namespace EpgTimer
         /// <summary>EPGデータファイル取得</summary>
         //public ErrCode SendGetEpgFile(string val,BYTE** resVal,uint* resValSize) { return ErrCode.CMD_NON_SUPPORT; }
         /// <summary>指定キーワードで番組情報を検索する (tkntrec氏版)</summary>
-        public ErrCode SendSearchPg(List<EpgSearchKeyInfo> key, ref List<EpgEventInfo> val) { object o = val; return SendAndReceiveCmdData2(CtrlCmd.CMD_EPG_SRV_SEARCH_PG2, key, ref o); }
+        //public ErrCode SendSearchPg(List<EpgSearchKeyInfo> key, ref List<EpgEventInfo> val) { object o = val; return SendAndReceiveCmdData2(CtrlCmd.CMD_EPG_SRV_SEARCH_PG2, key, ref o); }
         /// <summary>指定キーワードで番組情報を検索する(キーごと) (tkntrec氏版)</summary>
         public ErrCode SendSearchPgByKey(List<EpgSearchKeyInfo> key, ref List<List<EpgEventInfo>> val)
         {
