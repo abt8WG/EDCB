@@ -1037,12 +1037,21 @@ bool CParseEpgAutoAddText::ParseLine(LPCWSTR parseLine, pair<DWORD, EPG_AUTO_ADD
 	}
 	item.second.searchInfo.chkRecEnd = _wtoi(NextToken(token)) != 0;
 	item.second.searchInfo.chkRecDay = (WORD)_wtoi(NextToken(token));
-	/*
-	item.second.searchInfo.chkDurationMin = (WORD)_wtoi(NextToken(token));
-	item.second.searchInfo.chkDurationMax = (WORD)_wtoi(NextToken(token));
-	//chkRecNoServiceは後で追加したのでこの位置(保存ファイルの整合維持)
-	item.second.searchInfo.chkRecNoService = _wtoi(NextToken(token)) != 0;
-	*/
+	
+	// tkntrec方式からxtne6f方式に変換
+	LPCWSTR strDurationMin = NextToken(token);
+	LPCWSTR strDurationMax = NextToken(token);
+	LPCWSTR strRecNoService = NextToken(token);
+	if (strDurationMin[0] != L'\0' && strDurationMax[0] != L'\0' && strRecNoService[0] != L'\0') {
+		WCHAR dur[32];
+		swprintf_s(dur, L"D!{%d}", (10000 + min(max(_wtoi(strDurationMin), 0), 9999)) * 10000 + min(max(_wtoi(strDurationMax), 0), 9999));
+		size_t durPos = item.second.searchInfo.andKey.compare(0, 7, L"^!{999}") ? 0 : 7;
+		durPos += item.second.searchInfo.andKey.compare(durPos, 7, L"C!{999}") ? 0 : 7;
+		item.second.searchInfo.andKey.insert(durPos, dur);
+		if (_wtoi(strRecNoService) != 0) {
+			item.second.searchInfo.chkRecDay = item.second.searchInfo.chkRecDay % 10000 + 40000;
+		}
+	}
 	item.second.addCount = 0;
 	this->nextID = this->nextID > item.first + 50000000 ? item.first + 1 : (max(item.first + 1, this->nextID) - 1) % 100000000 + 1;
 	return true;
