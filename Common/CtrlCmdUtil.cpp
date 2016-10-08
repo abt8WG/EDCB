@@ -1216,7 +1216,13 @@ DWORD WriteVALUE(WORD ver, BYTE* buff, DWORD buffOffset, const EPG_AUTO_ADD_BASI
 {
 	DWORD pos = buffOffset + sizeof(DWORD);
 	pos += WriteVALUE(ver, buff, pos, val.dataID);
-	pos += WriteVALUE(ver, buff, pos, val.andKey);
+
+	// xtne6fî≈ópprefixÇçÌèú
+	wstring andKey = val.andKey;
+	if (andKey.compare(0, 4, L"D!{1") == 0) {
+		andKey.erase(0, 13);
+	}
+	pos += WriteVALUE(ver, buff, pos, andKey);
 	WriteVALUE(0, buff, buffOffset, pos - buffOffset);
 	return pos - buffOffset;
 }
