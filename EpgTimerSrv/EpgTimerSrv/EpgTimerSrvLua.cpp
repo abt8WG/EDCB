@@ -20,7 +20,9 @@ int CEpgTimerSrvMain::InitLuaCallback(lua_State* L)
 	LuaHelp::reg_function(L, "GetChDataList", LuaGetChDataList, sys);
 	LuaHelp::reg_function(L, "GetServiceList", LuaGetServiceList, sys);
 	LuaHelp::reg_function(L, "GetEventMinMaxTime", LuaGetEventMinMaxTime, sys);
+	LuaHelp::reg_function(L, "GetEventMinMaxTimeArchive", LuaGetEventMinMaxTimeArchive, sys);
 	LuaHelp::reg_function(L, "EnumEventInfo", LuaEnumEventInfo, sys);
+	LuaHelp::reg_function(L, "EnumEventInfoArchive", LuaEnumEventInfoArchive, sys);
 	LuaHelp::reg_function(L, "SearchEpg", LuaSearchEpg, sys);
 	LuaHelp::reg_function(L, "AddReserveData", LuaAddReserveData, sys);
 	LuaHelp::reg_function(L, "ChgReserveData", LuaChgReserveData, sys);
@@ -287,12 +289,21 @@ int CEpgTimerSrvMain::LuaGetServiceList(lua_State* L)
 
 int CEpgTimerSrvMain::LuaGetEventMinMaxTime(lua_State* L)
 {
+	return LuaGetEventMinMaxTimeProc(L, false);
+}
+
+int CEpgTimerSrvMain::LuaGetEventMinMaxTimeArchive(lua_State* L)
+{
+	return LuaGetEventMinMaxTimeProc(L, true);
+}
+
+int CEpgTimerSrvMain::LuaGetEventMinMaxTimeProc(lua_State* L, bool archive)
+{
 	CLuaWorkspace ws(L);
 	if( lua_gettop(L) == 3 ){
 		__int64 minMaxTime[2] = { LLONG_MAX, LLONG_MIN };
-		ws.sys->epgDB.EnumEventInfo(_Create64Key(
-			(WORD)lua_tointeger(L, 1), (WORD)lua_tointeger(L, 2), (WORD)lua_tointeger(L, 3)),
-			[&minMaxTime](const vector<EPGDB_EVENT_INFO>& val) {
+		__int64 serviceKey = _Create64Key((WORD)lua_tointeger(L, 1), (WORD)lua_tointeger(L, 2), (WORD)lua_tointeger(L, 3));
+		auto enumProc = [&minMaxTime](const vector<EPGDB_EVENT_INFO>& val) -> void {
 			for( size_t i = 0; i < val.size(); i++ ){
 				if( val[i].StartTimeFlag ){
 					__int64 startTime = ConvertI64Time(val[i].start_time);
@@ -300,7 +311,12 @@ int CEpgTimerSrvMain::LuaGetEventMinMaxTime(lua_State* L)
 					minMaxTime[1] = max(minMaxTime[1], startTime);
 				}
 			}
-		});
+		};
+		if( archive ){
+			ws.sys->epgDB.EnumArchiveEventInfo(serviceKey, enumProc);
+		}else{
+			ws.sys->epgDB.EnumEventInfo(serviceKey, enumProc);
+		}
 		if( minMaxTime[0] != LLONG_MAX ){
 			lua_newtable(ws.L);
 			SYSTEMTIME st;
@@ -316,6 +332,16 @@ int CEpgTimerSrvMain::LuaGetEventMinMaxTime(lua_State* L)
 }
 
 int CEpgTimerSrvMain::LuaEnumEventInfo(lua_State* L)
+{
+	return LuaEnumEventInfoProc(L, false);
+}
+
+int CEpgTimerSrvMain::LuaEnumEventInfoArchive(lua_State* L)
+{
+	return LuaEnumEventInfoProc(L, true);
+}
+
+int CEpgTimerSrvMain::LuaEnumEventInfoProc(lua_State* L, bool archive)
 {
 	CLuaWorkspace ws(L);
 	if( lua_gettop(L) >= 1 && lua_istable(L, 1) ){
@@ -342,7 +368,7 @@ int CEpgTimerSrvMain::LuaEnumEventInfo(lua_State* L)
 			key.push_back(LuaHelp::isnil(L, "sid") ? -1 : LuaHelp::get_int(L, "sid"));
 			lua_pop(L, 1);
 		}
-		BOOL ret = ws.sys->epgDB.EnumEventAll([=, &ws, &key](const map<LONGLONG, EPGDB_SERVICE_EVENT_INFO>& val) {
+		auto enumProc = [=, &ws, &key](const map<LONGLONG, EPGDB_SERVICE_EVENT_INFO>& val) -> void {
 			lua_newtable(ws.L);
 			int n = 0;
 			for( auto itr = val.cbegin(); itr != val.end(); itr++ ){
@@ -368,8 +394,11 @@ int CEpgTimerSrvMain::LuaEnumEventInfo(lua_State* L)
 					}
 				}
 			}
-		});
-		if( ret ){
+		};
+		if( archive ){
+			ws.sys->epgDB.EnumArchiveEventAll(enumProc);
+			return 1;
+		}else if( ws.sys->epgDB.EnumEventAll(enumProc) ){
 			return 1;
 		}
 	}

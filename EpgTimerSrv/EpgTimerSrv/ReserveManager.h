@@ -187,6 +187,7 @@ private:
 	int defEndMargin;
 	int notFindTuijyuHour;
 	bool backPriority;
+	bool fixedTunerPriority;
 	int recInfo2DropChk;
 	wstring recInfo2RegExp;
 	bool defEnableCaption;

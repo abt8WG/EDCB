@@ -8,7 +8,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using System.Threading; //紅
-using System.Runtime.InteropServices; //紅
 using System.Security.AccessControl;
 
 namespace EpgTimer
@@ -1468,39 +1467,13 @@ namespace EpgTimer
             return infoText + endText;
         }
 
-        internal struct LASTINPUTINFO
-        {
-            public uint cbSize;
-            public uint dwTime;
-        }
-
-        [DllImport("User32.dll")]
-        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
-
-        [DllImport("Kernel32.dll")]
-        public static extern UInt32 GetTickCount();
-
         private void ShowSleepDialog(UInt16 param)
         {
-            LASTINPUTINFO info = new LASTINPUTINFO();
-            info.cbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf(info);
-            GetLastInputInfo(ref info);
-
-            // 現在時刻取得
-            UInt64 dwNow = GetTickCount();
-
-            // GetTickCount()は49.7日周期でリセットされるので桁上りさせる
-            if (info.dwTime > dwNow)
-            {
-                dwNow += 0x100000000;
-            }
-
             if (IniFileHandler.GetPrivateProfileInt("NO_SUSPEND", "NoUsePC", 0, SettingPath.TimerSrvIniPath) == 1)
             {
-                UInt32 ngUsePCTime = (UInt32)IniFileHandler.GetPrivateProfileInt("NO_SUSPEND", "NoUsePCTime", 3, SettingPath.TimerSrvIniPath);
-                UInt32 threshold = ngUsePCTime * 60 * 1000;
+                int ngUsePCTime = IniFileHandler.GetPrivateProfileInt("NO_SUSPEND", "NoUsePCTime", 3, SettingPath.TimerSrvIniPath);
 
-                if (ngUsePCTime == 0 || dwNow - info.dwTime < threshold)
+                if (ngUsePCTime == 0 || CommonUtil.GetIdleTimeSec() < ngUsePCTime * 60)
                 {
                     return;
                 }
@@ -1541,34 +1514,6 @@ namespace EpgTimer
 
             switch ((UpdateNotifyItem)status.notifyID)
             {
-                case UpdateNotifyItem.SrvStatus:
-                    taskTray.Icon = GetTaskTrayIcon(status.param1);
-                    break;
-                case UpdateNotifyItem.PreRecStart:
-                    TaskTrayBaloonWork("予約録画開始準備", status.param4);
-                    break;
-                case UpdateNotifyItem.RecStart:
-                    TaskTrayBaloonWork("録画開始", status.param4);
-                    RefreshAllViewsReserveInfo();
-                    break;
-                case UpdateNotifyItem.RecEnd:
-                    TaskTrayBaloonWork("録画終了", status.param4);
-                    break;
-                case UpdateNotifyItem.RecTuijyu:
-                    TaskTrayBaloonWork("追従発生", status.param4);
-                    break;
-                case UpdateNotifyItem.ChgTuijyu:
-                    TaskTrayBaloonWork("番組変更", status.param4);
-                    break;
-                case UpdateNotifyItem.PreEpgCapStart:
-                    TaskTrayBaloonWork("EPG取得", status.param4);
-                    break;
-                case UpdateNotifyItem.EpgCapStart:
-                    TaskTrayBaloonWork("取得", "開始");
-                    break;
-                case UpdateNotifyItem.EpgCapEnd:
-                    TaskTrayBaloonWork("取得", "終了");
-                    break;
                 case UpdateNotifyItem.EpgData:
                     {
                         //NWでは重いが、使用している箇所多いので即取得する。
@@ -1650,6 +1595,34 @@ namespace EpgTimer
                             StatusManager.StatusNotifyAppend("設定ファイル転送 < ");
                         }
                     }
+                    break;
+                case UpdateNotifyItem.SrvStatus:
+                    taskTray.Icon = GetTaskTrayIcon(status.param1);
+                    break;
+                case UpdateNotifyItem.PreRecStart:
+                    TaskTrayBaloonWork("予約録画開始準備", status.param4);
+                    break;
+                case UpdateNotifyItem.RecStart:
+                    TaskTrayBaloonWork("録画開始", status.param4);
+                    RefreshAllViewsReserveInfo();
+                    break;
+                case UpdateNotifyItem.RecEnd:
+                    TaskTrayBaloonWork("録画終了", status.param4);
+                    break;
+                case UpdateNotifyItem.RecTuijyu:
+                    TaskTrayBaloonWork("追従発生", status.param4);
+                    break;
+                case UpdateNotifyItem.ChgTuijyu:
+                    TaskTrayBaloonWork("番組変更", status.param4);
+                    break;
+                case UpdateNotifyItem.PreEpgCapStart:
+                    TaskTrayBaloonWork("EPG取得", status.param4);
+                    break;
+                case UpdateNotifyItem.EpgCapStart:
+                    TaskTrayBaloonWork("取得", "開始");
+                    break;
+                case UpdateNotifyItem.EpgCapEnd:
+                    TaskTrayBaloonWork("取得", "終了");
                     break;
                 default:
                     break;

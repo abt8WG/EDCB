@@ -112,6 +112,8 @@ namespace EpgTimer.Setting
             {
                 checkBox_back_priority.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "BackPriority", 1, SettingPath.TimerSrvIniPath) == 1;
 
+                checkBox_fixedTunerPriority.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "FixedTunerPriority", 1, SettingPath.TimerSrvIniPath) == 1;
+
                 checkBox_autoDel.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "AutoDel", 0, SettingPath.TimerSrvIniPath) == 1;
                 button_autoDel_Set();
 
@@ -174,6 +176,11 @@ namespace EpgTimer.Setting
                 checkBox_tcpServer.IsEnabled = false; // ネットワーク接続を許可する
                 checkBox_srvCompatTkntrec.IsEnabled = false; // EpgTimerSrvの応答をtkntrec版互換にする
 
+                //textBox_autoDelRecInfo.IsEnabled = false;
+                //label_epgArchivePeriod1.IsEnabled = false;
+                //comboBox_epgArchivePeriod.IsEnabled = false;
+                //label_epgArchivePeriod2.IsEnabled = false;
+
                 checkBox_wakeReconnect.IsEnabled = true; // 起動時に前回接続サーバーに接続する
                 group_WoLWait.IsEnabled = true; // WoL設定
                 checkBox_suspendClose.IsEnabled = true; // 休止／スタンバイ移行時にEpgTimerNWを終了する
@@ -216,6 +223,10 @@ namespace EpgTimer.Setting
                 checkBox_autoDelRecInfo.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "AutoDelRecInfo", 0, SettingPath.TimerSrvIniPath) == 1;
                 checkBox_autoDelRecFile.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "RecInfoDelFile", 0, SettingPath.CommonIniPath) == 1;
                 textBox_autoDelRecInfo.Text = IniFileHandler.GetPrivateProfileInt("SET", "AutoDelRecInfoNum", 100, SettingPath.TimerSrvIniPath).ToString();
+
+                //EPG取得後も番組情報を N 日前まで保存する
+                comboBox_epgArchivePeriod.ItemsSource = Enumerable.Range(0, 15);
+                comboBox_epgArchivePeriod.SelectedIndex = Math.Min(Math.Max(IniFileHandler.GetPrivateProfileInt("SET", "EpgArchivePeriodHour", 0, SettingPath.TimerSrvIniPath) / 24, 0), 14);
 
                 //放送波時刻で同期する
                 checkBox_timeSync.IsChecked = IniFileHandler.GetPrivateProfileInt("SET", "TimeSync", 0, SettingPath.TimerSrvIniPath) == 1;
@@ -398,7 +409,9 @@ namespace EpgTimer.Setting
         private void SaveSetting_tabItem2()
         {
             SaveSettingIfIsEnabled(checkBox_back_priority, "BackPriority");
-            
+
+            SaveSettingIfIsEnabled(checkBox_fixedTunerPriority, "FixedTunerPriority");
+
             SaveSettingIfIsEnabled(checkBox_autoDel, "AutoDel");
             if (button_autoDel.IsEnabled)
             {
@@ -446,6 +459,12 @@ namespace EpgTimer.Setting
             SaveSettingIfIsEnabled(checkBox_autoDelRecInfo, "AutoDelRecInfo");
             SaveSettingIfIsEnabled(checkBox_autoDelRecFile, "RecInfoDelFile");
             SaveSettingIfIsEnabled(textBox_autoDelRecInfo, "AutoDelRecInfoNum");
+
+            //EPG取得後も番組情報を N 日前まで保存する
+            if (comboBox_epgArchivePeriod.IsEnabled)
+            {
+                IniFileHandler.WritePrivateProfileString("SET", "EpgArchivePeriodHour", (comboBox_epgArchivePeriod.SelectedIndex * 24).ToString(), SettingPath.TimerSrvIniPath);
+            }
 
             //放送波時刻で同期する
             SaveSettingIfIsEnabled(checkBox_timeSync, "TimeSync");

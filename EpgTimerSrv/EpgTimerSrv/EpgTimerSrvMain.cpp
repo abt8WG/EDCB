@@ -747,10 +747,12 @@ void CEpgTimerSrvMain::ReloadSetting()
 {
 	this->reserveManager.ReloadSetting();
 
-	CBlockLock lock(&this->settingLock);
-
 	wstring iniPath;
 	GetModuleIniPath(iniPath);
+	this->epgDB.SetArchivePeriod(GetPrivateProfileInt(L"SET", L"EpgArchivePeriodHour", 0, iniPath.c_str()) * 3600);
+
+	CBlockLock lock(&this->settingLock);
+
 	int residentMode = GetPrivateProfileInt(L"SET", L"ResidentMode", 0, iniPath.c_str());
 	this->residentFlag = residentMode >= 1; //í’“‚·‚é‚©‚Ç‚¤‚©(CMD2_EPG_SRV_CLOSE‚ð–³Ž‹)
 	if( this->residentFlag ){
@@ -1423,6 +1425,20 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			}
 		}
 		break;
+	case CMD2_EPG_SRV_ENUM_PG_ARC_INFO:
+		OutputDebugString(L"CMD2_EPG_SRV_ENUM_PG_ARC_INFO\r\n");
+		if( sys->epgDB.IsInitialLoadingDataDone() == FALSE ){
+			resParam->param = CMD_ERR_BUSY;
+		}else{
+			LONGLONG serviceKey;
+			if( ReadVALUE(&serviceKey, cmdParam->data, cmdParam->dataSize, NULL) ){
+				sys->epgDB.EnumArchiveEventInfo(serviceKey, [=](const vector<EPGDB_EVENT_INFO>& val) {
+					resParam->param = CMD_SUCCESS;
+					resParam->data = NewWriteVALUE(val, resParam->dataSize);
+				});
+			}
+		}
+		break;
 	case CMD2_EPG_SRV_SEARCH_PG:
 		if( sys->epgDB.IsInitialLoadingDataDone() == FALSE ){
 			resParam->param = CMD_ERR_BUSY;
@@ -1623,6 +1639,20 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 			resParam->param = CMD_ERR_BUSY;
 		}else{
 			sys->epgDB.EnumEventAll([=](const map<LONGLONG, EPGDB_SERVICE_EVENT_INFO>& val) {
+				vector<const EPGDB_SERVICE_EVENT_INFO*> valp;
+				valp.reserve(val.size());
+				for( auto itr = val.cbegin(); itr != val.end(); valp.push_back(&(itr++)->second) );
+				resParam->param = CMD_SUCCESS;
+				resParam->data = NewWriteVALUE(valp, resParam->dataSize);
+			});
+		}
+		break;
+	case CMD2_EPG_SRV_ENUM_PG_ARC_ALL:
+		OutputDebugString(L"CMD2_EPG_SRV_ENUM_PG_ARC_ALL\r\n");
+		if( sys->epgDB.IsInitialLoadingDataDone() == FALSE ){
+			resParam->param = CMD_ERR_BUSY;
+		}else{
+			sys->epgDB.EnumArchiveEventAll([=](const map<LONGLONG, EPGDB_SERVICE_EVENT_INFO>& val) {
 				vector<const EPGDB_SERVICE_EVENT_INFO*> valp;
 				valp.reserve(val.size());
 				for( auto itr = val.cbegin(); itr != val.end(); valp.push_back(&(itr++)->second) );

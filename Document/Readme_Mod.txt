@@ -136,6 +136,9 @@ EpgDataCap_Bon.exe.errというテキストファイルに出力するようにしました(スタックト
         廃止しました(常にオフ)。
       ・同一物理チャンネルで連続となるチューナーの使用を優先する
         廃止しました(常にオン)。
+      ・優先度が同じ場合、チューナー強制指定された予約を先に割り当てする【追加】
+        概ね、原作の「デフォルトアルゴリズム」と「アルゴリズム2」の違いと考えて
+        ください(現アルゴリズムについては後述Q&A参照)。
       ・ファイル名の禁則文字の変換対象から「\」を除外する【追加】
         PlugInが返すファイル名の禁則文字の変換対象から「\」を除外して、フォルダ
         階層を表現できるようにします(EpgTimerSrv.iniのNoChkYenに相当)。
@@ -166,6 +169,9 @@ EpgDataCap_Bon.exe.errというテキストファイルに出力するようにしました(スタックト
         権(コントロールパネル→ローカルセキュリティポリシー→システム時刻の変更)
         が必要です。判断は任せますが管理者起動させるよりもユーザにこの特権を与え
         るほうがマシな気がします。
+      ・EPG取得後も番組情報をX日前まで保存する【追加】
+        EPG取得後は過去の番組情報が消えますが、これを"EpgArc.dat"というファイル
+        に保存して、番組表などに利用できるようにします。
       ・EpgTimerSrvを常駐させる【追加】
         ・タスクトレイアイコンを表示する【追加】
         ・バルーンチップでの動作通知を抑制する【追加】
@@ -589,17 +595,21 @@ B EpgCapNow()
   プロセス起動直後はnil(失敗)。
 
 {minTime:TIME, maxTime:TIME}|nil GetEventMinMaxTime( ネットワークID:I, TSID:I, サービスID:I )
+{minTime:TIME, maxTime:TIME}|nil GetEventMinMaxTimeArchive( ネットワークID:I, TSID:I, サービスID:I )
   指定サービスの全イベントについて最小開始時間と最大開始時間を取得する
   開始時間未定でないイベントが1つもなければnil。
+  *Archive()は過去イベントが対象。
 
 <イベント情報>のリスト|nil EnumEventInfo( {onid:I|nil, tsid:I|nil, sid:I|nil}のリスト [, {startTime:TIME|nil, durationSecond:I|nil} ] )
-  指定サービスの全イベント情報を取得する(onid>tsid>sid>eidソート)
+<イベント情報>のリスト|nil EnumEventInfoArchive( {onid:I|nil, tsid:I|nil, sid:I|nil}のリスト [, {startTime:TIME|nil, durationSecond:I|nil} ] )
+  指定サービスの全イベント情報を取得する(onid>tsid>sid>eidソート、*Archive()は未ソート)
   リストのいずれかにマッチしたサービスについて取得する。
   onid,tsid,sidフィールドを各々nilとすると、各々すべてのIDにマッチする。
   プロセス起動直後はnil(失敗)。
   第2引数にイベントの開始時間の範囲を指定できる。
   ・開始時間がstartTime以上～startTime+durationSecond未満のイベントにマッチ
   ・空テーブルのときは開始時間未定のイベントにマッチ
+  *Archive()は過去イベントが対象。※再利用の可能性があるため、過去イベントのeidをIDとして扱うべきでない。
 
 <イベント情報>のリスト|nil SearchEpg( <自動予約検索条件> )
 <イベント情報>|nil SearchEpg( ネットワークID:I, TSID:I, サービスID:I, イベントID:I )

@@ -92,6 +92,7 @@
                         <GroupBox Header="EpgTimerSrv側設定" Margin="12,4">
                             <StackPanel Name="Settings_reserveEpgTimerSrv" >
                                 <CheckBox Name="checkBox_back_priority" Content="優先度が同じで時間が重なった場合、後の予約を優先する" Margin="0,8,0,0" />
+                                <CheckBox Name="checkBox_fixedTunerPriority" Content="優先度が同じ場合、チューナー強制指定された予約を先にチューナー割り当てする" Margin="0,8,0,0" />
                                 <WrapPanel Margin="0,4,0,0">
                                     <CheckBox Name="checkBox_autoDel" Content="HDDの空きが少ない場合、古い録画ファイルを削除する(削除設定で対象を指定)" Margin="0,4,0,0" />
                                     <Button Name="button_autoDel" Content="削除設定" Margin="30,4,0,0" Click="button_autoDel_Click" VerticalAlignment="Center" />
@@ -260,6 +261,11 @@
                                         <TextBox Name="textBox_autoDelRecInfo" Style="{StaticResource NumberBox}" IsEnabled="{Binding Path=IsEnabled, ElementName=checkBox_autoDelRecInfo}" />
                                     </StackPanel>
                                 </WrapPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="EPG取得後も番組情報を" Padding="0,0,5,0"/>
+                                    <ComboBox Name="comboBox_epgArchivePeriod" Width="47" />
+                                    <Label Content="日前まで保存する" />
+                                </StackPanel>
                                 <CheckBox Name="checkBox_timeSync" Margin="0,3,10,0" VerticalContentAlignment="Top">
                                     <TextBlock TextWrapping="Wrap">EPG取得時に放送波時刻でPC時計を同期する<LineBreak/>※EpgTimerSrv.exeが管理者権限で起動している必要があります</TextBlock>
                                 </CheckBox>

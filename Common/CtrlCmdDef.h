@@ -51,6 +51,8 @@
 #define CMD2_EPG_SRV_SEARCH_PG				1025 //番組検索
 #define CMD2_EPG_SRV_ENUM_PG_ALL			1026 //番組情報一覧取得
 #define CMD2_EPG_SRV_ENUM_REC_FOLDER        1027 //録画保存場所一覧取得 (abt8WG氏版)
+#define CMD2_EPG_SRV_ENUM_PG_ARC_INFO		1028 //サービス指定で過去番組情報一覧を取得する
+#define CMD2_EPG_SRV_ENUM_PG_ARC_ALL		1029 //過去番組情報一覧取得
 
 #define CMD2_EPG_SRV_ENUM_AUTO_ADD			1031 //自動予約登録の条件一覧取得
 #define CMD2_EPG_SRV_ADD_AUTO_ADD			1032 //自動予約登録の条件追加
