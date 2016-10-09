@@ -775,6 +775,8 @@ namespace EpgTimer
         public bool EpgGradation { get; set; }
         /// <summary>番組表のサービス・時刻軸をグラデーション表示する</summary>
         public bool EpgGradationHeader { get; set; }
+        /// <summary></summary>
+        public bool EpgLoadArcInfo { get; set; }
         /// <summary>古い番組データの表示を抑制する</summary>
         public bool EpgNoDisplayOld { get; set; }
         /// <summary>古い番組データをn日前まで表示</summary>
@@ -1196,6 +1198,7 @@ namespace EpgTimer
             EpgExtInfoTooltip = true;
             EpgGradation = true;
             EpgGradationHeader = true;
+            EpgLoadArcInfo = false;
             EpgNoDisplayOld = false;
             EpgNoDisplayOldDays = 1;
             ResColumnHead = "";

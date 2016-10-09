@@ -12,8 +12,8 @@
         <Label Name="label1" Content="※プリセットの変更を行うには、プリセットごとに変更ボタンを押してください" Margin="12,0" />
         <my:RecSettingView Grid.Row="1" x:Name="recSettingView" />
         <StackPanel Grid.Row="2" Name="stackPanel1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12">
-            <Button Content="閉じる" Name="button_ok" Click="button_ok_Click" Margin="0,0,30,0" />
-            <Button Content="キャンセル" Name="button_cancel" Click="button_cancel_Click" Visibility="Visible" IsCancel="True" />
+            <Button Name="button_ok" Content="    OK    " Click="button_ok_Click" Visibility="Collapsed" />
+            <Button Name="button_cancel" Content="閉じる" Click="button_cancel_Click" Margin="0,0,30,0" IsCancel="True" />
         </StackPanel>
     </Grid>
 </Window>

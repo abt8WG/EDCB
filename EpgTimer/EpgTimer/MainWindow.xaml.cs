@@ -1060,6 +1060,12 @@ namespace EpgTimer
                     //StatusbarReset();//ステータスバーリセット
                     //ChkTimerWork();//タイマーリセット
 
+                    if (setting.setEpgView.IsChangeEpgArcLoadSetting == true)
+                    {
+                        CommonManager.Instance.DB.SetUpdateNotify((UInt32)UpdateNotifyItem.EpgData);
+                        CommonManager.Instance.DB.ReloadEpgData();
+                    }
+
                     reserveView.UpdateInfo();
                     infoWindowViewModel.UpdateInfo();
                     tunerReserveView.UpdateInfo();

@@ -198,18 +198,21 @@
                                         <CheckBox Name="checkBox_displayNotifyChange" Margin="9,5">
                                             <TextBlock Text="番組表の切り替え時にも強調表示をする" TextWrapping="Wrap" />
                                         </CheckBox>
+                                        <CheckBox Name="checkBox_epgLoadArcInfo" Margin="9,5" ToolTip="検索による絞り込みを使用している場合は読込まれません。&#10;また、番組データの不整合のため表示が乱れる場合があります。">
+                                            <TextBlock Text="過去の番組データを読み込む" TextWrapping="Wrap" />
+                                        </CheckBox>
+                                        <WrapPanel Margin="9,0,0,0">
+                                            <CheckBox Name="checkBox_epgNoDisplayOld" Content="過去の番組データは" Margin="0,0,-20,0"/>
+                                            <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
+                                                <TextBox Name="textBox_epgNoDisplayOldDays" Style="{StaticResource NumberBox}" />
+                                                <Label Content="日前まで表示" />
+                                            </StackPanel>
+                                        </WrapPanel>
                                         <WrapPanel Margin="4,0,0,0">
                                             <Label Name="label_MaxWidth" Content="グラデーション表示を行う" Margin="0,0,-25,0" />
                                             <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
                                                 <CheckBox Name="checkBox_gradation"       Content="番組"              Margin="0,0,10,0" />
                                                 <CheckBox Name="checkBox_gradationHeader" Content="サービス・時刻軸"  Margin="0,0,10,0" />
-                                            </StackPanel>
-                                        </WrapPanel>
-                                        <WrapPanel Margin="9,0,0,0">
-                                            <CheckBox Name="checkBox_epgNoDisplayOld" Content="古い番組データの表示を抑制する" ToolTip="通常はチェック不要です。" />
-                                            <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
-                                                <TextBox Name="textBox_epgNoDisplayOldDays" Style="{StaticResource NumberBox}" />
-                                                <Label Content="日前まで表示" />
                                             </StackPanel>
                                         </WrapPanel>
                                     </StackPanel>

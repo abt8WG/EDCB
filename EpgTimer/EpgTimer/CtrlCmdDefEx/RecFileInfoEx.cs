@@ -10,10 +10,6 @@ namespace EpgTimer
         public override string DataTitle { get { return Title; } }
         public override DateTime PgStartTime { get { return StartTime; } }
         public override uint PgDurationSecond { get { return DurationSecond; } }
-        public override UInt64 Create64Key()
-        {
-            return CommonManager.Create64Key(OriginalNetworkID, TransportStreamID, ServiceID);
-        }
         public override UInt64 Create64PgKey()
         {
             return CommonManager.Create64PgKey(OriginalNetworkID, TransportStreamID, ServiceID, EventID);
@@ -73,6 +69,12 @@ namespace EpgTimer
             //それらしいものを選んでおく
             return SearchEpgAutoAddList(IsEnabled)
                 .FindAll(data => data.GetReserveList().FirstOrDefault(data2 => data2.Create64Key() == this.Create64Key()) != null);
+        }
+
+        public EpgEventInfo SearchEventInfo()
+        {
+            //それらしいものを選んでみる
+            return MenuUtil.SearchEventInfoLikeThat(this, CommonManager.Instance.DB.ServiceAllEventList);
         }
 
         //AppendData 関係。ID(元データ)に対して一意の情報なので、データ自体はDB側。

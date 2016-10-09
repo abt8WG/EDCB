@@ -11,10 +11,6 @@ namespace EpgTimer
         public override string DataTitle { get { return Title; } }
         public override DateTime PgStartTime { get { return StartTime; } }
         public override uint PgDurationSecond { get { return DurationSecond; } }
-        public override UInt64 Create64Key()
-        {
-            return CommonManager.Create64Key(OriginalNetworkID, TransportStreamID, ServiceID);
-        }
         public override UInt64 Create64PgKey()
         {
             return CommonManager.Create64PgKey(OriginalNetworkID, TransportStreamID, ServiceID, EventID);
@@ -53,11 +49,6 @@ namespace EpgTimer
             return CtrlCmdDefEx.isOnTime(startTime, duration);
         }
 
-        public bool IsOnAir()
-        {
-            return CtrlCmdDefEx.isOnTime(StartTime, (int)DurationSecond);
-        }
-
         public DateTime StartTimeWithMargin(int MarginMin = 0)
         {
             int StartMargin = RecSetting.StartMarginActual + 60 * MarginMin;
@@ -72,7 +63,6 @@ namespace EpgTimer
         public EpgEventInfo SearchEventInfo(bool getSrv = false)
         {
             EpgEventInfo eventInfo = null;
-
             try
             {
                 if (IsEpgReserve == true)
@@ -91,46 +81,18 @@ namespace EpgTimer
                     }
                     if (eventInfo == null && getSrv == true)
                     {
-                        UInt64 pgId = Create64PgKey();
                         eventInfo = new EpgEventInfo();
-                        CommonManager.Instance.CtrlCmd.SendGetPgInfo(pgId, ref eventInfo);
+                        CommonManager.Instance.CtrlCmd.SendGetPgInfo(Create64PgKey(), ref eventInfo);
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
-
+            catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
             return eventInfo;
         }
 
         public EpgEventInfo SearchEventInfoLikeThat()
         {
-            double dist = double.MaxValue, dist1;
-            EpgEventInfo eventPossible = null;
-
-            UInt64 key = Create64Key();
-            if (CommonManager.Instance.DB.ServiceEventList.ContainsKey(key) == true)
-            {
-                foreach (EpgEventInfo eventChkInfo in CommonManager.Instance.DB.ServiceEventList[key].eventList)
-                {
-                    dist1 = Math.Abs((StartTime - eventChkInfo.start_time).TotalSeconds);
-                    double overlapLength = MenuUtil.CulcOverlapLength(StartTime, DurationSecond,
-                                                            eventChkInfo.start_time, eventChkInfo.durationSec);
-
-                    //開始時間が最も近いものを選ぶ。同じ差なら時間が前のものを選ぶ
-                    if (overlapLength >= 0 && (dist > dist1 ||
-                        dist == dist1 && (eventPossible == null || StartTime > eventChkInfo.start_time)))
-                    {
-                        dist = dist1;
-                        eventPossible = eventChkInfo;
-                        if (dist == 0) break;
-                    }
-                }
-            }
-
-            return eventPossible;
+            return MenuUtil.SearchEventInfoLikeThat(this, CommonManager.Instance.DB.ServiceEventList);
         }
 
         //AppendData 関係。ID(元データ)に対して一意の情報なので、データ自体はDB側。

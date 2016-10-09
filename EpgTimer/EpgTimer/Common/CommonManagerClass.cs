@@ -130,6 +130,7 @@ namespace EpgTimer
         }
 
         public static Dictionary<UInt16, ContentKindInfo> ContentKindDictionary { get; private set; }
+        public static Dictionary<Int32, string> AttributeInfoDictionary { get; private set; }
         public static Dictionary<UInt16, string> ComponentKindDictionary { get; private set; }
         public static List<string> DayOfWeekList { get; private set; }
         public static List<string> RecModeList { get; private set; }
@@ -321,6 +322,18 @@ namespace EpgTimer
                 {0xFFFF, new ContentKindInfo("ジャンル情報なし", "", 0xFF, 0xFF)}
             };
 
+            AttributeInfoDictionary = new Dictionary<Int32, string>()
+            {
+                { 0x0000, "中止の可能性あり" },
+                { 0x0001, "延長の可能性あり" },
+                { 0x0002, "中断の可能性あり" },
+                { 0x0003, "同一シリーズの別話数放送の可能性あり" },
+                { 0x0004, "編成未定" },
+                { 0x0100, "中断ニュースあり" },
+                { 0x0101, "臨時サービスあり" },
+                { 0x0200, "3D映像あり" }
+            };
+
             ComponentKindDictionary = new Dictionary<UInt16, string>()
             {
                 { 0x0101, "480i(525i)、アスペクト比4:3" },
@@ -422,6 +435,18 @@ namespace EpgTimer
 
         //public bool IsConnected { get { return NWMode == false || NW.IsConnected == true; } }
 
+        //ChKeyを16ビットに圧縮し、EpgTimerの起動中保持し続ける。
+        private static Dictionary<UInt64, UInt16> chKey64to16Dic = new Dictionary<UInt64, UInt16>();
+        public static UInt16 Create16Key(UInt64 key64)
+        {
+            UInt16 Key16;
+            if (chKey64to16Dic.TryGetValue(key64, out Key16) == false)
+            {
+                Key16 = (UInt16)chKey64to16Dic.Count;
+                chKey64to16Dic.Add(key64, Key16);
+            }
+            return Key16;
+        }
         public static UInt64 Create64Key(UInt16 ONID, UInt16 TSID, UInt16 SID)
         {
             return ((UInt64)ONID) << 32 | ((UInt64)TSID) << 16 | (UInt64)SID;
@@ -725,6 +750,10 @@ namespace EpgTimer
                 {
                     var ID1 = (UInt16)(info.content_nibble_level_1 << 8 | 0xFF);
                     var ID2 = (UInt16)(info.content_nibble_level_1 << 8 | info.content_nibble_level_2);
+
+                    //番組特性コードをパス
+                    if (ID2 == 0x0E00) continue;
+
                     if (ID2 == 0x0E01)//CS、仮対応データをそのまま使用。
                     {
                         ID1 = (UInt16)((info.user_nibble_1 | 0x70) << 8 | 0xFF);
@@ -859,10 +888,22 @@ namespace EpgTimer
                 }
             }
 
-            retText += idStr("OriginalNetworkID", eventInfo.original_network_id) + "\r\n";
-            retText += idStr("TransportStreamID", eventInfo.transport_stream_id) + "\r\n";
-            retText += idStr("ServiceID", eventInfo.service_id) + "\r\n";
-            retText += idStr("EventID", eventInfo.event_id) + "\r\n";
+            //その他情報(番組特性コード関係)
+            if (eventInfo.ContentInfo != null)
+            {
+                var etcInfo = eventInfo.ContentInfo.nibbleList
+                            .Where(info => info.content_nibble_level_1 == 0x0E && info.content_nibble_level_2 == 0x00)
+                            .Select(info => info.user_nibble_1 << 8 | info.user_nibble_2)
+                            .Where(ckey => AttributeInfoDictionary.ContainsKey(ckey) == true).ToList();
+
+                if (etcInfo.Count != 0)
+                {
+                    etcInfo.ForEach(cInfo => retText += AttributeInfoDictionary[cInfo] + "\r\n");
+                    retText += "\r\n";
+                }
+            }
+
+            retText += Convert64PGKeyString(eventInfo.Create64PgKey()) + "\r\n";
 
             return retText;
         }
@@ -929,6 +970,10 @@ namespace EpgTimer
                 {
                     int nibble1 = ecd1.content_nibble_level_1;
                     int nibble2 = ecd1.content_nibble_level_2;
+
+                    //番組特性コードをパス
+                    if (nibble1 == 0x0E && nibble2 == 0x00) continue;
+
                     if (nibble1 == 0x0E && nibble2 == 0x01)//CS、仮対応データをそのまま使用
                     {
                         nibble1 = ecd1.user_nibble_1 | 0x70;

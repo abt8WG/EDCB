@@ -417,7 +417,7 @@ namespace EpgTimer.Setting
             {
                 button_autoDel_Save();
             }
-            
+
             SaveSettingIfIsEnabled(checkBox_recname, "RecNamePlugIn");
             SaveSettingIfIsEnabled(comboBox_recname, "RecNamePlugInFile", true);
 

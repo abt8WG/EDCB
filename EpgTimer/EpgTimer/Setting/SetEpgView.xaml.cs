@@ -27,8 +27,9 @@ namespace EpgTimer.Setting
         private MenuSettingData ctxmSetInfo;
         private RadioBtnSelect epgPopupRadioBtns;
         private RadioBtnSelect tunerPopupRadioBtns;
-
         private string styleFile;
+
+        public bool IsChangeEpgArcLoadSetting { get; private set; }
 
         public SetEpgView()
         {
@@ -60,6 +61,7 @@ namespace EpgTimer.Setting
                 checkBox_openInfo.IsChecked = (Settings.Instance.EpgInfoOpenMode != 0);
                 checkBox_displayNotifyChange.IsChecked = Settings.Instance.DisplayNotifyEpgChange;
                 checkBox_reserveBackground.IsChecked = Settings.Instance.ReserveRectBackground;
+                checkBox_epgLoadArcInfo.IsChecked = Settings.Instance.EpgLoadArcInfo;
                 checkBox_epgNoDisplayOld.IsChecked = Settings.Instance.EpgNoDisplayOld;
                 textBox_epgNoDisplayOldDays.Text = Settings.Instance.EpgNoDisplayOldDays.ToString();
 
@@ -311,6 +313,8 @@ namespace EpgTimer.Setting
                 Settings.Instance.MouseScrollAuto = (checkBox_scrollAuto.IsChecked == true);
                 Settings.Instance.DisplayNotifyEpgChange = (checkBox_displayNotifyChange.IsChecked == true);
                 Settings.Instance.ReserveRectBackground = (checkBox_reserveBackground.IsChecked == true);
+                IsChangeEpgArcLoadSetting = Settings.Instance.EpgLoadArcInfo != (checkBox_epgLoadArcInfo.IsChecked == true);
+                Settings.Instance.EpgLoadArcInfo = (checkBox_epgLoadArcInfo.IsChecked == true);
                 Settings.Instance.EpgNoDisplayOld = (checkBox_epgNoDisplayOld.IsChecked == true);
                 Settings.Instance.EpgNoDisplayOldDays = MenuUtil.MyToNumerical(textBox_epgNoDisplayOldDays, Convert.ToDouble, double.MaxValue, double.MinValue, 1);
 
