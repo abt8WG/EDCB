@@ -175,7 +175,6 @@ namespace EpgTimer.UserCtrlView
         {
             cnvs.Children.Remove(Tooltip);
             Tooltip.Visibility = Visibility.Hidden;
-            //Tooltip.ToolTip = null;
             lastToolInfo = null;
             toolTipTimer.Stop();
         }
@@ -230,12 +229,11 @@ namespace EpgTimer.UserCtrlView
             Canvas.SetLeft(Tooltip, Math.Floor(toolInfo.LeftPos));
             Canvas.SetTop(Tooltip, Math.Floor(toolInfo.TopPos));
 
-            //Tooltip.ToolTip = null;
-            SetTooltip(toolInfo);
-            Tooltip.Visibility = Visibility.Visible;
+            bool b = SetTooltip(toolInfo);
+            Tooltip.Visibility = b ? Visibility.Visible : Visibility.Hidden;
             return;
         }
-        protected virtual void SetTooltip(ViewPanelItemBase toolInfo) { }
+        protected virtual bool SetTooltip(ViewPanelItemBase toolInfo) { return true; }
 
         /// <summary>マウスホイールイベント呼び出し</summary>
         protected virtual void scrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)

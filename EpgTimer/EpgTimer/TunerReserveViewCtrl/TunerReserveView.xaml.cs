@@ -164,9 +164,10 @@ namespace EpgTimer.TunerReserveViewCtrl
         {
             return GetPopupItem(cursorPos, false);
         }
-        protected override void SetTooltip(ViewPanelItemBase toolInfo)
+        protected override bool SetTooltip(ViewPanelItemBase toolInfo)
         {
             Tooltip.ToolTip = new ReserveItem((toolInfo as ReserveViewItem).ReserveInfo).ToolTipViewAlways;
+            return true;
         }
 
     }

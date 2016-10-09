@@ -170,13 +170,14 @@ namespace EpgTimer.EpgView
         {
             return GetProgramViewData(cursorPos);
         }
-        protected override void SetTooltip(ViewPanelItemBase toolInfo)
+        protected override bool SetTooltip(ViewPanelItemBase toolInfo)
         {
             var info = toolInfo as ProgramViewItem;
-            if (info.TitleDrawErr == false && Settings.Instance.EpgToolTipNoViewOnly == true) return;
+            if (info.TitleDrawErr == false && Settings.Instance.EpgToolTipNoViewOnly == true) return false;
 
             Tooltip.ToolTip = ViewUtil.GetTooltipBlockStandard(CommonManager.ConvertProgramText(info.EventInfo,
                 Settings.Instance.EpgExtInfoTooltip == true ? EventInfoTextMode.TextAll : EventInfoTextMode.BasicText));
+            return true;
         }
 
         public ProgramViewItem GetProgramViewData(Point cursorPos)
