@@ -1426,7 +1426,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_PG_ARC_INFO:
-		OutputDebugString(L"CMD2_EPG_SRV_ENUM_PG_ARC_INFO\r\n");
 		if( sys->epgDB.IsInitialLoadingDataDone() == FALSE ){
 			resParam->param = CMD_ERR_BUSY;
 		}else{
@@ -1648,7 +1647,6 @@ int CEpgTimerSrvMain::CtrlCmdCallback(void* param, CMD_STREAM* cmdParam, CMD_STR
 		}
 		break;
 	case CMD2_EPG_SRV_ENUM_PG_ARC_ALL:
-		OutputDebugString(L"CMD2_EPG_SRV_ENUM_PG_ARC_ALL\r\n");
 		if( sys->epgDB.IsInitialLoadingDataDone() == FALSE ){
 			resParam->param = CMD_ERR_BUSY;
 		}else{
@@ -2610,6 +2608,7 @@ void CEpgTimerSrvMain::OutputDebugCmd(DWORD cmd, DWORD result, LONGLONG ticks)
 	}
 
 	switch( cmd ){
+	/* CtrlCmdDef.h èá */
 	case CMD2_EPG_SRV_RELOAD_EPG: strCmd = L"CMD2_EPG_SRV_RELOAD_EPG"; break;
 	case CMD2_EPG_SRV_RELOAD_SETTING: strCmd = L"CMD2_EPG_SRV_RELOAD_SETTING"; break;
 	case CMD2_EPG_SRV_CLOSE: strCmd = L"CMD2_EPG_SRV_CLOSE"; break;
@@ -2618,41 +2617,50 @@ void CEpgTimerSrvMain::OutputDebugCmd(DWORD cmd, DWORD result, LONGLONG ticks)
 	case CMD2_EPG_SRV_REGIST_GUI_TCP: strCmd = L"CMD2_EPG_SRV_REGIST_GUI_TCP"; break;
 	case CMD2_EPG_SRV_UNREGIST_GUI_TCP: strCmd = L"CMD2_EPG_SRV_UNREGIST_GUI_TCP"; break;
 	case CMD2_EPG_SRV_ISREGIST_GUI_TCP: strCmd = L"CMD2_EPG_SRV_ISREGIST_GUI_TCP"; break;
+	
 	case CMD2_EPG_SRV_ENUM_RESERVE: strCmd = L"CMD2_EPG_SRV_ENUM_RESERVE"; break;
 	case CMD2_EPG_SRV_GET_RESERVE: strCmd = L"CMD2_EPG_SRV_GET_RESERVE"; break;
 	case CMD2_EPG_SRV_ADD_RESERVE: strCmd = L"CMD2_EPG_SRV_ADD_RESERVE"; break;
 	case CMD2_EPG_SRV_DEL_RESERVE: strCmd = L"CMD2_EPG_SRV_DEL_RESERVE"; break;
 	case CMD2_EPG_SRV_CHG_RESERVE: strCmd = L"CMD2_EPG_SRV_CHG_RESERVE"; break;
-		
+	case CMD2_EPG_SRV_ENUM_TUNER_RESERVE: strCmd = L"CMD2_EPG_SRV_ENUM_TUNER_RESERVE"; break;
 	case CMD2_EPG_SRV_ENUM_RECINFO: strCmd = L"CMD2_EPG_SRV_ENUM_RECINFO"; break;
 	case CMD2_EPG_SRV_DEL_RECINFO: strCmd = L"CMD2_EPG_SRV_DEL_RECINFO"; break;
+
 	case CMD2_EPG_SRV_ENUM_SERVICE: strCmd = L"CMD2_EPG_SRV_ENUM_SERVICE"; break;
 	case CMD2_EPG_SRV_ENUM_PG_INFO: strCmd = L"CMD2_EPG_SRV_ENUM_PG_INFO"; break;
-	case CMD2_EPG_SRV_SEARCH_PG: strCmd = L"CMD2_EPG_SRV_SEARCH_PG"; break;
 	case CMD2_EPG_SRV_GET_PG_INFO: strCmd = L"CMD2_EPG_SRV_GET_PG_INFO"; break;
-	case CMD2_EPG_SRV_CHK_SUSPEND: strCmd = L"CMD2_EPG_SRV_CHK_SUSPEND"; break;
-	case CMD2_EPG_SRV_SUSPEND: strCmd = L"CMD2_EPG_SRV_SUSPEND"; break;
-	case CMD2_EPG_SRV_REBOOT: strCmd = L"CMD2_EPG_SRV_REBOOT"; break;
-	case CMD2_EPG_SRV_EPG_CAP_NOW: strCmd = L"CMD2_EPG_SRV_EPG_CAP_NOW"; break;
+	case CMD2_EPG_SRV_SEARCH_PG: strCmd = L"CMD2_EPG_SRV_SEARCH_PG"; break;
+	case CMD2_EPG_SRV_ENUM_PG_ALL: strCmd = L"CMD2_EPG_SRV_ENUM_PG_ALL"; break;
+	case CMD2_EPG_SRV_ENUM_REC_FOLDER: strCmd = L"CMD2_EPG_SRV_ENUM_REC_FOLDER"; break;
+	case CMD2_EPG_SRV_ENUM_PG_ARC_INFO: strCmd = L"CMD2_EPG_SRV_ENUM_PG_ARC_INFO"; break;
+	case CMD2_EPG_SRV_ENUM_PG_ARC_ALL: strCmd = L"CMD2_EPG_SRV_ENUM_PG_ARC_ALL"; break;
+
 	case CMD2_EPG_SRV_ENUM_AUTO_ADD: strCmd = L"CMD2_EPG_SRV_ENUM_AUTO_ADD"; break;
 	case CMD2_EPG_SRV_ADD_AUTO_ADD: strCmd = L"CMD2_EPG_SRV_ADD_AUTO_ADD"; break;
 	case CMD2_EPG_SRV_DEL_AUTO_ADD: strCmd = L"CMD2_EPG_SRV_DEL_AUTO_ADD"; break;
 	case CMD2_EPG_SRV_CHG_AUTO_ADD: strCmd = L"CMD2_EPG_SRV_CHG_AUTO_ADD"; break;
+
 	case CMD2_EPG_SRV_ENUM_MANU_ADD: strCmd = L"CMD2_EPG_SRV_ENUM_MANU_ADD"; break;
 	case CMD2_EPG_SRV_ADD_MANU_ADD: strCmd = L"CMD2_EPG_SRV_ADD_MANU_ADD"; break;
 	case CMD2_EPG_SRV_DEL_MANU_ADD: strCmd = L"CMD2_EPG_SRV_DEL_MANU_ADD"; break;
 	case CMD2_EPG_SRV_CHG_MANU_ADD: strCmd = L"CMD2_EPG_SRV_CHG_MANU_ADD"; break;
-	case CMD2_EPG_SRV_ENUM_TUNER_RESERVE: strCmd = L"CMD2_EPG_SRV_ENUM_TUNER_RESERVE"; break;
+
+	case CMD2_EPG_SRV_CHK_SUSPEND: strCmd = L"CMD2_EPG_SRV_CHK_SUSPEND"; break;
+	case CMD2_EPG_SRV_SUSPEND: strCmd = L"CMD2_EPG_SRV_SUSPEND"; break;
+	case CMD2_EPG_SRV_REBOOT: strCmd = L"CMD2_EPG_SRV_REBOOT"; break;
+	case CMD2_EPG_SRV_EPG_CAP_NOW: strCmd = L"CMD2_EPG_SRV_EPG_CAP_NOW"; break;
+
 	case CMD2_EPG_SRV_FILE_COPY: strCmd = L"CMD2_EPG_SRV_FILE_COPY"; break;
-	case CMD2_EPG_SRV_UPDATE_SETTING: strCmd = L"CMD2_EPG_SRV_UPDATE_SETTING"; break;
-	case CMD2_EPG_SRV_ENUM_PG_ALL: strCmd = L"CMD2_EPG_SRV_ENUM_PG_ALL"; break;
-	case CMD2_EPG_SRV_ENUM_REC_FOLDER: strCmd = L"CMD2_EPG_SRV_ENUM_REC_FOLDER"; break;
 	case CMD2_EPG_SRV_ENUM_PLUGIN: strCmd = L"CMD2_EPG_SRV_ENUM_PLUGIN"; break;
 	case CMD2_EPG_SRV_GET_CHG_CH_TVTEST: strCmd = L"CMD2_EPG_SRV_GET_CHG_CH_TVTEST"; break;
 	case CMD2_EPG_SRV_PROFILE_UPDATE: strCmd = L"CMD2_EPG_SRV_PROFILE_UPDATE"; break;
+	case CMD2_EPG_SRV_UPDATE_SETTING: strCmd = L"CMD2_EPG_SRV_UPDATE_SETTING"; break;
+
 	case CMD2_EPG_SRV_NWTV_SET_CH: strCmd = L"CMD2_EPG_SRV_NWTV_SET_CH"; break;
 	case CMD2_EPG_SRV_NWTV_CLOSE: strCmd = L"CMD2_EPG_SRV_NWTV_CLOSE"; break;
 	case CMD2_EPG_SRV_NWTV_MODE: strCmd = L"CMD2_EPG_SRV_NWTV_MODE"; break;
+
 	case CMD2_EPG_SRV_NWPLAY_OPEN: strCmd = L"CMD2_EPG_SRV_NWPLAY_OPEN"; break;
 	case CMD2_EPG_SRV_NWPLAY_CLOSE: strCmd = L"CMD2_EPG_SRV_NWPLAY_CLOSE"; break;
 	case CMD2_EPG_SRV_NWPLAY_PLAY: strCmd = L"CMD2_EPG_SRV_NWPLAY_PLAY"; break;
@@ -2661,6 +2669,7 @@ void CEpgTimerSrvMain::OutputDebugCmd(DWORD cmd, DWORD result, LONGLONG ticks)
 	case CMD2_EPG_SRV_NWPLAY_SET_POS: strCmd = L"CMD2_EPG_SRV_NWPLAY_SET_POS"; break;
 	case CMD2_EPG_SRV_NWPLAY_SET_IP: strCmd = L"CMD2_EPG_SRV_NWPLAY_SET_IP"; break;
 	case CMD2_EPG_SRV_NWPLAY_TF_OPEN: strCmd = L"CMD2_EPG_SRV_NWPLAY_TF_OPEN"; break;
+
 	case CMD2_EPG_SRV_GET_NETWORK_PATH: strCmd = L"CMD2_EPG_SRV_GET_NETWORK_PATH"; break;
 
 	////////////////////////////////////////////////////////////
