@@ -3,6 +3,7 @@
 #include "HttpServer.h"
 #include "../../Common/PathUtil.h"
 #include "../../Common/TimeUtil.h"
+#include "../../Common/SendCtrlCmd.h"
 
 int CEpgTimerSrvMain::InitLuaCallback(lua_State* L)
 {
@@ -43,6 +44,7 @@ int CEpgTimerSrvMain::InitLuaCallback(lua_State* L)
 	LuaHelp::reg_function(L, "AddOrChgManuAdd", LuaAddOrChgManuAdd, sys);
 	LuaHelp::reg_function(L, "GetNotifyUpdateCount", LuaGetNotifyUpdateCount, sys);
 	LuaHelp::reg_function(L, "ListDmsPublicFile", LuaListDmsPublicFile, sys);
+	LuaHelp::reg_function(L, "SendSuspend", SendSuspend_lua, sys);
 	LuaHelp::reg_int(L, "htmlEscape", 0);
 	LuaHelp::reg_string(L, "serverRandom", sys->httpServerRandom.c_str());
 	lua_setglobal(L, "edcb");
@@ -893,6 +895,36 @@ int CEpgTimerSrvMain::LuaListDmsPublicFile(lua_State* L)
 		lua_rawseti(L, -2, (int)i + 1);
 	}
 	return 1;
+}
+
+int CEpgTimerSrvMain::SendSuspend_lua(lua_State* L)
+{
+	CSendCtrlCmd cmd;
+
+	short mode = lua_toboolean(L, 1);
+	bool bRet = false;
+
+	switch (mode) {
+	case 1:
+		if (cmd.SendChkSuspend() == CMD_SUCCESS) {
+			cmd.SendSuspend(0xFF01);
+			bRet = true;
+		}
+		break;
+	case 2:
+		if (cmd.SendChkSuspend() == CMD_SUCCESS) {
+			cmd.SendSuspend(0xFF02);
+			bRet = true;
+		}
+		break;
+	default:
+		bRet = true;
+		break;
+	}
+
+	lua_pushboolean(L, bRet);
+	return 1;
+
 }
 
 void CEpgTimerSrvMain::PushEpgEventInfo(CLuaWorkspace& ws, const EPGDB_EVENT_INFO& e)
