@@ -126,6 +126,7 @@ private:
 	static int LuaAddOrChgManuAdd(lua_State* L);
 	static int LuaGetNotifyUpdateCount(lua_State* L);
 	static int LuaListDmsPublicFile(lua_State* L);
+	static int SendSuspend_lua(lua_State* L);
 	static void PushEpgEventInfo(CLuaWorkspace& ws, const EPGDB_EVENT_INFO& e);
 	static void PushReserveData(CLuaWorkspace& ws, const RESERVE_DATA& r);
 	static void PushRecSettingData(CLuaWorkspace& ws, const REC_SETTING_DATA& rs);

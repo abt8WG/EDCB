@@ -10,6 +10,10 @@ if epg=='reload' then
   messege=edcb.ReloadEpg() and 'EPG再読み込みを開始しました' or 'EPG再読み込みを開始できませんでした'
 elseif epg=='epgcap' then
   messege=edcb.EpgCapNow() and 'EPG取得開始しました' or 'EPG取得開始できませんでした'
+elseif epg=='standby' then
+   messege=edcb.SendSuspend(1) and 'スタンバイに移行します...' or 'スタンバイに移行できる状態ではありません'
+elseif epg=='hibernation' then
+   messege=edcb.SendSuspend(2) and '休止に移行します...' or '休止に移行できる状態ではありません'
 end
 
 ct='<?xml version="1.0" encoding="UTF-8" ?'..'><entry><info>'
