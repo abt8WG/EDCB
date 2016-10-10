@@ -269,6 +269,7 @@ namespace EpgTimer
                     {
                         recSetting = (comboBox_preSet.SelectedItem as RecPresetItem).RecPresetData.Clone();
                     }
+                    UpdateView();
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace); }
@@ -281,7 +282,7 @@ namespace EpgTimer
             OnUpdatingView = true;
             try
             {
-                if (IniFileHandler.CanUpdateInifile)
+                if (!IniFileHandler.CanUpdateInifile)
                 {
                     button_add_preset.IsEnabled = false;
                     button_chg_preset.IsEnabled = false;
